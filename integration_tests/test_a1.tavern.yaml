@@ -1,0 +1,74 @@
+# test_a1.tavern.yaml
+
+---
+
+test_name: test delayed policy
+
+stages:
+  - name: test the delayed policy
+    request:
+      url: http://localhost:10000/ric/policies/test_policy
+      method: PUT
+      json:
+        {}
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      body:
+        ACK_FROM: DELAYED_TEST
+        status: SUCCESS
+
+
+---
+
+test_name: test admission control
+
+stages:
+  - name: test the admission control policy
+    request:
+      url: http://localhost:10000/ric/policies/control_admission_time
+      method: PUT
+      json:
+        dc_admission_start_time: "10:00:00"
+        dc_admission_end_time: "11:00:00"
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      body:
+        ACK_FROM: ADMISSION_CONTROL
+        status: SUCCESS
+
+---
+
+test_name: bad_requests
+
+stages:
+  - name: does not exist
+    request:
+      url: http://localhost:10000/ric/policies/darkness
+      method: PUT
+      json:
+        {}
+      headers:
+        content-type: application/json
+    response:
+      status_code: 404
+
+  - name: not a json
+    request:
+      url: http://localhost:10000/ric/policies/control_admission_time
+      method: PUT
+      data: "asdf"
+    response:
+      status_code: 415
+
+  - name: body not expected
+    request:
+      url: http://localhost:10000/ric/policies/test_policy
+      method: PUT
+      json:
+        not: "welcome"
+    response:
+      status_code: 400
