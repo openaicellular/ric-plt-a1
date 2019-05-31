@@ -24,6 +24,15 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/>`__
 and this project adheres to `Semantic
 Versioning <http://semver.org/>`__.
 
+[0.8.1] - 5/31/2019
+-------------------
+
+::
+
+   * Run unit tests as part of docker build
+
+
+
 [0.8.0] - 5/28/2019
 -------------------
 

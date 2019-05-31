@@ -26,10 +26,16 @@ RUN git checkout a012cf63dfdad3656c995cb06c316fd208c63b98
 RUN mkdir .build; cd .build; cmake ..; make install
 
 # Install python-rmr
-RUN pip install --upgrade pip 
+RUN pip install --upgrade pip
 
 #install a1
 WORKDIR /tmp
+
+# Run our unit tests
+RUN pip install tox
+RUN tox
+
+# do the actual install
 RUN pip install .
 EXPOSE 10000
 
