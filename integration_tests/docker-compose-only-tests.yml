@@ -14,24 +14,25 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
-[tox]
-envlist = int
+version: '3'
+services:
 
-[testenv:int]
-whitelist_externals=
-    sleep
-    docker-compose
-    ab
-deps =
-    pytest-xdist
-    tavern
-changedir=integration_tests
-commands_pre=
-    docker-compose up --build -d
-    sleep 2
-commands=
-# helm lint a1mediator/
-    pytest -n 2
-    ab -n 100 -c 10 -u putdata -T application/json http://localhost:10000/ric/policies/control_admission_time
-commands_post=
-    docker-compose down
+    rmr_receiver:
+        build: .
+        hostname: "rmr_receiver"
+        volumes:
+          - ./test_docker.rt:/opt/route/local.rt
+
+    rmr_delay_receiver:
+        build: .
+        hostname: "rmr_delay_receiver"
+        volumes:
+          - ./test_docker.rt:/opt/route/local.rt
+        environment:
+            # https://github.com/docker/compose/issues/3878
+            RMR_RCV_RETRY_INTERVAL: 500
+            RMR_RETRY_TIMES: 10
+            TEST_RCV_PORT: 4563
+            TEST_RCV_RETURN_MINT: 10001
+            TEST_RCV_SEC_DELAY: 5
+            TEST_RCV_RETURN_PAYLOAD: '{"ACK_FROM": "DELAYED_TEST", "status": "SUCCESS"}'

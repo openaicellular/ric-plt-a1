@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "a1mediator.fullname" . }}
+  labels:
+{{ include "a1mediator.labels" . | indent 4 }}
+
+spec:
+  type: {{ .Values.httpservice.type }}
+  ports:
+    - port: {{ .Values.httpservice.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ include "a1mediator.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.rmrservice.name }}
+  labels:
+{{ include "a1mediator.labels" . | indent 4 }}
+
+spec:
+  type: {{ .Values.rmrservice.type }}
+  ports:
+    - port: {{ .Values.rmrservice.port }}
+      targetPort: {{ .Values.rmrservice.port }}
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ include "a1mediator.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
