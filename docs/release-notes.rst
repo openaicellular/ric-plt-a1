@@ -24,6 +24,15 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/>`__
 and this project adheres to `Semantic
 Versioning <http://semver.org/>`__.
 
+[0.8.2] - 6/5/2019
+-------------------
+
+::
+
+   * Upgrade RMR due to a bug that was preventing rmr from init in kubernetes
+
+
+
 [0.8.1] - 5/31/2019
 -------------------
 

@@ -22,7 +22,7 @@ ADD receiver.py /
 RUN apt-get update && apt-get install -y gcc git cmake
 RUN git clone https://gerrit.oran-osc.org/r/ric-plt/lib/rmr
 WORKDIR rmr
-RUN git checkout a012cf63dfdad3656c995cb06c316fd208c63b98
+RUN git checkout 68d09fa5028e47e763c44c30647da31e77eda64a
 RUN mkdir .build; cd .build; cmake ..; make install
 
 # Install python-rmr
