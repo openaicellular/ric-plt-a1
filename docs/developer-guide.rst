@@ -35,7 +35,9 @@ This project follows semver. When changes are made, the versions are in:
 
 2) ``setup.py``
 
-3) ``a1/openapi.yml``
+3) ``container-tag.yaml``
+
+4) ``a1/openapi.yml``
 
 Running locally
 ===============
