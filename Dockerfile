@@ -14,14 +14,19 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
+
+# CI to build a Docker image with the A1 mediator
+# Adds gcc and cmake to build RMr library
+
 FROM python:3.7
 
 ADD . /tmp
 
-# Install RMR
+# Install RMr
 RUN apt-get update && apt-get install -y gcc git cmake
 RUN git clone https://gerrit.oran-osc.org/r/ric-plt/lib/rmr
 WORKDIR rmr
+# This pins RMr to a known working version
 RUN git checkout 68d09fa5028e47e763c44c30647da31e77eda64a
 RUN mkdir .build; cd .build; cmake ..; make install
 
