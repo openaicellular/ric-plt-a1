@@ -58,16 +58,3 @@ spec:
         - name: "a1conf"
           configMap:
             name: "a1conf"
-
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-    {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
-    {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
