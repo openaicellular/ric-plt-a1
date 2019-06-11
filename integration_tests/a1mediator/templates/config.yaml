@@ -5,8 +5,8 @@ metadata:
 data:
   local.rt: |
     newrt|start
-    rte|10000|rmr_delay_receiver:4563
-    rte|20000|rmr_receiver:4560
+    rte|20000|testreceiverrmrservice:4560
+    rte|10000|delayreceiverrmrservice:4563
     rte|10001|{{ .Values.rmrservice.name }}:{{ .Values.rmrservice.port }}
     rte|20001|{{ .Values.rmrservice.name }}:{{ .Values.rmrservice.port }}
     newrt|end

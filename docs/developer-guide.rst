@@ -76,7 +76,7 @@ Running locally
 Testing locally
 ===============
 
-There are also two test receivers in ``localtests`` you can run locally.
+There are also two test receivers in ``integration_tests`` you can run locally.
 The first is meant to be used with the ``control_admission`` policy
 (that comes in test fixture ric manifest):
 
