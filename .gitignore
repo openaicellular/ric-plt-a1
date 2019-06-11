@@ -1,3 +1,4 @@
+*.log
 NOTES.txt
 .pytest_cache/
 xunit-results.xml

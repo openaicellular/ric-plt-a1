@@ -39,13 +39,27 @@ Integration testing
 ===================
 
 This tests A1’s external API with two test receivers. Note, this
-currently depends on docker-compose, meaning you cannot run this if
-docker-compose is not installed. Note2: this is not fast. It builds the
-containers and launches requests against the API so it takes time.
+currently depends on helm+k8s, meaning you cannot run this if
+this is not installed.
 
+If you've never run the integration tests before, build the test receiver
+::
+
+    cd integration_tests
+    docker build  --no-cache -t testreceiver:latest .
+
+Else, from the root,
 ::
 
    tox -c tox-integration.ini
+
+This script:
+1. Deploys 3 helm charts into a local kubernetes installation
+2. Port forwards a pod ClusterIP to localhost
+3. Uses “tavern” to run some tests against the server
+4. Barrages the server with apache bench
+5. Tears everything down
+
 
 Running
 =======
@@ -66,22 +80,13 @@ returns a 503. The default is ``4``.
 
 K8S
 ---
-The helm chart is in the folder `a1mediator`.
+The "real" helm chart for A1 is in the LF it/dep repo. That repo holds all of the helm charts for the RIC platform. There is a helm chart in `integration_tests` here for running the integration tests as discussed above.
 
-There are two files in `a1mediator/files` that should be replaced with the "real" files for deployment. The ones included there, and referenced in the configmap, are only samples. To deploy A1 correctly, make sure these files are correct.
-
-::
-
-    helm install --devel a1mediator/ --name a1 --set imageCredentials.username=xxx --set imageCredentials.password=xxx
-
-The username and password here are the credentials to the registry defined in `a1mediator/values.yaml`. Currently this is the LF docker registry.
-
-Docker
-------
+Local Docker
+------------
 
 building
 ~~~~~~~~
-
 ::
 
    docker build --no-cache -t a1:X.Y.Z .
@@ -90,8 +95,6 @@ building
 
 running
 ~~~~~~~
-
-(TODO: this will be enhanced with Helm.)
 
 ::
 
