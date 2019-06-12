@@ -1,14 +1,32 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.rmrservice.name }}
+  name: {{ .Values.testrmrservice.name }}
   labels:
 {{ include "testreceiver.labels" . | indent 4 }}
 spec:
-  type: {{ .Values.rmrservice.type }}
+  type: {{ .Values.testrmrservice.type }}
   ports:
-    - port: {{ .Values.rmrservice.port }}
-      targetPort: {{ .Values.rmrservice.port }}
+    - port: {{ .Values.testrmrservice.port }}
+      targetPort: {{ .Values.testrmrservice.port }}
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ include "testreceiver.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.delayrmrservice.name }}
+  labels:
+{{ include "testreceiver.labels" . | indent 4 }}
+spec:
+  type: {{ .Values.delayrmrservice.type }}
+  ports:
+    - port: {{ .Values.delayrmrservice.port }}
+      targetPort: {{ .Values.delayrmrservice.port }}
       protocol: TCP
   selector:
     app.kubernetes.io/name: {{ include "testreceiver.name" . }}

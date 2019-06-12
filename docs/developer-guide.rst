@@ -37,11 +37,11 @@ This project follows semver. When changes are made, the versions are in:
 
 3) ``container-tag.yaml``
 
-4) ``a1mediator/values.yaml``
-
-5) ``a1mediator/Chart.yaml``
+4) ``integration_tests/a1mediator/values.yaml + ``Chart.yaml``
 
 6) ``a1/openapi.yml``
+
+7) in the it/dep repo that contains a1 helm chart, ``values.yaml``, ``Chart.yml``
 
 Running locally
 ===============

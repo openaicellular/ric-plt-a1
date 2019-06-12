@@ -4,10 +4,17 @@
 
 replicaCount: 1
 
-rmrservice:
+testrmrservice:
   name: testreceiverrmrservice
   type: ClusterIP
   port: 4560
+
+delayrmrservice:
+  name: delayreceiverrmrservice
+  type: ClusterIP
+  port: 4563
+
+
 
 ingress:
   enabled: false
