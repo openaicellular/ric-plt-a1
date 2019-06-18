@@ -14,19 +14,17 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
-FROM python:3.7
 
-ADD receiver.py /
+FROM nexus3.o-ran-sc.org:10004/bldr-debian-python-nng:2-py3.7-nng1.1.1
 
-# Install RMR
-RUN apt-get update && apt-get install -y gcc git cmake
-RUN git clone https://gerrit.oran-osc.org/r/ric-plt/lib/rmr
-WORKDIR rmr
-RUN git checkout 68d09fa5028e47e763c44c30647da31e77eda64a
-RUN mkdir .build; cd .build; cmake ..; make install
+COPY receiver.py /
 
-# Install python-rmr
-RUN pip install --upgrade pip 
+# Install RMr
+RUN wget --content-disposition https://packagecloud.io/o-ran-sc/master/packages/debian/stretch/rmr_1.0.34_amd64.deb/download.deb
+RUN dpkg -i rmr_1.0.34_amd64.deb
+
+# Install RMr python bindings
+RUN pip install --upgrade pip
 RUN pip install rmr==0.10.1
 
 # rmr setups
