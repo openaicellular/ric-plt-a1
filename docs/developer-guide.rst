@@ -43,6 +43,49 @@ This project follows semver. When changes are made, the versions are in:
 
 7) in the it/dep repo that contains a1 helm chart, ``values.yaml``, ``Chart.yml``
 
+Unit Testing
+============
+Note, this requires rmr to be installed on the system executing the tests. Also, this requires the python packages ``tox`` and ``pytest``.
+
+::
+
+   tox
+   open htmlcov/index.html
+
+Integration testing
+===================
+This tests A1’s external API with two test receivers. This depends on helm+k8s, meaning you cannot run this if this is not installed.
+
+Unlike the unit tests, however, this does not require rmr to be installed on the base system, as everything
+runs in Docker, and the Dockerfiles provide/install rmr.
+
+First, build the latest A1 you are testing (from the root):
+::
+
+    docker build  --no-cache -t a1:latest .
+
+Note that this step also runs the unit tests, since running the unit tests are part of the Dockerfile for A1.
+
+If you've never run the integration tests before, build the test receiver, which is referenced in the helm chart:
+::
+
+    cd integration_tests
+    docker build  --no-cache -t testreceiver:latest .
+
+You do not need the "bombarder" image as they are not currently used in the integration tests (that is more for load testing).
+
+Finally, run all the tests from the root (this requires the python packages ``tox``, ``pytest``, and ``tavern``).
+::
+
+   tox -c tox-integration.ini
+
+This script:
+1. Deploys 3 helm charts into a local kubernetes installation
+2. Port forwards a pod ClusterIP to localhost
+3. Uses “tavern” to run some tests against the server
+4. Barrages the server with apache bench
+5. Tears everything down
+
 Running locally
 ===============
 

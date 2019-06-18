@@ -1,9 +1,9 @@
 replicaCount: 1
 
 image:
-  repository: nexus3.o-ran-sc.org:10004/ric-plt-a1
-  tag: 0.8.2
-  pullPolicy: IfNotPresent
+  repository: a1
+  tag: latest
+  pullPolicy: Never
 
 # name of the secret that allows for privagte registry docker pulls.
 # if the value is "lfhelper", there is a helper function included in this chart, and it uses imageCredentials .

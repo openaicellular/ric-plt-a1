@@ -25,42 +25,6 @@ You can see the API (OpenAPI3 spec) at ``a1/openapi.yml``. You can also
 see the “pretty” version if you run the container at
 ``http://localhost:10000/ui/``.
 
-Unit Testing
-============
-
-Note, this requires rmr to be installed!
-
-::
-
-   tox
-   open htmlcov/index.html
-
-Integration testing
-===================
-
-This tests A1’s external API with two test receivers. Note, this
-currently depends on helm+k8s, meaning you cannot run this if
-this is not installed.
-
-If you've never run the integration tests before, build the test receiver
-::
-
-    cd integration_tests
-    docker build  --no-cache -t testreceiver:latest .
-
-Else, from the root,
-::
-
-   tox -c tox-integration.ini
-
-This script:
-1. Deploys 3 helm charts into a local kubernetes installation
-2. Port forwards a pod ClusterIP to localhost
-3. Uses “tavern” to run some tests against the server
-4. Barrages the server with apache bench
-5. Tears everything down
-
-
 Running
 =======
 
