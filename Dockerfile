@@ -25,8 +25,8 @@ COPY . /tmp
 WORKDIR /tmp
 
 # Install RMr library
-RUN wget --content-disposition https://packagecloud.io/o-ran-sc/master/packages/debian/stretch/rmr_1.0.34_amd64.deb/download.deb
-RUN dpkg -i rmr_1.0.34_amd64.deb
+RUN wget --content-disposition https://packagecloud.io/o-ran-sc/master/packages/debian/stretch/rmr_1.0.36_amd64.deb/download.deb
+RUN dpkg -i rmr_1.0.36_amd64.deb
 
 # Install RMr python bindings
 RUN pip install --upgrade pip
