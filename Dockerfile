@@ -17,7 +17,6 @@
 # TODO: switch to alpine once rmr apk available
 FROM python:3.7
 
-
 COPY . /tmp
 WORKDIR /tmp
 
@@ -28,22 +27,27 @@ COPY --from=nexus3.o-ran-sc.org:10004/bldr-debian-python-nng:2-py3.7-nng1.1.1 /u
 RUN wget --content-disposition https://packagecloud.io/o-ran-sc/master/packages/debian/stretch/rmr_1.0.36_amd64.deb/download.deb
 RUN dpkg -i rmr_1.0.36_amd64.deb
 
+# dir that rmr routing file temp goes into
+RUN mkdir -p /opt/route/
+
 # Install RMr python bindings
-RUN pip install --upgrade pip
-RUN pip install rmr==0.10.1
+# this writes into /usr/local, need root
+RUN pip install --upgrade pip && pip install rmr==0.10.1 tox
 
-# install a1
-
-# Prereq for unit tests
-RUN pip install tox
+# Run the unit tests
 RUN tox
 
 # do the actual install
 RUN pip install .
-EXPOSE 10000
 
-# rmr setups
-RUN mkdir -p /opt/route/
+# Switch to a non-root user for security reasons.
+# a1 does not currently write into any dirs so no chowns are needed at this time.
+# https://stackoverflow.com/questions/27701930/add-user-to-docker-container
+RUN adduser --disabled-password --gecos '' a1user
+USER a1user
+
+# misc setups
+EXPOSE 10000
 ENV LD_LIBRARY_PATH /usr/local/lib
 ENV RMR_SEED_RT /opt/route/local.rt
 
