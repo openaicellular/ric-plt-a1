@@ -27,11 +27,13 @@ test_name: test admission control
 stages:
   - name: test the admission control policy
     request:
-      url: http://localhost:10000/ric/policies/control_admission_time
+      url: http://localhost:10000/ric/policies/admission_control_policy
       method: PUT
       json:
-        dc_admission_start_time: "10:00:00"
-        dc_admission_end_time: "11:00:00"
+        enforce: true
+        window_length: 10
+        blocking_rate: 20
+        trigger_threshold: 10
       headers:
         content-type: application/json
     response:
@@ -56,15 +58,26 @@ stages:
     response:
       status_code: 404
 
+  - name: bad body for admission control policy
+    request:
+      url: http://localhost:10000/ric/policies/admission_control_policy
+      method: PUT
+      json:
+        not: "expected"
+      headers:
+        content-type: application/json
+    response:
+      status_code: 400
+
   - name: not a json
     request:
-      url: http://localhost:10000/ric/policies/control_admission_time
+      url: http://localhost:10000/ric/policies/admission_control_policy
       method: PUT
       data: "asdf"
     response:
       status_code: 415
 
-  - name: body not expected
+  - name: bad body for test policy
     request:
       url: http://localhost:10000/ric/policies/test_policy
       method: PUT

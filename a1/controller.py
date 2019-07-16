@@ -17,6 +17,7 @@
 from flask import Response
 import connexion
 import json
+from jsonschema.exceptions import ValidationError
 from a1 import get_module_logger
 from a1 import a1rmr, exceptions, utils
 
@@ -47,6 +48,9 @@ def _try_func_return(func):
     """
     try:
         return func()
+    except ValidationError as exc:
+        logger.exception(exc)
+        return "", 400
     except exceptions.PolicyNotFound as exc:
         logger.exception(exc)
         return "", 404

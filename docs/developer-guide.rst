@@ -45,7 +45,8 @@ This project follows semver. When changes are made, the versions are in:
 
 Unit Testing
 ============
-Note, this requires rmr to be installed on the system executing the tests. Also, this requires the python packages ``tox`` and ``pytest``.
+Note,  before this will work, for the first time on the machine running the tests, run ``./install_deps.sh``. This is only needed once on the machine.
+Also, this requires the python packages ``tox`` and ``pytest``.
 
 ::
 
@@ -89,8 +90,7 @@ This script:
 Running locally
 ===============
 
-1. This requires that RMR is installed on the base system. (the
-   Dockerfile does this when running in Docker)
+1. Before this will work, for the first time on that machine, run ``./install_deps.sh``
 
 2. It also requires rmr-python >= 0.10.1 installed. (The dockerfile also
    does this)
@@ -145,7 +145,7 @@ while it is sleeping, and both responses should be correct.
 ::
 
    curl -v -X PUT -H "Content-Type: application/json" -d '{}' localhost:10000/ric/policies/test_policy
-   curl -v -X PUT -H "Content-Type: application/json" -d '{"dc_admission_start_time": "10:00:00", "dc_admission_end_time": "11:00:00"}' localhost:10000/ric/policies/control_admission_time
+   curl -v -X PUT -H "Content-Type: application/json" -d '{ "enforce":true, "window_length":10, "blocking_rate":20, "trigger_threshold":10 }' localhost:10000/ric/policies/admission_control_policy
 
 Finally, there is a test “bombarder” that will flood A1 with messages
 with good message types but bad transaction IDs, to test A1’s resilience

@@ -39,4 +39,4 @@ def patch_all(monkeypatch, nonexisting_rmr=False):
 
 
 def good_payload():
-    return {"dc_admission_start_time": "10:00:00", "dc_admission_end_time": "11:00:00"}
+    return {"enforce": True, "window_length": 10, "blocking_rate": 20, "trigger_threshold": 10}

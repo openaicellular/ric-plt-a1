@@ -24,6 +24,16 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/>`__
 and this project adheres to `Semantic
 Versioning <http://semver.org/>`__.
 
+[0.8.4] - 7/16/2019
+-------------------
+
+::
+
+   * Fix the 400, which was in the API, but wasn't actually implemented
+   * Update the test fixture manifests to reflect the latest adm control, paves way for next feature coming which is a policy GET
+
+
+
 [0.8.3] - 6/18/2019
 -------------------
 
