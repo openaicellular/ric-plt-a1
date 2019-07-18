@@ -16,9 +16,21 @@
 # ==================================================================================
 openapi: 3.0.0
 info:
-  version: 0.8.0
+  version: 0.9.0
   title: RIC A1
 paths:
+  '/a1-p/healthcheck':
+    get:
+      description: >
+        perform a healthcheck on a1
+      tags:
+        - A1 Mediator
+      operationId: a1.controller.healthcheck_handler
+      responses:
+        200:
+          description: >
+            a1 is healthy. Anything other than a 200 should be considered a1 as failing
+
   '/ric/policies/{policyname}':
     parameters:
       - name: policyname
@@ -88,6 +100,17 @@ paths:
         - A1 Mediator
       operationId: a1.controller.get_handler
       responses:
-        '501':
+        '200':
           description: >
-            "future GET support has been pondered, but this is not currently implemented"U
+            The downstream component responsible for implementing this policy replied with a good response. Check the manifest for response details.
+        '400':
+          description: >
+            The downstream component for implementing this policy does not support policy fetching.
+        '404':
+          description: >
+            there is no policy with this name
+        '504':
+          description: >
+            the downstream component responsible for handling this policy did not respond (in time)
+
+

@@ -7,6 +7,8 @@ data:
     newrt|start
     rte|20000|{{ .Values.testrmrservice.name }}:{{ .Values.testrmrservice.port }}
     rte|20001|a1rmrservice:4562
+    rte|20002|{{ .Values.testrmrservice.name }}:{{ .Values.testrmrservice.port }}
+    rte|20003|a1rmrservice:4562
     newrt|end
 
 ---

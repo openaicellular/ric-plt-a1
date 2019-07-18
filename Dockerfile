@@ -21,7 +21,7 @@ COPY . /tmp
 WORKDIR /tmp
 
 # copy NNG out of the  CI builder nng
-COPY --from=nexus3.o-ran-sc.org:10004/bldr-debian-python-nng:2-py3.7-nng1.1.1 /usr/local/lib/libnng.so /usr/local/lib/libnng.so
+COPY --from=nexus3.o-ran-sc.org:10004/bldr-debian-python:3-py3.7-nng1.1.1 /usr/local/lib/libnng.so /usr/local/lib/libnng.so
 
 # Installs RMr using debian package hosted at packagecloud.io
 RUN wget --content-disposition https://packagecloud.io/o-ran-sc/master/packages/debian/stretch/rmr_1.0.36_amd64.deb/download.deb

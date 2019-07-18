@@ -19,12 +19,13 @@ Test receiver
 """
 
 import time
-from rmr import rmr
 import json
 import os
+from rmr import rmr
 
 PORT = os.environ.get("TEST_RCV_PORT", "4560")
 RETURN_MINT = int(os.environ.get("TEST_RCV_RETURN_MINT", 20001))
+RETURN_MINT_FETCH = int(os.environ.get("TEST_RCV_RETURN_MINT", 20003))
 DELAY = int(os.environ.get("TEST_RCV_SEC_DELAY", 0))
 PAYLOAD_RETURNED = json.loads(
     os.environ.get("TEST_RCV_RETURN_PAYLOAD", '{"ACK_FROM": "ADMISSION_CONTROL", "status": "SUCCESS"}')
@@ -47,6 +48,11 @@ while True:
         time.sleep(1)
     else:
         print("Message received!: {}".format(summary))
+
+        # if this was a policy fetch (request int =20002), override the payload and return int
+        if summary["message type"] == 20002:
+            PAYLOAD_RETURNED = {"mock return from FETCH": "pretend policy is here"}
+            RETURN_MINT = 20003
 
         val = json.dumps(PAYLOAD_RETURNED).encode("utf-8")
         rmr.set_payload_and_length(val, sbuf)

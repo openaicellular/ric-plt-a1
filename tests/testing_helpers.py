@@ -24,13 +24,17 @@ def _get_fixture_path(name):
     return "{0}/fixtures/{1}".format(cur_dir, name)
 
 
-def patch_all(monkeypatch, nonexisting_rmr=False):
+def patch_all(monkeypatch, nonexisting_rmr=False, nofetch=False):
     rmr_mocks.patch_rmr(monkeypatch)
 
     # patch manifest
     man = json.loads(open(_get_fixture_path("ricmanifest.json"), "r").read())
     if nonexisting_rmr:
         man["controls"][0]["message_receives_rmr_type"] = "DARKNESS"
+
+    if nofetch:
+        del man["controls"][0]["control_state_request_rmr_type"]
+
     monkeypatch.setattr("a1.utils.get_ric_manifest", lambda: man)
 
     # patch rmr mapping

@@ -68,9 +68,6 @@ def _fake_dequeue(
     return f
 
 
-# Actual Tests
-
-
 def _test_put_patch(monkeypatch):
     testing_helpers.patch_all(monkeypatch)
     monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(0))  # good sends for this whole batch
@@ -88,6 +85,33 @@ def _test_put_patch(monkeypatch):
     # Note, we could have just patched summary, but this patches at a "lower level" so is a better test
     monkeypatch.setattr("rmr.rmr.rmr_alloc_msg", fake_alloc)
     monkeypatch.setattr("rmr.rmr.generate_and_set_transaction_id", fake_set_transactionid)
+
+
+# Actual Tests
+
+
+def test_policy_get(client, monkeypatch):
+    """
+    test policy GET
+    """
+    _test_put_patch(monkeypatch)
+    monkeypatch.setattr(
+        "a1.a1rmr._dequeue_all_waiting_messages",
+        _fake_dequeue(monkeypatch, msg_payload={"GET ack": "pretend policy is here"}, msg_type=20003),
+    )
+    res = client.get("/ric/policies/admission_control_policy")
+    assert res.status_code == 200
+    assert res.json == {"GET ack": "pretend policy is here"}
+
+
+def test_policy_get_unsupported(client, monkeypatch):
+    """
+    test policy GET
+    """
+    testing_helpers.patch_all(monkeypatch, nofetch=True)
+    res = client.get("/ric/policies/admission_control_policy")
+    assert res.status_code == 400
+    assert res.data == b'"POLICY DOES NOT SUPPORT FETCHING"\n'
 
 
 def test_xapp_put_good(client, monkeypatch):
@@ -202,3 +226,11 @@ def test_missing_rmr(client, monkeypatch):
     res = client.put("/ric/policies/admission_control_policy", json=testing_helpers.good_payload())
     assert res.status_code == 500
     assert res.data == b'"A1 does not have a mapping for the desired rmr string. report this!"\n'
+
+
+def test_healthcheck(client):
+    """
+    test healthcheck
+    """
+    res = client.get("/a1-p/healthcheck")
+    assert res.status_code == 200

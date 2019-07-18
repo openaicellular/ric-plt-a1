@@ -6,9 +6,11 @@ data:
   local.rt: |
     newrt|start
     rte|20000|testreceiverrmrservice:4560
+    rte|20001|{{ .Values.rmrservice.name }}:{{ .Values.rmrservice.port }}
+    rte|20002|testreceiverrmrservice:4560
+    rte|20003|{{ .Values.rmrservice.name }}:{{ .Values.rmrservice.port }}
     rte|10000|delayreceiverrmrservice:4563
     rte|10001|{{ .Values.rmrservice.name }}:{{ .Values.rmrservice.port }}
-    rte|20001|{{ .Values.rmrservice.name }}:{{ .Values.rmrservice.port }}
     newrt|end
   rmr_string_int_mapping.txt: {{ tpl (.Files.Get "files/rmr_string_int_mapping.txt") . | quote }}
   ricmanifest.json: {{ tpl (.Files.Get "files/ricmanifest.json") . | quote }}

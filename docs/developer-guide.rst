@@ -87,6 +87,9 @@ This script:
 4. Barrages the server with apache bench
 5. Tears everything down
 
+Unless you're a core A1 developer, you should probably stop here. The below instructions
+are for running A1 locally, without docker, and is much more involved (however useful when developing a1).
+
 Running locally
 ===============
 
@@ -96,7 +99,7 @@ Running locally
    does this)
 
 3. Create a ``local.rt`` file and copy it into ``/opt/route/local.rt``.
-   Note, the example one in ``local_tests`` will need to be modified for
+   Note, the example one in ``integration_tests`` will need to be modified for
    your scenario and machine.
 
 4. Copy a ric manifest into ``/opt/ricmanifest.json`` and an rmr mapping
@@ -105,19 +108,17 @@ Running locally
 
    ::
 
-     cp tests/fixtures/ricmanifest.json /opt/ricmanifest.json cp
-     tests/fixtures/rmr_string_int_mapping.txt
-     /opt/rmr_string_int_mapping.txt
+     cp tests/fixtures/ricmanifest.json /opt/ricmanifest.json
+     cp tests/fixtures/rmr_string_int_mapping.txt /opt/rmr_string_int_mapping.txt
 
 5. Then:
 
-   sudo pip install –ignore-installed .; set -x LD_LIBRARY_PATH
-   /usr/local/lib/; set -x RMR_SEED_RT /opt/route/local.rt ; set -x
-   RMR_RCV_RETRY_INTERVAL 500; set -x RMR_RETRY_TIMES 10;
+   ::
+
+   sudo pip install -e .
+   set -x LD_LIBRARY_PATH /usr/local/lib/; set -x RMR_SEED_RT /opt/route/local.rt ; set -x RMR_RCV_RETRY_INTERVAL 500; set -x RMR_RETRY_TIMES 10;
    /usr/bin/run.py
 
-Testing locally
-===============
 
 There are also two test receivers in ``integration_tests`` you can run locally.
 The first is meant to be used with the ``control_admission`` policy
@@ -146,6 +147,8 @@ while it is sleeping, and both responses should be correct.
 
    curl -v -X PUT -H "Content-Type: application/json" -d '{}' localhost:10000/ric/policies/test_policy
    curl -v -X PUT -H "Content-Type: application/json" -d '{ "enforce":true, "window_length":10, "blocking_rate":20, "trigger_threshold":10 }' localhost:10000/ric/policies/admission_control_policy
+   curl -v localhost:10000/ric/policies/admission_control_policy
+   curl -v localhost:10000/a1-p/healthcheck
 
 Finally, there is a test “bombarder” that will flood A1 with messages
 with good message types but bad transaction IDs, to test A1’s resilience

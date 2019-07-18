@@ -24,6 +24,15 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/>`__
 and this project adheres to `Semantic
 Versioning <http://semver.org/>`__.
 
+[0.9.0] - 7/22/2019
+-------------------
+
+::
+
+   * Implement the GET on policies
+   * Add a new endpoint for healthcheck. NOTE, it has been decided by oran architecture documents that this policy interface should be named a1-p in all URLS. In a future release the existing URLs will be renamed (existing URLs were not changed in this release).
+
+
 [0.8.4] - 7/16/2019
 -------------------
 

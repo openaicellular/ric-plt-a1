@@ -1,5 +1,16 @@
 # test_a1.tavern.yaml
 
+test_name: test healthcheck
+
+stages:
+  - name: test the a1 healthcheck
+    request:
+      url: http://localhost:10000/a1-p/healthcheck
+      method: GET
+    response:
+      status_code: 200
+
+
 ---
 
 test_name: test delayed policy
@@ -42,6 +53,15 @@ stages:
         ACK_FROM: ADMISSION_CONTROL
         status: SUCCESS
 
+  - name: test the admission control policy get
+    request:
+      url: http://localhost:10000/ric/policies/admission_control_policy
+      method: GET
+    response:
+      status_code: 200
+      body:
+        mock return from FETCH: pretend policy is here
+
 ---
 
 test_name: bad_requests
@@ -83,5 +103,12 @@ stages:
       method: PUT
       json:
         not: "welcome"
+    response:
+      status_code: 400
+
+  - name: test policy doesnt support fetch
+    request:
+      url: http://localhost:10000/ric/policies/test_policy
+      method: GET
     response:
       status_code: 400

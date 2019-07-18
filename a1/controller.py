@@ -25,21 +25,38 @@ from a1 import a1rmr, exceptions, utils
 logger = get_module_logger(__name__)
 
 
-def _get_needed_policy_info(policyname):
-    """
-    Get the needed info for a policy
-    """
+def _get_policy_definition(policyname):
     # Currently we read the manifest on each call, which would seem to allow updating A1 in place. Revisit this?
     manifest = utils.get_ric_manifest()
     for m in manifest["controls"]:
         if m["name"] == policyname:
-            schema = m["message_receives_payload_schema"] if "message_receives_payload_schema" in m else None
-            return (
-                utils.rmr_string_to_int(m["message_receives_rmr_type"]),
-                schema,
-                utils.rmr_string_to_int(m["message_sends_rmr_type"]),
-            )
+            return m
     raise exceptions.PolicyNotFound()
+
+
+def _get_needed_policy_info(policyname):
+    """
+    Get the needed info for a policy
+    """
+    m = _get_policy_definition(policyname)
+    return (
+        utils.rmr_string_to_int(m["message_receives_rmr_type"]),
+        m["message_receives_payload_schema"] if "message_receives_payload_schema" in m else None,
+        utils.rmr_string_to_int(m["message_sends_rmr_type"]),
+    )
+
+
+def _get_needed_policy_fetch_info(policyname):
+    """
+    Get the needed info for fetching a policy state
+    """
+    m = _get_policy_definition(policyname)
+    req_k = "control_state_request_rmr_type"
+    ack_k = "control_state_request_reply_rmr_type"
+    return (
+        utils.rmr_string_to_int(m[req_k]) if req_k in m else None,
+        utils.rmr_string_to_int(m[ack_k]) if ack_k in m else None,
+    )
 
 
 def _try_func_return(func):
@@ -99,6 +116,25 @@ def _put_handler(policyname, data):
         return {"reason": "NO STATUS", "return_payload": rpj}, 502
 
 
+def _get_handler(policyname):
+    """
+    Handles policy GET
+    """
+    mtype_send, mtype_return = _get_needed_policy_fetch_info(policyname)
+
+    if not (mtype_send and mtype_return):
+        return "POLICY DOES NOT SUPPORT FETCHING", 400
+
+    # send rmr, wait for ACK
+    return_payload = a1rmr.send_ack_retry("", message_type=mtype_send, expected_ack_message_type=mtype_return)
+
+    # right now it is assumed that xapps respond with JSON payloads
+    try:
+        return (json.loads(return_payload), 200)
+    except json.decoder.JSONDecodeError:
+        return {"reason": "NOT JSON", "return_payload": return_payload}, 502
+
+
 # Public
 
 
@@ -114,4 +150,12 @@ def get_handler(policyname):
     """
     Handles policy GET
     """
-    return "", 501
+    return _try_func_return(lambda: _get_handler(policyname))
+
+
+def healthcheck_handler():
+    """
+    Handles healthcheck GET
+    Currently, this basically checks the server is alive.a1rmr
+    """
+    return "", 200
