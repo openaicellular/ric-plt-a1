@@ -99,7 +99,7 @@ def test_policy_get(client, monkeypatch):
         "a1.a1rmr._dequeue_all_waiting_messages",
         _fake_dequeue(monkeypatch, msg_payload={"GET ack": "pretend policy is here"}, msg_type=20003),
     )
-    res = client.get("/ric/policies/admission_control_policy")
+    res = client.get("/a1-p/policies/admission_control_policy")
     assert res.status_code == 200
     assert res.json == {"GET ack": "pretend policy is here"}
 
@@ -109,7 +109,7 @@ def test_policy_get_unsupported(client, monkeypatch):
     test policy GET
     """
     testing_helpers.patch_all(monkeypatch, nofetch=True)
-    res = client.get("/ric/policies/admission_control_policy")
+    res = client.get("/a1-p/policies/admission_control_policy")
     assert res.status_code == 400
     assert res.data == b'"POLICY DOES NOT SUPPORT FETCHING"\n'
 
@@ -118,7 +118,7 @@ def test_xapp_put_good(client, monkeypatch):
     """ test policy put good"""
     _test_put_patch(monkeypatch)
     monkeypatch.setattr("a1.a1rmr._dequeue_all_waiting_messages", _fake_dequeue(monkeypatch))
-    res = client.put("/ric/policies/admission_control_policy", json=testing_helpers.good_payload())
+    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
     assert res.status_code == 200
     assert res.json == {"status": "SUCCESS", "foo": "bar"}
 
@@ -130,14 +130,14 @@ def test_xapp_put_bad(client, monkeypatch):
     monkeypatch.setattr(
         "a1.a1rmr._dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_payload={"status": "FAIL", "foo": "bar"})
     )
-    res = client.put("/ric/policies/admission_control_policy", json=testing_helpers.good_payload())
+    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
     assert res.status_code == 502
     assert res.json["reason"] == "BAD STATUS"
     assert res.json["return_payload"] == {"status": "FAIL", "foo": "bar"}
 
     # return from policy handler has no status field
     monkeypatch.setattr("a1.a1rmr._dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_payload={"foo": "bar"}))
-    res = client.put("/ric/policies/admission_control_policy", json=testing_helpers.good_payload())
+    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
     assert res.status_code == 502
     assert res.json["reason"] == "NO STATUS"
     assert res.json["return_payload"] == {"foo": "bar"}
@@ -146,20 +146,20 @@ def test_xapp_put_bad(client, monkeypatch):
     monkeypatch.setattr(
         "a1.a1rmr._dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_payload="booger", jsonb=False)
     )
-    res = client.put("/ric/policies/admission_control_policy", json=testing_helpers.good_payload())
+    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
     assert res.status_code == 502
     assert res.json["reason"] == "NOT JSON"
     assert res.json["return_payload"] == "booger"
 
     # bad type
     monkeypatch.setattr("a1.a1rmr._dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_type=666))
-    res = client.put("/ric/policies/admission_control_policy", json=testing_helpers.good_payload())
+    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
     assert res.status_code == 504
     assert res.data == b"\"A1 was expecting an ACK back but it didn't receive one or didn't recieve the expected ACK\"\n"
 
     # bad state
     monkeypatch.setattr("a1.a1rmr._dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_state=666))
-    res = client.put("/ric/policies/admission_control_policy", json=testing_helpers.good_payload())
+    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
     assert res.status_code == 504
     assert res.data == b"\"A1 was expecting an ACK back but it didn't receive one or didn't recieve the expected ACK\"\n"
 
@@ -171,16 +171,16 @@ def test_xapp_put_bad_send(client, monkeypatch):
     testing_helpers.patch_all(monkeypatch)
 
     monkeypatch.setattr("a1.a1rmr._dequeue_all_waiting_messages", _fake_dequeue(monkeypatch))
-    res = client.put("/ric/policies/admission_control_policy", json={"not": "expected"})
+    res = client.put("/a1-p/policies/admission_control_policy", json={"not": "expected"})
     assert res.status_code == 400
 
     monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(10))
-    res = client.put("/ric/policies/admission_control_policy", json=testing_helpers.good_payload())
+    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
     assert res.status_code == 504
     assert res.data == b'"A1 was unable to send a needed message to a downstream subscriber"\n'
 
     monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(5))
-    res = client.put("/ric/policies/admission_control_policy", json=testing_helpers.good_payload())
+    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
     assert res.status_code == 504
     assert res.data == b'"A1 was unable to send a needed message to a downstream subscriber"\n'
 
@@ -190,15 +190,15 @@ def test_bad_requests(client, monkeypatch):
     testing_helpers.patch_all(monkeypatch)
 
     # test a 404
-    res = client.put("/ric/policies/noexist", json=testing_helpers.good_payload())
+    res = client.put("/a1-p/policies/noexist", json=testing_helpers.good_payload())
     assert res.status_code == 404
 
     # bad media type
-    res = client.put("/ric/policies/admission_control_policy", data="notajson")
+    res = client.put("/a1-p/policies/admission_control_policy", data="notajson")
     assert res.status_code == 415
 
     # test a PUT body against a poliucy not expecting one
-    res = client.put("/ric/policies/test_policy", json=testing_helpers.good_payload())
+    res = client.put("/a1-p/policies/test_policy", json=testing_helpers.good_payload())
     assert res.status_code == 400
     assert res.data == b'"BODY SUPPLIED BUT POLICY HAS NO EXPECTED BODY"\n'
 
@@ -213,7 +213,7 @@ def test_missing_manifest(client, monkeypatch):
 
     monkeypatch.setattr("a1.utils.get_ric_manifest", f)
 
-    res = client.put("/ric/policies/admission_control_policy", json=testing_helpers.good_payload())
+    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
     assert res.status_code == 500
     assert res.data == b'"A1 was unable to find the required RIC manifest. report this!"\n'
 
@@ -223,7 +223,7 @@ def test_missing_rmr(client, monkeypatch):
     test that we get a 500 with an approrpiate message on a missing rmr rmr_string
     """
     testing_helpers.patch_all(monkeypatch, nonexisting_rmr=True)
-    res = client.put("/ric/policies/admission_control_policy", json=testing_helpers.good_payload())
+    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
     assert res.status_code == 500
     assert res.data == b'"A1 does not have a mapping for the desired rmr string. report this!"\n'
 

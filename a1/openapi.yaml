@@ -16,7 +16,7 @@
 # ==================================================================================
 openapi: 3.0.0
 info:
-  version: 0.9.0
+  version: 0.10.0
   title: RIC A1
 paths:
   '/a1-p/healthcheck':
@@ -31,7 +31,7 @@ paths:
           description: >
             a1 is healthy. Anything other than a 200 should be considered a1 as failing
 
-  '/ric/policies/{policyname}':
+  '/a1-p/policies/{policyname}':
     parameters:
       - name: policyname
         in: path

@@ -18,7 +18,7 @@ test_name: test delayed policy
 stages:
   - name: test the delayed policy
     request:
-      url: http://localhost:10000/ric/policies/test_policy
+      url: http://localhost:10000/a1-p/policies/test_policy
       method: PUT
       json:
         {}
@@ -38,7 +38,7 @@ test_name: test admission control
 stages:
   - name: test the admission control policy
     request:
-      url: http://localhost:10000/ric/policies/admission_control_policy
+      url: http://localhost:10000/a1-p/policies/admission_control_policy
       method: PUT
       json:
         enforce: true
@@ -55,7 +55,7 @@ stages:
 
   - name: test the admission control policy get
     request:
-      url: http://localhost:10000/ric/policies/admission_control_policy
+      url: http://localhost:10000/a1-p/policies/admission_control_policy
       method: GET
     response:
       status_code: 200
@@ -69,7 +69,7 @@ test_name: bad_requests
 stages:
   - name: does not exist
     request:
-      url: http://localhost:10000/ric/policies/darkness
+      url: http://localhost:10000/a1-p/policies/darkness
       method: PUT
       json:
         {}
@@ -80,7 +80,7 @@ stages:
 
   - name: bad body for admission control policy
     request:
-      url: http://localhost:10000/ric/policies/admission_control_policy
+      url: http://localhost:10000/a1-p/policies/admission_control_policy
       method: PUT
       json:
         not: "expected"
@@ -91,7 +91,7 @@ stages:
 
   - name: not a json
     request:
-      url: http://localhost:10000/ric/policies/admission_control_policy
+      url: http://localhost:10000/a1-p/policies/admission_control_policy
       method: PUT
       data: "asdf"
     response:
@@ -99,7 +99,7 @@ stages:
 
   - name: bad body for test policy
     request:
-      url: http://localhost:10000/ric/policies/test_policy
+      url: http://localhost:10000/a1-p/policies/test_policy
       method: PUT
       json:
         not: "welcome"
@@ -108,7 +108,7 @@ stages:
 
   - name: test policy doesnt support fetch
     request:
-      url: http://localhost:10000/ric/policies/test_policy
+      url: http://localhost:10000/a1-p/policies/test_policy
       method: GET
     response:
       status_code: 400
