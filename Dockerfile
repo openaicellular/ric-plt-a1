@@ -14,41 +14,35 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
-# TODO: switch to alpine once rmr apk available
-FROM python:3.7
+FROM python:3.7-alpine
 
-COPY . /tmp
+# copy NNG and rmr out of the  CI builder nng
+COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3:3-a3.9 /usr/local/lib64/libnng.so /usr/local/lib64/libnng.so
+COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3:3-a3.9 /usr/local/lib64/librmr_nng.so /usr/local/lib64/librmr_nng.so
+
+COPY a1/ /tmp/a1
+COPY tests/ /tmp/tests
+COPY setup.py tox.ini /tmp/
 WORKDIR /tmp
-
-# copy NNG out of the  CI builder nng
-COPY --from=nexus3.o-ran-sc.org:10004/bldr-debian-python:3-py3.7-nng1.1.1 /usr/local/lib/libnng.so /usr/local/lib/libnng.so
-
-# Installs RMr using debian package hosted at packagecloud.io
-RUN wget --content-disposition https://packagecloud.io/o-ran-sc/master/packages/debian/stretch/rmr_1.0.36_amd64.deb/download.deb
-RUN dpkg -i rmr_1.0.36_amd64.deb
 
 # dir that rmr routing file temp goes into
 RUN mkdir -p /opt/route/
 
-# Install RMr python bindings
-# this writes into /usr/local, need root
-RUN pip install --upgrade pip && pip install rmr==0.10.1 tox
+# Gevent needs gcc; TODO: this will get fixed
+RUN apk add gcc musl-dev
 
-# Run the unit tests
-RUN tox
-
-# do the actual install
+# do the actual install; this writes into /usr/local, need root
 RUN pip install .
 
 # Switch to a non-root user for security reasons.
 # a1 does not currently write into any dirs so no chowns are needed at this time.
-# https://stackoverflow.com/questions/27701930/add-user-to-docker-container
-RUN adduser --disabled-password --gecos '' a1user
-USER a1user
+ENV A1USER a1user
+RUN addgroup -S $A1USER && adduser -S -G $A1USER $A1USER 
+USER $A1USER
 
 # misc setups
 EXPOSE 10000
-ENV LD_LIBRARY_PATH /usr/local/lib
+ENV LD_LIBRARY_PATH /usr/local/lib/:/usr/local/lib64
 ENV RMR_SEED_RT /opt/route/local.rt
 
 CMD run.py

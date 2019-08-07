@@ -53,6 +53,12 @@ Also, this requires the python packages ``tox`` and ``pytest``.
    tox
    open htmlcov/index.html
 
+Alternatively, you can run the unit tests in Docker (this is somewhat less nice because you don't get the pretty HTML)
+
+::
+
+   docker build  --no-cache -t a1test:latest -f Dockerfile-Unit-Test
+
 Integration testing
 ===================
 This tests A1’s external API with two test receivers. This depends on helm+k8s, meaning you cannot run this if this is not installed.

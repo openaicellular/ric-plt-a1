@@ -23,6 +23,14 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <http://keepachangelog.com/>`__
 and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
+[0.10.1] - 8/9/2019
+
+::
+
+    * Greatly reduce the size of A1 docker from 1.25GB to ~278MB.
+    * Add a seperate dockerfile for unit testing
+
+
 [0.10.0] - 7/30/2019
 
 ::
