@@ -23,6 +23,12 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <http://keepachangelog.com/>`__
 and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
+[0.10.2] - 8/14/2019
+
+::
+
+    * Update to later rmr-python
+
 [0.10.1] - 8/9/2019
 
 ::

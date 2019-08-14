@@ -35,6 +35,12 @@
             "description":"Minimum number of events in window to trigger blocking"
           }
         },
+        "required":[
+          "enforce",
+          "blocking_rate",
+          "trigger_threshold",
+          "window_length"
+        ],
         "additionalProperties":false
       },
       "message_sends_rmr_type":"DC_ADM_INT_CONTROL_ACK",
