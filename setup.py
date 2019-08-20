@@ -18,14 +18,13 @@ from setuptools import setup, find_packages
 
 setup(
     name="a1",
-    version="0.10.2",
+    version="0.10.3",
     packages=find_packages(exclude=["tests.*", "tests"]),
     author="Tommy Carpenter",
     description="RIC A1 Mediator for policy/intent changes",
     url="https://gerrit.o-ran-sc.org/r/admin/repos/ric-plt/a1",
     entry_points={"console_scripts": ["run.py=a1.run:main"]},
     # we require jsonschema, should be in that list, but connexion already requires a specific version of it
-    # rmr 0.10.4 has a bugfix required on alpine
-    install_requires=["requests", "Flask", "connexion[swagger-ui]", "gevent", "rmr>=0.10.7"],
+    install_requires=["requests", "Flask", "connexion[swagger-ui]", "gevent", "rmr>=0.10.8"],
     package_data={"a1": ["openapi.yaml"]},
 )

@@ -15,24 +15,21 @@
 #   limitations under the License.
 # ==================================================================================
 # TODO: switch to alpine once rmr apk available
-FROM python:3.7
+FROM python:3.7-alpine
 
 COPY receiver.py /
 
-# copy NNG out of the  CI builder nng
-COPY --from=nexus3.o-ran-sc.org:10004/bldr-debian-python-nng:2-py3.7-nng1.1.1 /usr/local/lib/libnng.so /usr/local/lib/libnng.so
-
-# Installs RMr using debian package hosted at packagecloud.io
-RUN wget --content-disposition https://packagecloud.io/o-ran-sc/master/packages/debian/stretch/rmr_1.0.36_amd64.deb/download.deb
-RUN dpkg -i rmr_1.0.36_amd64.deb
+# copy NNG and rmr out of the  CI builder nng
+COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3:3-a3.9 /usr/local/lib64/libnng.so /usr/local/lib64/libnng.so
+COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3:3-a3.9 /usr/local/lib64/librmr_nng.so /usr/local/lib64/librmr_nng.so
 
 # Install RMr python bindings
 RUN pip install --upgrade pip
-RUN pip install rmr==0.10.1
+RUN pip install rmr==0.10.8
 
 # rmr setups
 RUN mkdir -p /opt/route/
-ENV LD_LIBRARY_PATH /usr/local/lib
+ENV LD_LIBRARY_PATH /usr/local/lib:/usr/local/lib64
 ENV RMR_SEED_RT /opt/route/local.rt
 
 WORKDIR /

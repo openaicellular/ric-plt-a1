@@ -23,6 +23,15 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <http://keepachangelog.com/>`__
 and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
+[0.10.3] - 8/20/2019
+
+::
+
+    * Update to later rmr-python
+    * Add docs about upgrading rmr
+    * remove bombarder since tavern runs apache bench
+
+
 [0.10.2] - 8/14/2019
 
 ::

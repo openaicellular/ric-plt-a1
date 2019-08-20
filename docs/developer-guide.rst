@@ -43,6 +43,18 @@ This project follows semver. When changes are made, the versions are in:
 
 7) in the it/dep repo that contains a1 helm chart, ``values.yaml``, ``Chart.yml``
 
+Version bumping rmr-python
+==========================
+rmr-python is a critial dependency of A1. Bumping the rmr version dependency requires changes in:
+
+1) ``setup.py``
+
+2) ``Dockerfile``
+
+3) ``integration_tests/Dockerfile``
+
+Run the integration tests after attempting this.
+
 Unit Testing
 ============
 Note,  before this will work, for the first time on the machine running the tests, run ``./install_deps.sh``. This is only needed once on the machine.
@@ -79,8 +91,6 @@ If you've never run the integration tests before, build the test receiver, which
     cd integration_tests
     docker build  --no-cache -t testreceiver:latest .
 
-You do not need the "bombarder" image as they are not currently used in the integration tests (that is more for load testing).
-
 Finally, run all the tests from the root (this requires the python packages ``tox``, ``pytest``, and ``tavern``).
 ::
 
@@ -101,8 +111,7 @@ Running locally
 
 1. Before this will work, for the first time on that machine, run ``./install_deps.sh``
 
-2. It also requires rmr-python >= 0.10.1 installed. (The dockerfile also
-   does this)
+2. It also requires rmr-python installed. (The dockerfile does this)
 
 3. Create a ``local.rt`` file and copy it into ``/opt/route/local.rt``.
    Note, the example one in ``integration_tests`` will need to be modified for
@@ -155,11 +164,3 @@ while it is sleeping, and both responses should be correct.
    curl -v -X PUT -H "Content-Type: application/json" -d '{ "enforce":true, "window_length":10, "blocking_rate":20, "trigger_threshold":10 }' localhost:10000/ric/policies/admission_control_policy
    curl -v localhost:10000/ric/policies/admission_control_policy
    curl -v localhost:10000/a1-p/healthcheck
-
-Finally, there is a test “bombarder” that will flood A1 with messages
-with good message types but bad transaction IDs, to test A1’s resilience
-against queue-overflow attacks
-
-::
-
-   set -x LD_LIBRARY_PATH /usr/local/lib/; set -x RMR_SEED_RT /opt/route/local.rt ;  python bombard.py
