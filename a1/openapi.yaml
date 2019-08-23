@@ -43,12 +43,10 @@ paths:
       description: >
           Replace the current operation of policyname with the new parameters (replaces the current policy with the new one specified here).
 
-
           Until there are standard policy definitions that are defined OUTSIDE of the scope of xapps, this API will be *very underspecified*.
           This is a known gap, do not despair.
           The PUT body is specified, *currently* in the xapp manifest that implements this policy; the caller should refer to the message_receives_payload_schema field to make this request.
           The return content is also specified as above (in the xapp manifest) in the message_sends_payload_schema field.
-
 
           Eventually, we need concrete policy defintions that are decoupled from xapp, and then this API description will become more fully specified.
       tags:
@@ -103,6 +101,10 @@ paths:
         '200':
           description: >
             The downstream component responsible for implementing this policy replied with a good response. Check the manifest for response details.
+          content:
+            application/json:
+              schema:
+                type: object
         '400':
           description: >
             The downstream component for implementing this policy does not support policy fetching.
