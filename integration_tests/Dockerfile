@@ -14,14 +14,23 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
-# TODO: switch to alpine once rmr apk available
+# install a well known working rmr
+FROM python:3.7-alpine
+RUN apk update && apk add autoconf automake build-base cmake libtool ninja pkgconfig git 
+RUN git clone --branch 1.3.0 https://gerrit.o-ran-sc.org/r/ric-plt/lib/rmr \
+    && cd rmr \
+    && mkdir build \
+    && cd build \
+    && cmake .. -DPACK_EXTERNALS=1 \
+    && make install
+
+# stage2
 FROM python:3.7-alpine
 
+# copies
+COPY --from=0 /usr/local/lib64/libnng.so /usr/local/lib64/libnng.so
+COPY --from=0 /usr/local/lib64/librmr_nng.so /usr/local/lib64/librmr_nng.so
 COPY receiver.py /
-
-# copy NNG and rmr out of the  CI builder nng
-COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3:3-a3.9 /usr/local/lib64/libnng.so /usr/local/lib64/libnng.so
-COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3:3-a3.9 /usr/local/lib64/librmr_nng.so /usr/local/lib64/librmr_nng.so
 
 # Install RMr python bindings
 RUN pip install --upgrade pip

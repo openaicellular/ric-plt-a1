@@ -24,12 +24,8 @@ import os
 from rmr import rmr
 
 PORT = os.environ.get("TEST_RCV_PORT", "4560")
-RETURN_MINT = int(os.environ.get("TEST_RCV_RETURN_MINT", 20001))
-RETURN_MINT_FETCH = int(os.environ.get("TEST_RCV_RETURN_MINT", 20003))
 DELAY = int(os.environ.get("TEST_RCV_SEC_DELAY", 0))
-PAYLOAD_RETURNED = json.loads(
-    os.environ.get("TEST_RCV_RETURN_PAYLOAD", '{"ACK_FROM": "ADMISSION_CONTROL", "status": "SUCCESS"}')
-)
+HANDLER_ID = os.environ.get("HANDLER_ID", "test_receiver")
 
 # TODO: should these be made constants?
 mrc = rmr.rmr_init(PORT.encode("utf-8"), rmr.RMR_MAX_RCV_BYTES, 0x00)
@@ -38,7 +34,7 @@ while rmr.rmr_ready(mrc) == 0:
     time.sleep(1)
     print("not yet ready")
 
-print("listening")
+print("listening ON {}".format(PORT))
 sbuf = None
 while True:
     sbuf = rmr.rmr_torcv_msg(mrc, sbuf, 1000)
@@ -49,14 +45,18 @@ while True:
     else:
         print("Message received!: {}".format(summary))
 
-        # if this was a policy fetch (request int =20002), override the payload and return int
-        if summary["message type"] == 20002:
-            PAYLOAD_RETURNED = {"mock return from FETCH": "pretend policy is here"}
-            RETURN_MINT = 20003
+        received_payload = json.loads(summary["payload"])
 
-        val = json.dumps(PAYLOAD_RETURNED).encode("utf-8")
+        payload = {
+            "policy_type_id": received_payload["policy_type_id"],
+            "policy_instance_id": received_payload["policy_instance_id"],
+            "handler_id": HANDLER_ID,
+            "status": "OK",
+        }
+
+        val = json.dumps(payload).encode("utf-8")
         rmr.set_payload_and_length(val, sbuf)
-        sbuf.contents.mtype = RETURN_MINT
+        sbuf.contents.mtype = 21024
         print("Pre reply summary: {}".format(rmr.message_summary(sbuf)))
         time.sleep(DELAY)
         sbuf = rmr.rmr_rts_msg(mrc, sbuf)

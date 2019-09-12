@@ -14,12 +14,22 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
+# install a well known working rmr
+FROM python:3.7-alpine
+RUN apk update && apk add autoconf automake build-base cmake libtool ninja pkgconfig git
+RUN git clone --branch 1.3.0 https://gerrit.o-ran-sc.org/r/ric-plt/lib/rmr \
+    && cd rmr \
+    && mkdir build \
+    && cd build \
+    && cmake .. -DPACK_EXTERNALS=1 \
+    && make install
+
+# a1 stage 2
 FROM python:3.7-alpine
 
-# copy NNG and rmr out of the  CI builder nng
-COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3:3-a3.9 /usr/local/lib64/libnng.so /usr/local/lib64/libnng.so
-COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3:3-a3.9 /usr/local/lib64/librmr_nng.so /usr/local/lib64/librmr_nng.so
-
+# copies
+COPY --from=0 /usr/local/lib64/libnng.so /usr/local/lib64/libnng.so
+COPY --from=0 /usr/local/lib64/librmr_nng.so /usr/local/lib64/librmr_nng.so
 COPY a1/ /tmp/a1
 COPY tests/ /tmp/tests
 COPY setup.py tox.ini /tmp/
@@ -28,11 +38,11 @@ WORKDIR /tmp
 # dir that rmr routing file temp goes into
 RUN mkdir -p /opt/route/
 
-# Gevent needs gcc; TODO: this will get fixed
-RUN apk add gcc musl-dev
+# Gevent needs gcc
+RUN apk update && apk add bash gcc musl-dev
 
 # do the actual install; this writes into /usr/local, need root
-RUN pip install .
+RUN pip install --upgrade pip && pip install .
 
 # Switch to a non-root user for security reasons.
 # a1 does not currently write into any dirs so no chowns are needed at this time.
@@ -44,5 +54,8 @@ USER $A1USER
 EXPOSE 10000
 ENV LD_LIBRARY_PATH /usr/local/lib/:/usr/local/lib64
 ENV RMR_SEED_RT /opt/route/local.rt
+
+# dont buffer logging
+ENV PYTHONUNBUFFERED 1
 
 CMD run.py

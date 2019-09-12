@@ -36,18 +36,12 @@ spec:
               mountPath: /opt/route/local.rt
               subPath: local.rt
           env:
-          - name: RMR_RCV_RETRY_INTERVAL
-            value: "500"
-          - name: RMR_RETRY_TIMES
-            value: "10"
           - name: TEST_RCV_PORT
             value: "{{ .Values.delayrmrservice.port }}"
-          - name: TEST_RCV_RETURN_MINT
-            value: "10001"
           - name: TEST_RCV_SEC_DELAY
             value: "5"
-          - name: TEST_RCV_RETURN_PAYLOAD
-            value: '{"ACK_FROM": "DELAYED_TEST", "status": "SUCCESS"}'
+          - name: HANDLER_ID
+            value: "delay_receiver"
 
       volumes:
         - name: "testreceiverconf"

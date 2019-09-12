@@ -6,9 +6,7 @@ data:
   local.rt: |
     newrt|start
     rte|20000|{{ .Values.testrmrservice.name }}:{{ .Values.testrmrservice.port }}
-    rte|20001|a1rmrservice:4562
-    rte|20002|{{ .Values.testrmrservice.name }}:{{ .Values.testrmrservice.port }}
-    rte|20003|a1rmrservice:4562
+    rte|21024|a1rmrservice:4562
     newrt|end
 
 ---
@@ -20,6 +18,6 @@ metadata:
 data:
   local.rt: |
     newrt|start
-    rte|10000|{{ .Values.delayrmrservice.name }}:{{ .Values.delayrmrservice.port }}
-    rte|10001|a1rmrservice:4562
+    rte|20001|{{ .Values.delayrmrservice.name }}:{{ .Values.delayrmrservice.port }}
+    rte|21024|a1rmrservice:4562
     newrt|end

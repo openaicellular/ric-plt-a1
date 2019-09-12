@@ -37,10 +37,6 @@ def patch_all(monkeypatch, nonexisting_rmr=False, nofetch=False):
 
     monkeypatch.setattr("a1.utils.get_ric_manifest", lambda: man)
 
-    # patch rmr mapping
-    mapping = open(_get_fixture_path("rmr_string_int_mapping.txt"), "r").readlines()
-    monkeypatch.setattr("a1.utils._get_rmr_mapping_table", lambda: mapping)
-
 
 def good_payload():
     return {"enforce": True, "window_length": 10, "blocking_rate": 20, "trigger_threshold": 10}

@@ -23,6 +23,26 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <http://keepachangelog.com/>`__
 and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
+[1.0.0] - TBD
+
+::
+
+    * Release 1.0.0 will be the Release A version of A1
+
+
+[0.11.0] - 9/17/2019
+
+::
+
+    * This is on the road to release 1.0.0. It is not meant to be tested (E2E) as it's own release
+    * Implement the Release A spec in the openapi.yaml
+    * Rework A1 to follow that spec
+    * Remove rmr_mapping now that we use policyid as the mtype to send and a well known mtype for the ACKs
+    * Add the delay receiver test to the tavern integration tests
+    * Remove unneeded ENV variables from helm charts
+    * Switch away from builder images to avoid quicksand; upgrade rmr at our own pace
+
+
 [0.10.3] - 8/20/2019
 
 ::

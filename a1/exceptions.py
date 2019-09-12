@@ -19,16 +19,12 @@ Custom Exceptions
 """
 
 
-class MessageSendFailure(BaseException):
-    pass
+class PolicyInstanceNotFound(BaseException):
+    """a policy instance cannot be found"""
 
 
-class ExpectedAckNotReceived(BaseException):
-    pass
-
-
-class PolicyNotFound(BaseException):
-    pass
+class PolicyTypeNotFound(BaseException):
+    """a policy type instance cannot be found"""
 
 
 class MissingRmrString(BaseException):

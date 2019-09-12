@@ -25,16 +25,11 @@ spec:
             mountPath: /opt/ricmanifest.json
             subPath: ricmanifest.json
           - name: a1conf
-            mountPath: /opt/rmr_string_int_mapping.txt
-            subPath: rmr_string_int_mapping.txt
-          - name: a1conf
             mountPath: /opt/route/local.rt
             subPath: local.rt
           env:
           - name: PYTHONUNBUFFERED
-            value: "0"
-          - name: RMR_RCV_RETRY_INTERVAL
-            value: "{{ .Values.rmr_timeout_config.rcv_retry_interval_ms }}"
+            value: "1"
           - name: RMR_RETRY_TIMES
             value: "{{ .Values.rmr_timeout_config.rcv_retry_times }}"
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -46,11 +41,11 @@ spec:
 
           livenessProbe:
             httpGet:
-              path: /healthcheck
+              path: /a1-p/healthcheck
               port: http
           readinessProbe:
             httpGet:
-              path: /healthcheck
+              path: /a1-p/healthcheck
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

@@ -1,8 +1,5 @@
 newrt|start
-rte|10000|devarchwork:4563
-rte|10001|devarchwork:4562
 rte|20000|devarchwork:4560
-rte|20002|devarchwork:4560
-rte|20001|devarchwork:4562
-rte|20003|devarchwork:4562
+rte|20001|devarchwork:4563
+rte|21024|devarchwork:4562
 newrt|end

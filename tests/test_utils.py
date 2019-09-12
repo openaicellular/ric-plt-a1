@@ -33,33 +33,12 @@ def test_bad_get_ric_manifest(monkeypatch):
         utils.get_ric_manifest()
 
 
-def test_bad_get_rmr_mapping(monkeypatch):
-    """
-    testing missing rmr mapping
-    """
-
-    def badopen(filename, mode):
-        raise FileNotFoundError()
-
-    monkeypatch.setattr("builtins.open", badopen)
-    with pytest.raises(exceptions.MissingRmrMapping):
-        utils._get_rmr_mapping_table()
-
-
 def test_good_get_ric_manifest(monkeypatch):
     """
     test get_ric_manifest
     """
     testing_helpers.patch_all(monkeypatch)
     utils.get_ric_manifest()
-
-
-def test_good_get_rmr_mapping(monkeypatch):
-    """
-    testing getting the ric maping table
-    """
-    testing_helpers.patch_all(monkeypatch)
-    utils._get_rmr_mapping_table()
 
 
 def test_validate(monkeypatch):

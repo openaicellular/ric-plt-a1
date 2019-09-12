@@ -16,12 +16,17 @@
 # ==================================================================================
 import tempfile
 import os
+
 from rmr.rmr_mocks import rmr_mocks
 from a1 import app
-from a1 import exceptions
-from rmr import rmr
 import testing_helpers
 import pytest
+
+
+ADM_CTRL = "admission_control_policy"
+ADM_CTRL_INSTANCE = "/a1-p/policytypes/20000/policies/" + ADM_CTRL
+ADM_CTRL_INSTANCE_STATUS = ADM_CTRL_INSTANCE + "/status"
+
 
 # http://flask.pocoo.org/docs/1.0/testing/
 @pytest.fixture
@@ -36,36 +41,15 @@ def client():
     os.unlink(app.app.config["DATABASE"])
 
 
-def _fake_dequeue(
-    monkeypatch,
-    msg_payload={"status": "SUCCESS", "foo": "bar"},
-    msg_type=20001,
-    msg_state=0,
-    jsonb=True,
-    unexpected_first=True,
-):
+def _fake_dequeue(_filter_type):
     """
-    generates a mock rmr message response (returns a function that does; uses closures to set params)
+    for monkeypatching a1rmnr.dequeue_all_messages
     """
-    new_messages = []
-    # stick a message we don't want at the front of the queue, then stick the message we want
-    if unexpected_first:
-        monkeypatch.setattr("rmr.rmr.rmr_torcv_msg", rmr_mocks.rcv_mock_generator(msg_payload, -1, msg_state, jsonb))
-        sbuf = rmr.rmr_alloc_msg(None, None)
-        sbuf = rmr.rmr_torcv_msg(None, sbuf, None)
-        summary = rmr.message_summary(sbuf)
-        new_messages.append(summary)
-
-    monkeypatch.setattr("rmr.rmr.rmr_torcv_msg", rmr_mocks.rcv_mock_generator(msg_payload, msg_type, msg_state, jsonb))
-    sbuf = rmr.rmr_alloc_msg(None, None)
-    sbuf = rmr.rmr_torcv_msg(None, sbuf, None)
-    summary = rmr.message_summary(sbuf)
-    new_messages.append(summary)
-
-    def f():
-        return new_messages
-
-    return f
+    fake_msg = {}
+    pay = b'{"policy_type_id": 20000, "policy_instance_id": "admission_control_policy", "handler_id": "test_receiver", "status": "OK"}'
+    fake_msg["payload"] = pay
+    new_messages = [fake_msg]
+    return new_messages
 
 
 def _test_put_patch(monkeypatch):
@@ -90,142 +74,150 @@ def _test_put_patch(monkeypatch):
 # Actual Tests
 
 
-def test_policy_get(client, monkeypatch):
-    """
-    test policy GET
-    """
-    _test_put_patch(monkeypatch)
-    monkeypatch.setattr(
-        "a1.a1rmr._dequeue_all_waiting_messages",
-        _fake_dequeue(monkeypatch, msg_payload={"GET ack": "pretend policy is here"}, msg_type=20003),
-    )
-    res = client.get("/a1-p/policies/admission_control_policy")
-    assert res.status_code == 200
-    assert res.json == {"GET ack": "pretend policy is here"}
-
-
-def test_policy_get_unsupported(client, monkeypatch):
-    """
-    test policy GET
-    """
-    testing_helpers.patch_all(monkeypatch, nofetch=True)
-    res = client.get("/a1-p/policies/admission_control_policy")
-    assert res.status_code == 400
-    assert res.data == b'"POLICY DOES NOT SUPPORT FETCHING"\n'
-
-
+# def test_policy_get(client, monkeypatch):
+#     """
+#     test policy GET
+#     """
+#     _test_put_patch(monkeypatch)
+#     monkeypatch.setattr(
+#         "a1.a1rmr.dequeue_all_waiting_messages",
+#         _fake_dequeue(monkeypatch, msg_payload={"GET ack": "pretend policy is here"}, msg_type=20003),
+#     )
+#     res = client.get("/a1-p/policies/admission_control_policy")
+#     assert res.status_code == 200
+#     assert res.json == {"GET ack": "pretend policy is here"}
+#
+#
+# def test_policy_get_unsupported(client, monkeypatch):
+#     """
+#     test policy GET
+#     """
+#     testing_helpers.patch_all(monkeypatch, nofetch=True)
+#     res = client.get("/a1-p/policies/admission_control_policy")
+#     assert res.status_code == 400
+#     assert res.data == b'"POLICY DOES NOT SUPPORT FETCHING"\n'
+#
+#
 def test_xapp_put_good(client, monkeypatch):
     """ test policy put good"""
+
+    # nothing there yet
+    res = client.get(ADM_CTRL_INSTANCE)
+    assert res.status_code == 404
+    res = client.get(ADM_CTRL_INSTANCE_STATUS)
+    assert res.status_code == 404
+
+    # create a good instance
     _test_put_patch(monkeypatch)
-    monkeypatch.setattr("a1.a1rmr._dequeue_all_waiting_messages", _fake_dequeue(monkeypatch))
-    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
+    res = client.put(ADM_CTRL_INSTANCE, json=testing_helpers.good_payload())
+    assert res.status_code == 201
+
+    # get the instance
+    res = client.get(ADM_CTRL_INSTANCE)
     assert res.status_code == 200
-    assert res.json == {"status": "SUCCESS", "foo": "bar"}
+    assert res.json == testing_helpers.good_payload()
+
+    # get the instance status
+    monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue)
+    res = client.get(ADM_CTRL_INSTANCE_STATUS)
+    assert res.status_code == 200
+    assert res.json == [{"handler_id": "test_receiver", "status": "OK"}]
+
+    # assert that rmr bad states don't cause problems
+    monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(10))
+    res = client.put(ADM_CTRL_INSTANCE, json=testing_helpers.good_payload())
+    assert res.status_code == 201
+
+    monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(5))
+    res = client.put(ADM_CTRL_INSTANCE, json=testing_helpers.good_payload())
+    assert res.status_code == 201
 
 
-def test_xapp_put_bad(client, monkeypatch):
-    """Test policy put fails"""
-    _test_put_patch(monkeypatch)
-    # return from policy handler has a status indicating FAIL
-    monkeypatch.setattr(
-        "a1.a1rmr._dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_payload={"status": "FAIL", "foo": "bar"})
-    )
-    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
-    assert res.status_code == 502
-    assert res.json["reason"] == "BAD STATUS"
-    assert res.json["return_payload"] == {"status": "FAIL", "foo": "bar"}
-
-    # return from policy handler has no status field
-    monkeypatch.setattr("a1.a1rmr._dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_payload={"foo": "bar"}))
-    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
-    assert res.status_code == 502
-    assert res.json["reason"] == "NO STATUS"
-    assert res.json["return_payload"] == {"foo": "bar"}
-
-    # return from policy handler not a json
-    monkeypatch.setattr(
-        "a1.a1rmr._dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_payload="booger", jsonb=False)
-    )
-    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
-    assert res.status_code == 502
-    assert res.json["reason"] == "NOT JSON"
-    assert res.json["return_payload"] == "booger"
-
-    # bad type
-    monkeypatch.setattr("a1.a1rmr._dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_type=666))
-    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
-    assert res.status_code == 504
-    assert res.data == b"\"A1 was expecting an ACK back but it didn't receive one or didn't recieve the expected ACK\"\n"
-
-    # bad state
-    monkeypatch.setattr("a1.a1rmr._dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_state=666))
-    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
-    assert res.status_code == 504
-    assert res.data == b"\"A1 was expecting an ACK back but it didn't receive one or didn't recieve the expected ACK\"\n"
-
-
-def test_xapp_put_bad_send(client, monkeypatch):
+#
+#
+# def test_xapp_put_bad(client, monkeypatch):
+#     """Test policy put fails"""
+#     _test_put_patch(monkeypatch)
+#     # return from policy handler has a status indicating FAIL
+#     monkeypatch.setattr(
+#         "a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_payload={"status": "FAIL", "foo": "bar"})
+#     )
+#     res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
+#     assert res.status_code == 502
+#     assert res.json["reason"] == "BAD STATUS"
+#     assert res.json["return_payload"] == {"status": "FAIL", "foo": "bar"}
+#
+#     # return from policy handler has no status field
+#     monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_payload={"foo": "bar"}))
+#     res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
+#     assert res.status_code == 502
+#     assert res.json["reason"] == "NO STATUS"
+#     assert res.json["return_payload"] == {"foo": "bar"}
+#
+#     # return from policy handler not a json
+#     monkeypatch.setattr(
+#         "a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_payload="booger", jsonb=False)
+#     )
+#     res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
+#     assert res.status_code == 502
+#     assert res.json["reason"] == "NOT JSON"
+#     assert res.json["return_payload"] == "booger"
+#
+#     # bad type
+#     monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_type=666))
+#     res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
+#     assert res.status_code == 504
+#     assert res.data == b"\"A1 was expecting an ACK back but it didn't receive one or didn't recieve the expected ACK\"\n"
+#
+#     # bad state
+#     monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_state=666))
+#     res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
+#     assert res.status_code == 504
+#     assert res.data == b"\"A1 was expecting an ACK back but it didn't receive one or didn't recieve the expected ACK\"\n"
+#
+#
+def test_bad_requests(client, monkeypatch):
     """
     Test bad send failures
     """
     testing_helpers.patch_all(monkeypatch)
-
-    monkeypatch.setattr("a1.a1rmr._dequeue_all_waiting_messages", _fake_dequeue(monkeypatch))
-    res = client.put("/a1-p/policies/admission_control_policy", json={"not": "expected"})
+    res = client.put(ADM_CTRL_INSTANCE, json={"not": "expected"})
     assert res.status_code == 400
 
-    monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(10))
-    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
-    assert res.status_code == 504
-    assert res.data == b'"A1 was unable to send a needed message to a downstream subscriber"\n'
-
-    monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(5))
-    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
-    assert res.status_code == 504
-    assert res.data == b'"A1 was unable to send a needed message to a downstream subscriber"\n'
-
-
-def test_bad_requests(client, monkeypatch):
-    """Test bad requests"""
-    testing_helpers.patch_all(monkeypatch)
-
-    # test a 404
-    res = client.put("/a1-p/policies/noexist", json=testing_helpers.good_payload())
-    assert res.status_code == 404
-
     # bad media type
-    res = client.put("/a1-p/policies/admission_control_policy", data="notajson")
+    res = client.put(ADM_CTRL_INSTANCE, data="notajson")
     assert res.status_code == 415
 
     # test a PUT body against a poliucy not expecting one
-    res = client.put("/a1-p/policies/test_policy", json=testing_helpers.good_payload())
+    res = client.put("/a1-p/policytypes/20001/policies/test_policy", json=testing_helpers.good_payload())
     assert res.status_code == 400
     assert res.data == b'"BODY SUPPLIED BUT POLICY HAS NO EXPECTED BODY"\n'
 
 
-def test_missing_manifest(client, monkeypatch):
-    """
-    test that we get a 500 with an approrpiate message on a missing manifest
-    """
-
-    def f():
-        raise exceptions.MissingManifest()
-
-    monkeypatch.setattr("a1.utils.get_ric_manifest", f)
-
-    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
-    assert res.status_code == 500
-    assert res.data == b'"A1 was unable to find the required RIC manifest. report this!"\n'
+# def test_bad_requests(client, monkeypatch):
+#     """Test bad requests"""
+#     testing_helpers.patch_all(monkeypatch)
+#
+#     # test a 404
+#     res = client.put("/a1-p/policies/noexist", json=testing_helpers.good_payload())
+#     assert res.status_code == 404
 
 
-def test_missing_rmr(client, monkeypatch):
-    """
-    test that we get a 500 with an approrpiate message on a missing rmr rmr_string
-    """
-    testing_helpers.patch_all(monkeypatch, nonexisting_rmr=True)
-    res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
-    assert res.status_code == 500
-    assert res.data == b'"A1 does not have a mapping for the desired rmr string. report this!"\n'
+# def test_missing_manifest(client, monkeypatch):
+#     """
+#     test that we get a 500 with an approrpiate message on a missing manifest
+#     """
+#
+#     def f():
+#         raise exceptions.MissingManifest()
+#
+#     monkeypatch.setattr("a1.utils.get_ric_manifest", f)
+#
+#     res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
+#     assert res.status_code == 500
+#     assert res.data == b'"A1 was unable to find the required RIC manifest. report this!"\n'
+#
+#
 
 
 def test_healthcheck(client):

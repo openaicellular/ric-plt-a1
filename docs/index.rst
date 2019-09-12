@@ -31,14 +31,9 @@ Running
 Optional ENV Variables
 ----------------------
 
-You can set the following ENVs to change the A1 behavior: 1)
-``RMR_RCV_RETRY_INTERVAL`` the number of milliseconds that execution
-will defer (back to the server loop to handle http request if
-applicable) when an expected ack is not received by rmr call. The
-default is ``1000`` (1s). The time for the full HTTP request to
-``PUT /policies`` will be > this if an ACK is not recieved within 10ms,
-which is an initial delay until the first rcv is tried. 2)
-``RMR_RETRY_TIMES`` the number of times failed rmr operations such as
+You can set the following ENVs to change the A1 behavior:
+
+1. ``RMR_RETRY_TIMES`` the number of times failed rmr operations such as
 timeouts and send failures should be retried before A1 gives up and
 returns a 503. The default is ``4``.
 

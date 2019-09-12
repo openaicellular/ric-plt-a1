@@ -23,18 +23,6 @@ from a1 import exceptions
 logger = get_module_logger(__name__)
 
 
-def _get_rmr_mapping_table(cache={}):
-    """
-    Get the rmr mapping file
-    Broken out for ease of unit testing
-    """
-    try:
-        return open("/opt/rmr_string_int_mapping.txt", "r").readlines()
-    except FileNotFoundError:
-        logger.error("Missing RMR Mapping!")
-        raise exceptions.MissingRmrMapping
-
-
 # Public
 
 
@@ -57,19 +45,3 @@ def get_ric_manifest():
     except FileNotFoundError:
         logger.error("Missing A1 Manifest!")
         raise exceptions.MissingManifest
-
-
-def rmr_string_to_int(rmrs, cache={}):
-    """
-    map an rmr string to an int.
-    TODO: should we allow for dynamic updates to this file? If so, we shouldn't cache
-    """
-    if cache == {}:  # fill the cache if not populated
-        lines = _get_rmr_mapping_table()
-        for l in lines:
-            items = l.split(":")
-            cache[items[0]] = int(items[1])
-
-    if rmrs in cache:
-        return cache[rmrs]
-    raise exceptions.MissingRmrString(rmrs)
