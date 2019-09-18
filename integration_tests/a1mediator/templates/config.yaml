@@ -9,4 +9,3 @@ data:
     rte|20001|delayreceiverrmrservice:4563
     rte|21024|{{ .Values.rmrservice.name }}:{{ .Values.rmrservice.port }}
     newrt|end
-  ricmanifest.json: {{tpl (.Files.Get "files/ricmanifest.json") . | quote}}

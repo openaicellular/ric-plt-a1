@@ -16,9 +16,7 @@
 # ==================================================================================
 from gevent.pywsgi import WSGIServer
 from a1 import get_module_logger, app
-from a1 import utils, exceptions
 from a1.a1rmr import init_rmr
-import sys
 
 
 logger = get_module_logger(__name__)
@@ -26,15 +24,8 @@ logger = get_module_logger(__name__)
 
 def main():
     """Entrypoint"""
-    # Fail fast if we don't have a manifest
-    try:
-        utils.get_ric_manifest()
-    except exceptions.MissingManifest:
-        logger.error("Failing fast: no A1 manifest found!")
-        sys.exit(1)
-
     logger.debug("Initializing rmr")
     init_rmr()
     logger.debug("Starting gevent server")
-    http_server = WSGIServer(('', 10000), app)
+    http_server = WSGIServer(("", 10000), app)
     http_server.serve_forever()

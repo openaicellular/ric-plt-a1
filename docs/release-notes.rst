@@ -30,6 +30,16 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
     * Release 1.0.0 will be the Release A version of A1
 
 
+[0.12.0] - 9/19/2019
+::
+
+    * Implement type PUT
+    * Implement type GET
+    * Remove RIC manifest
+    * Read type GET to get schema for instance PUT
+    * Remove Utils (no longer needed)
+    * lots more tests (unit and integration)
+
 [0.11.0] - 9/17/2019
 
 ::

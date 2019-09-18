@@ -22,9 +22,6 @@ spec:
         - name: {{ .Chart.Name }}
           volumeMounts:
           - name: a1conf
-            mountPath: /opt/ricmanifest.json
-            subPath: ricmanifest.json
-          - name: a1conf
             mountPath: /opt/route/local.rt
             subPath: local.rt
           env:

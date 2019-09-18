@@ -27,6 +27,10 @@ class PolicyTypeNotFound(BaseException):
     """a policy type instance cannot be found"""
 
 
+class PolicyTypeAlreadyExists(BaseException):
+    """a policy type already exists and replace not supported at this time"""
+
+
 class MissingRmrString(BaseException):
     pass
 

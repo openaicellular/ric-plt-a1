@@ -15,6 +15,59 @@ stages:
 test_name: test admission control
 
 stages:
+  - name: type not there yet
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20000
+      method: GET
+    response:
+      status_code: 404
+
+  - name: put the type
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20000
+      method: PUT
+      json:
+        name: Admission Control
+        description: various parameters to control admission of dual connection
+        policy_type_id: 20000
+        create_schema:
+          "$schema": http://json-schema.org/draft-07/schema#
+          type: object
+          properties:
+            enforce:
+              type: boolean
+              default: true
+            window_length:
+              type: integer
+              default: 1
+              minimum: 1
+              maximum: 60
+              description: Sliding window length (in minutes)
+            blocking_rate:
+              type: number
+              default: 10
+              minimum: 1
+              maximum: 100
+              description: "% Connections to block"
+            trigger_threshold:
+              type: integer
+              default: 10
+              minimum: 1
+              description: Minimum number of events in window to trigger blocking
+          required:
+            - enforce
+            - blocking_rate
+            - trigger_threshold
+            - window_length
+          additionalProperties: false
+
+  - name: type there now
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20000
+      method: GET
+    response:
+      status_code: 200
+
   - name: test the admission control policy get not there yet
     request:
       url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy
@@ -29,7 +82,7 @@ stages:
     response:
       status_code: 404
 
-  - name: test the admission control policy
+  - name: put the admission control policy
     request:
       url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy
       method: PUT
@@ -71,7 +124,53 @@ stages:
 test_name: test the delay receiver
 
 stages:
-  - name: test the delay policy get not there yet
+
+  - name: test the delay policy type not there yet
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20001
+      method: GET
+    response:
+      status_code: 404
+
+  - name: put the type
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20001
+      method: PUT
+      json:
+        name: test policy
+        description: just for testing
+        policy_type_id: 20001
+        create_schema:
+          "$schema": http://json-schema.org/draft-07/schema#
+          type: object
+          properties:
+            test:
+              type: string
+          required:
+            - test
+          additionalProperties: false
+
+  - name: type there now
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20001
+      method: GET
+    response:
+      status_code: 200
+      body:
+        name: test policy
+        description: just for testing
+        policy_type_id: 20001
+        create_schema:
+          "$schema": http://json-schema.org/draft-07/schema#
+          type: object
+          properties:
+            test:
+              type: string
+          required:
+            - test
+          additionalProperties: false
+
+  - name: test the delay policy instance get not there yet
     request:
       url: http://localhost:10000/a1-p/policytypes/20001/policies/delaytest
       method: GET
@@ -89,7 +188,8 @@ stages:
     request:
       url: http://localhost:10000/a1-p/policytypes/20001/policies/delaytest
       method: PUT
-      json: {}
+      json:
+        test: foo
       headers:
         content-type: application/json
     response:
@@ -101,7 +201,8 @@ stages:
       method: GET
     response:
       status_code: 200
-      body: {}
+      body:
+        test: foo
 
   - name: test the admission control policy status get
     delay_before: 8  # give it a few seconds for rmr ; delay reciever sleeps for 5 seconds by default
@@ -115,13 +216,57 @@ stages:
           status: OK
 
 
-
-
 ---
 
 test_name: bad_requests
 
 stages:
+
+  - name: bad type get
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20002
+      method: GET
+    response:
+      status_code: 404
+
+
+  - name: bad instance get
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20000/policies/darkness
+      method: GET
+    response:
+      status_code: 404
+
+  - name: bad int range 1
+    request:
+      url: http://localhost:10000/a1-p/policytypes/19999
+      method: PUT
+      json:
+        name: test policy
+        description: just for testing
+        policy_type_id: 19999
+        create_schema:
+          "$schema": http://json-schema.org/draft-07/schema#
+          type: object
+    response:
+      status_code: 400
+
+  - name: bad int range 2
+    request:
+      url: http://localhost:10000/a1-p/policytypes/21024
+      method: PUT
+      json:
+        name: test policy
+        description: just for testing
+        policy_type_id: 21024
+        create_schema:
+          "$schema": http://json-schema.org/draft-07/schema#
+          type: object
+    response:
+      status_code: 400
+
+
+
 
   - name: bad body for admission control policy
     request:
@@ -142,9 +287,9 @@ stages:
     response:
       status_code: 415
 
-  - name: bad body for test policy
+  - name: bad body for delaytest
     request:
-      url: http://localhost:10000/a1-p/policytypes/20001/policies/test_policy
+      url: http://localhost:10000/a1-p/policytypes/20001/policies/delaytest
       method: PUT
       json:
         not: "welcome"

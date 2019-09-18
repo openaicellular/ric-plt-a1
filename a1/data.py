@@ -23,7 +23,7 @@ Hopefully, the access functions are a good api so nothing else has to change whe
 For now, the database is in memory.
 We use dict data structures (KV) with the expectation of having to move this into Redis
 """
-from a1.exceptions import PolicyTypeNotFound, PolicyInstanceNotFound
+from a1.exceptions import PolicyTypeNotFound, PolicyInstanceNotFound, PolicyTypeAlreadyExists
 from a1 import get_module_logger
 
 logger = get_module_logger(__name__)
@@ -35,14 +35,7 @@ I = "instances"
 H = "handlers"
 D = "data"
 
-
-# TODO: REMOVE THIS!! (should be done via PUT)
-POLICY_DATA[20000] = {}
-POLICY_DATA[20000][D] = {"foo": "bar"}
-POLICY_DATA[20000][I] = {}
-POLICY_DATA[20001] = {}
-POLICY_DATA[20001][D] = {"foo": "bar"}
-POLICY_DATA[20001][I] = {}
+# Types
 
 
 def type_is_valid(policy_type_id):
@@ -52,6 +45,29 @@ def type_is_valid(policy_type_id):
     if policy_type_id not in POLICY_DATA:
         logger.error("%s not found", policy_type_id)
         raise PolicyTypeNotFound()
+
+
+def store_policy_type(policy_type_id, body):
+    """
+    store a policy type if it doesn't already exist
+    """
+    if policy_type_id in POLICY_DATA:
+        raise PolicyTypeAlreadyExists()
+
+    POLICY_DATA[policy_type_id] = {}
+    POLICY_DATA[policy_type_id][D] = body
+    POLICY_DATA[policy_type_id][I] = {}
+
+
+def get_policy_type(policy_type_id):
+    """
+    retrieve a type
+    """
+    type_is_valid(policy_type_id)
+    return POLICY_DATA[policy_type_id][D]
+
+
+# Instances
 
 
 def instance_is_valid(policy_type_id, policy_instance_id):

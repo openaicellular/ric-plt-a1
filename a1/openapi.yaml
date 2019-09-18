@@ -318,7 +318,7 @@ components:
         represents a policy type identifier. Currently this is restricted to an integer range.
       type: integer
       minimum: 20000
-      maximum: 21024
+      maximum: 21023
 
     policy_instance_id:
       description: >

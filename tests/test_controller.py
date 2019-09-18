@@ -19,13 +19,14 @@ import os
 
 from rmr.rmr_mocks import rmr_mocks
 from a1 import app
-import testing_helpers
 import pytest
 
 
 ADM_CTRL = "admission_control_policy"
 ADM_CTRL_INSTANCE = "/a1-p/policytypes/20000/policies/" + ADM_CTRL
 ADM_CTRL_INSTANCE_STATUS = ADM_CTRL_INSTANCE + "/status"
+ADM_CTRL_TYPE = "/a1-p/policytypes/20000"
+TEST_TYPE = "/a1-p/policytypes/20001"
 
 
 # http://flask.pocoo.org/docs/1.0/testing/
@@ -53,7 +54,7 @@ def _fake_dequeue(_filter_type):
 
 
 def _test_put_patch(monkeypatch):
-    testing_helpers.patch_all(monkeypatch)
+    rmr_mocks.patch_rmr(monkeypatch)
     monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(0))  # good sends for this whole batch
 
     # we need to repatch alloc (already patched in patch_rmr) to fix the transactionid, alloc is called in send and recieve
@@ -74,34 +75,23 @@ def _test_put_patch(monkeypatch):
 # Actual Tests
 
 
-# def test_policy_get(client, monkeypatch):
-#     """
-#     test policy GET
-#     """
-#     _test_put_patch(monkeypatch)
-#     monkeypatch.setattr(
-#         "a1.a1rmr.dequeue_all_waiting_messages",
-#         _fake_dequeue(monkeypatch, msg_payload={"GET ack": "pretend policy is here"}, msg_type=20003),
-#     )
-#     res = client.get("/a1-p/policies/admission_control_policy")
-#     assert res.status_code == 200
-#     assert res.json == {"GET ack": "pretend policy is here"}
-#
-#
-# def test_policy_get_unsupported(client, monkeypatch):
-#     """
-#     test policy GET
-#     """
-#     testing_helpers.patch_all(monkeypatch, nofetch=True)
-#     res = client.get("/a1-p/policies/admission_control_policy")
-#     assert res.status_code == 400
-#     assert res.data == b'"POLICY DOES NOT SUPPORT FETCHING"\n'
-#
-#
-def test_xapp_put_good(client, monkeypatch):
+def test_xapp_put_good(client, monkeypatch, adm_type_good, adm_instance_good):
     """ test policy put good"""
 
-    # nothing there yet
+    # no type there yet
+    res = client.get(ADM_CTRL_TYPE)
+    assert res.status_code == 404
+
+    # put the type
+    res = client.put(ADM_CTRL_TYPE, json=adm_type_good)
+    assert res.status_code == 201
+
+    # there now
+    res = client.get(ADM_CTRL_TYPE)
+    assert res.status_code == 200
+    assert res.json == adm_type_good
+
+    # no instance there yet
     res = client.get(ADM_CTRL_INSTANCE)
     assert res.status_code == 404
     res = client.get(ADM_CTRL_INSTANCE_STATUS)
@@ -109,13 +99,13 @@ def test_xapp_put_good(client, monkeypatch):
 
     # create a good instance
     _test_put_patch(monkeypatch)
-    res = client.put(ADM_CTRL_INSTANCE, json=testing_helpers.good_payload())
+    res = client.put(ADM_CTRL_INSTANCE, json=adm_instance_good)
     assert res.status_code == 201
 
     # get the instance
     res = client.get(ADM_CTRL_INSTANCE)
     assert res.status_code == 200
-    assert res.json == testing_helpers.good_payload()
+    assert res.json == adm_instance_good
 
     # get the instance status
     monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue)
@@ -125,16 +115,14 @@ def test_xapp_put_good(client, monkeypatch):
 
     # assert that rmr bad states don't cause problems
     monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(10))
-    res = client.put(ADM_CTRL_INSTANCE, json=testing_helpers.good_payload())
+    res = client.put(ADM_CTRL_INSTANCE, json=adm_instance_good)
     assert res.status_code == 201
 
     monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(5))
-    res = client.put(ADM_CTRL_INSTANCE, json=testing_helpers.good_payload())
+    res = client.put(ADM_CTRL_INSTANCE, json=adm_instance_good)
     assert res.status_code == 201
 
 
-#
-#
 # def test_xapp_put_bad(client, monkeypatch):
 #     """Test policy put fails"""
 #     _test_put_patch(monkeypatch)
@@ -174,50 +162,32 @@ def test_xapp_put_good(client, monkeypatch):
 #     res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
 #     assert res.status_code == 504
 #     assert res.data == b"\"A1 was expecting an ACK back but it didn't receive one or didn't recieve the expected ACK\"\n"
-#
-#
-def test_bad_requests(client, monkeypatch):
+
+
+def test_bad_instances(client, monkeypatch, adm_type_good):
     """
     Test bad send failures
     """
-    testing_helpers.patch_all(monkeypatch)
+    rmr_mocks.patch_rmr(monkeypatch)
+
+    # TODO: reenable this after delete!
+    # put the type
+    # res = client.put(ADM_CTRL_TYPE, json=adm_type_good)
+    # assert res.status_code == 201
+
+    # illegal type range
+    res = client.put("/a1-p/policytypes/19999", json=adm_type_good)
+    assert res.status_code == 400
+    res = client.put("/a1-p/policytypes/21024", json=adm_type_good)
+    assert res.status_code == 400
+
+    # bad body
     res = client.put(ADM_CTRL_INSTANCE, json={"not": "expected"})
     assert res.status_code == 400
 
     # bad media type
     res = client.put(ADM_CTRL_INSTANCE, data="notajson")
     assert res.status_code == 415
-
-    # test a PUT body against a poliucy not expecting one
-    res = client.put("/a1-p/policytypes/20001/policies/test_policy", json=testing_helpers.good_payload())
-    assert res.status_code == 400
-    assert res.data == b'"BODY SUPPLIED BUT POLICY HAS NO EXPECTED BODY"\n'
-
-
-# def test_bad_requests(client, monkeypatch):
-#     """Test bad requests"""
-#     testing_helpers.patch_all(monkeypatch)
-#
-#     # test a 404
-#     res = client.put("/a1-p/policies/noexist", json=testing_helpers.good_payload())
-#     assert res.status_code == 404
-
-
-# def test_missing_manifest(client, monkeypatch):
-#     """
-#     test that we get a 500 with an approrpiate message on a missing manifest
-#     """
-#
-#     def f():
-#         raise exceptions.MissingManifest()
-#
-#     monkeypatch.setattr("a1.utils.get_ric_manifest", f)
-#
-#     res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
-#     assert res.status_code == 500
-#     assert res.data == b'"A1 was unable to find the required RIC manifest. report this!"\n'
-#
-#
 
 
 def test_healthcheck(client):
