@@ -14,29 +14,6 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
-[tox]
-envlist = py37,flake8
 
-[testenv]
-deps=
-    pytest
-    coverage
-    pytest-cov
-setenv =
-    LD_LIBRARY_PATH = /usr/local/lib/:/usr/local/lib64
-    RMR_RCV_RETRY_INTERVAL = 1
-    RMR_RETRY_TIMES = 2
-
-# Note, before this will work, for the first time on that machine, run ./install_deps.sh
-commands =
-    pytest --junitxml xunit-results.xml --cov a1 --cov-report xml --cov-report term-missing --cov-report html --cov-fail-under=70
-    coverage xml -i
-
-[testenv:flake8]
-basepython = python3.7
-skip_install = true
-deps = flake8
-commands = flake8 setup.py a1 tests
-
-[flake8]
-extend-ignore = E501,E741
+# empty __init__.py so that pytest can add correct path to coverage report, -- per pytest
+# https://github.com/pytest-dev/pytest-cov/issues/98#issuecomment-451344057
