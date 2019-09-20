@@ -72,6 +72,7 @@ def send(payload, message_type=0):
 
     # we failed all RETRY_TIMES
     logger.debug("Send failed all %s times, stopping", RETRY_TIMES)
+    return None
 
 
 def dequeue_all_waiting_messages(filter_type=None):

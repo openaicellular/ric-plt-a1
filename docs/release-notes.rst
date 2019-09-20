@@ -30,6 +30,15 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
     * Release 1.0.0 will be the Release A version of A1
 
 
+[0.12.1] - 9/20/2019
+::
+    * switch to rmr 1.8.1 to pick up a non blocking variant of rmr that deals with bad routing tables (no hanging connections / blocking calls)
+    * improve test receiver to behave with this setup
+    * add integration test for this case
+    * this also switches past 1.5.x, which included another change that altered the behavior of rts; deal with this with a change to a1s helmchart (env: `RMR_SRC_ID`) that causes the sourceid to be set to a1s service name, which was not needed prior
+    * improve integration tests overall
+
+
 [0.12.0] - 9/19/2019
 ::
 

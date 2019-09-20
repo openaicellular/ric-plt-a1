@@ -59,5 +59,13 @@ while True:
         sbuf.contents.mtype = 21024
         print("Pre reply summary: {}".format(rmr.message_summary(sbuf)))
         time.sleep(DELAY)
-        sbuf = rmr.rmr_rts_msg(mrc, sbuf)
-        print("Post reply summary: {}".format(rmr.message_summary(sbuf)))
+
+        # try up to 5 times to send back the ack
+        for _ in range(5):
+            sbuf = rmr.rmr_rts_msg(mrc, sbuf)
+            post_reply_summary = rmr.message_summary(sbuf)
+            print("Post reply summary: {}".format(post_reply_summary))
+            if post_reply_summary["message state"] == 10 and post_reply_summary["message status"] == "RMR_ERR_RETRY":
+                time.sleep(1)
+            else:
+                break
