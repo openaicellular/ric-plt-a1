@@ -29,6 +29,13 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
     * Release 1.0.0 will be the Release A version of A1
 
+[0.13.0] - 9/25/2019
+::
+
+    * Implement GET all policy type ids
+    * Implement GET all policy instance ids for a policy type
+    * fix a tiny bug in integration test receiver
+
 
 [0.12.1] - 9/20/2019
 ::

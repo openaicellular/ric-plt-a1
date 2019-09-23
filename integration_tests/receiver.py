@@ -35,8 +35,8 @@ while rmr.rmr_ready(mrc) == 0:
     print("not yet ready")
 
 print("listening ON {}".format(PORT))
-sbuf = None
 while True:
+    sbuf = rmr.rmr_alloc_msg(mrc, 4096)
     sbuf = rmr.rmr_torcv_msg(mrc, sbuf, 1000)
     summary = rmr.message_summary(sbuf)
     if summary["message state"] == 12 and summary["message status"] == "RMR_ERR_TIMEOUT":

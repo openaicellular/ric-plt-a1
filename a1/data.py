@@ -67,6 +67,13 @@ def get_policy_type(policy_type_id):
     return POLICY_DATA[policy_type_id][D]
 
 
+def get_type_list():
+    """
+    retrieve all type ids
+    """
+    return list(POLICY_DATA.keys())
+
+
 # Instances
 
 
@@ -119,3 +126,11 @@ def set_policy_instance_status(policy_type_id, policy_instance_id, handler_id, s
     instance_is_valid(policy_type_id, policy_instance_id)
 
     POLICY_DATA[policy_type_id][I][policy_instance_id][H][handler_id] = status
+
+
+def get_instance_list(policy_type_id):
+    """
+    retrieve all instance ids for a type
+    """
+    type_is_valid(policy_type_id)
+    return list(POLICY_DATA[policy_type_id][I].keys())

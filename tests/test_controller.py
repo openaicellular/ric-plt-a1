@@ -23,7 +23,8 @@ import pytest
 
 
 ADM_CTRL = "admission_control_policy"
-ADM_CTRL_INSTANCE = "/a1-p/policytypes/20000/policies/" + ADM_CTRL
+ADM_CTRL_POLICIES = "/a1-p/policytypes/20000/policies"
+ADM_CTRL_INSTANCE = ADM_CTRL_POLICIES + "/" + ADM_CTRL
 ADM_CTRL_INSTANCE_STATUS = ADM_CTRL_INSTANCE + "/status"
 ADM_CTRL_TYPE = "/a1-p/policytypes/20000"
 TEST_TYPE = "/a1-p/policytypes/20001"
@@ -82,14 +83,31 @@ def test_xapp_put_good(client, monkeypatch, adm_type_good, adm_instance_good):
     res = client.get(ADM_CTRL_TYPE)
     assert res.status_code == 404
 
+    # no types at all
+    res = client.get("/a1-p/policytypes")
+    assert res.status_code == 200
+    assert res.json == []
+
+    # instance 404 because type not there yet
+    res = client.get(ADM_CTRL_POLICIES)
+    assert res.status_code == 404
+
     # put the type
     res = client.put(ADM_CTRL_TYPE, json=adm_type_good)
     assert res.status_code == 201
 
-    # there now
+    # type there now
     res = client.get(ADM_CTRL_TYPE)
     assert res.status_code == 200
     assert res.json == adm_type_good
+    res = client.get("/a1-p/policytypes")
+    assert res.status_code == 200
+    assert res.json == [20000]
+
+    # instance 200 but empty list
+    res = client.get(ADM_CTRL_POLICIES)
+    assert res.status_code == 200
+    assert res.json == []
 
     # no instance there yet
     res = client.get(ADM_CTRL_INSTANCE)
@@ -101,6 +119,11 @@ def test_xapp_put_good(client, monkeypatch, adm_type_good, adm_instance_good):
     _test_put_patch(monkeypatch)
     res = client.put(ADM_CTRL_INSTANCE, json=adm_instance_good)
     assert res.status_code == 201
+
+    # instance 200 and in list
+    res = client.get(ADM_CTRL_POLICIES)
+    assert res.status_code == 200
+    assert res.json == [ADM_CTRL]
 
     # get the instance
     res = client.get(ADM_CTRL_INSTANCE)
@@ -121,47 +144,6 @@ def test_xapp_put_good(client, monkeypatch, adm_type_good, adm_instance_good):
     monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(5))
     res = client.put(ADM_CTRL_INSTANCE, json=adm_instance_good)
     assert res.status_code == 201
-
-
-# def test_xapp_put_bad(client, monkeypatch):
-#     """Test policy put fails"""
-#     _test_put_patch(monkeypatch)
-#     # return from policy handler has a status indicating FAIL
-#     monkeypatch.setattr(
-#         "a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_payload={"status": "FAIL", "foo": "bar"})
-#     )
-#     res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
-#     assert res.status_code == 502
-#     assert res.json["reason"] == "BAD STATUS"
-#     assert res.json["return_payload"] == {"status": "FAIL", "foo": "bar"}
-#
-#     # return from policy handler has no status field
-#     monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_payload={"foo": "bar"}))
-#     res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
-#     assert res.status_code == 502
-#     assert res.json["reason"] == "NO STATUS"
-#     assert res.json["return_payload"] == {"foo": "bar"}
-#
-#     # return from policy handler not a json
-#     monkeypatch.setattr(
-#         "a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_payload="booger", jsonb=False)
-#     )
-#     res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
-#     assert res.status_code == 502
-#     assert res.json["reason"] == "NOT JSON"
-#     assert res.json["return_payload"] == "booger"
-#
-#     # bad type
-#     monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_type=666))
-#     res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
-#     assert res.status_code == 504
-#     assert res.data == b"\"A1 was expecting an ACK back but it didn't receive one or didn't recieve the expected ACK\"\n"
-#
-#     # bad state
-#     monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue(monkeypatch, msg_state=666))
-#     res = client.put("/a1-p/policies/admission_control_policy", json=testing_helpers.good_payload())
-#     assert res.status_code == 504
-#     assert res.data == b"\"A1 was expecting an ACK back but it didn't receive one or didn't recieve the expected ACK\"\n"
 
 
 def test_bad_instances(client, monkeypatch, adm_type_good):
