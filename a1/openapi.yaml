@@ -204,9 +204,9 @@ paths:
         - A1 Mediator
       operationId: a1.controller.delete_policy_instance
       responses:
-        '204':
+        '202':
           description: >
-            policy instance successfully deleted
+            policy instance deletion initiated
         '404':
           description: >
             there is no policy instance with this policy_instance_id
@@ -234,9 +234,9 @@ paths:
               trigger_threshold: 10
 
       responses:
-        '201':
+        '202':
           description: >
-            Policy instance created
+            Policy instance creation initiated
         '400':
           description: >
             Bad PUT body for this policy instance
@@ -261,32 +261,27 @@ paths:
     get:
       description: >
         Retrieve the policy instance status across all handlers of the policy
-
+        If this endpoint returns successfully (200), it is either IN EFFECT or NOT IN EFFECT.
+        IN EFFECT is returned if at least one policy handler in the RIC is implementing the policy
+        NOT IN EFFECT is returned otherwise
+        If a policy instance is successfully deleted, this endpoint will return a 404 (not a 200)
       tags:
         - A1 Mediator
       operationId: a1.controller.get_policy_instance_status
       responses:
         '200':
           description: >
-            The policy instance status.
-            Returns a vector of statuses, where each contains a handler_id (opaque id of a RIC component that implements this policy) and the policy status as returned by that handler
+            successfully retrieved the status
           content:
-            application/json:
+            text/plain:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    handler_id:
-                      type: string
-                    status:
-                      type: string
-              example:
-                [{"handler_id": "1234-5678", "status" : "OK"}, {"handler_id": "abc-def", "status" : "NOT IMPLEMENTED"}]
+                type: string
+                enum:
+                 - IN EFFECT
+                 - NOT IN EFFECT
         '404':
           description: >
             there is no policy instance with this policy_instance_id or there is no policy type with this policy_type_id
-
 
 components:
   schemas:
@@ -381,6 +376,10 @@ components:
           description: >
             the status of this policy instance in this handler
           type: string
+          enum:
+            - OK
+            - ERROR
+            - DELETED
       example:
         policy_type_id: 12345678
         policy_instance_id: 3d2157af-6a8f-4a7c-810f-38c2f824bf12

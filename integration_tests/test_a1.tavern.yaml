@@ -75,6 +75,8 @@ stages:
             - trigger_threshold
             - window_length
           additionalProperties: false
+    response:
+      status_code: 201
 
   - name: type there now
     request:
@@ -113,7 +115,8 @@ stages:
     response:
       status_code: 404
 
-  - name: put the admission control policy
+  # PUT the instance and make sure subsequent GETs return properly
+  - name: put the admission control policy instance
     request:
       url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy
       method: PUT
@@ -125,7 +128,7 @@ stages:
       headers:
         content-type: application/json
     response:
-      status_code: 201
+      status_code: 202
 
   - name: test the admission control policy get
     request:
@@ -146,9 +149,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
-        - handler_id: test_receiver
-          status: OK
+      # tavern doesn't yet let you check string statuses!!!
 
   - name: instance list 200 and contains the instance
     request:
@@ -159,7 +160,36 @@ stages:
       body:
         - admission_control_policy
 
+  # DELETE the instance and make sure subsequent GETs return properly
+  - name: delete the instance
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy
+      method: DELETE
+    response:
+      status_code: 202
 
+  - name: instance list 200 but no instance
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20000/policies
+      method: GET
+    response:
+      status_code: 200
+      body: []
+
+  - name: cant get instance status
+    delay_before: 3 # give it a few seconds for rmr
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy/status
+      method: GET
+    response:
+      status_code: 404
+
+  - name: cant get instance
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy
+      method: GET
+    response:
+      status_code: 404
 
 ---
 
@@ -206,6 +236,8 @@ stages:
           required:
             - test
           additionalProperties: false
+    response:
+      status_code: 201
 
   - name: type there now
     request:
@@ -268,7 +300,7 @@ stages:
       headers:
         content-type: application/json
     response:
-      status_code: 201
+      status_code: 202
 
   - name: test the delay policy get
     request:
@@ -287,9 +319,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
-        - handler_id: delay_receiver
-          status: OK
+      # tavern doesn't let you check non json yet!
 
   - name: instance list 200 and there
     request:
@@ -333,7 +363,7 @@ stages:
       headers:
         content-type: application/json
     response:
-      status_code: 201
+      status_code: 202
 
   - name: should be no status
     delay_before: 5  # give it a few seconds for rmr ; delay reciever sleeps for 5 seconds by default

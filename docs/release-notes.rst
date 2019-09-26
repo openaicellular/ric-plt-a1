@@ -29,6 +29,15 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
     * Release 1.0.0 will be the Release A version of A1
 
+[0.14.0] - 10/1/2019
+::
+
+    * Implement instance delete
+    * Moves away from the status vector and now aggregates statuses
+    * Pop through a1s mailbox "3x as often"; on all 3 kinds of instance GET since all such calls want the latest information
+    * Misc cleanups in controller (closures ftw)
+    * Add rmr-version.yaml for CICD jobs
+
 [0.13.0] - 9/25/2019
 ::
 

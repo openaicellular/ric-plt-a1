@@ -27,34 +27,36 @@ RUN git clone --branch 1.8.1 https://gerrit.o-ran-sc.org/r/ric-plt/lib/rmr \
 # a1 stage 2
 FROM python:3.7-alpine
 
-# copies
-COPY --from=0 /usr/local/lib64/libnng.so /usr/local/lib64/libnng.so
-COPY --from=0 /usr/local/lib64/librmr_nng.so /usr/local/lib64/librmr_nng.so
-COPY a1/ /tmp/a1
-COPY tests/ /tmp/tests
-COPY setup.py tox.ini /tmp/
-WORKDIR /tmp
-
 # dir that rmr routing file temp goes into
 RUN mkdir -p /opt/route/
 
 # Gevent needs gcc
 RUN apk update && apk add bash gcc musl-dev
 
+# Speed hack; we install gevent here because when building repeatedly (eg during dev) and only changing a1 code,
+# we do not need to keep compiling gevent which takes forever
+RUN pip install --upgrade pip && pip install gevent
+
+# copies
+COPY --from=0 /usr/local/lib64/libnng.so /usr/local/lib64/libnng.so
+COPY --from=0 /usr/local/lib64/librmr_nng.so /usr/local/lib64/librmr_nng.so
+COPY a1/ /tmp/a1
+COPY setup.py tox.ini /tmp/
+WORKDIR /tmp
+
 # do the actual install; this writes into /usr/local, need root
-RUN pip install --upgrade pip && pip install .
+RUN pip install .
 
 # Switch to a non-root user for security reasons.
 # a1 does not currently write into any dirs so no chowns are needed at this time.
 ENV A1USER a1user
-RUN addgroup -S $A1USER && adduser -S -G $A1USER $A1USER 
+RUN addgroup -S $A1USER && adduser -S -G $A1USER $A1USER
 USER $A1USER
 
 # misc setups
 EXPOSE 10000
 ENV LD_LIBRARY_PATH /usr/local/lib/:/usr/local/lib64
 ENV RMR_SEED_RT /opt/route/local.rt
-
 # dont buffer logging
 ENV PYTHONUNBUFFERED 1
 

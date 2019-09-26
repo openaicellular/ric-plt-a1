@@ -47,11 +47,18 @@ while True:
 
         received_payload = json.loads(summary["payload"])
 
+        op = received_payload["operation"]
+        send_payload_status = "ERROR"
+        if op == "CREATE":
+            send_payload_status = "OK"
+        elif op == "DELETE":
+            send_payload_status = "DELETED"
+
         payload = {
             "policy_type_id": received_payload["policy_type_id"],
             "policy_instance_id": received_payload["policy_instance_id"],
             "handler_id": HANDLER_ID,
-            "status": "OK",
+            "status": send_payload_status,
         }
 
         val = json.dumps(payload).encode("utf-8")

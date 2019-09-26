@@ -25,6 +25,8 @@ We use dict data structures (KV) with the expectation of having to move this int
 """
 from a1.exceptions import PolicyTypeNotFound, PolicyInstanceNotFound, PolicyTypeAlreadyExists
 from a1 import get_module_logger
+from a1 import a1rmr
+import json
 
 logger = get_module_logger(__name__)
 
@@ -34,6 +36,7 @@ POLICY_DATA = {}
 I = "instances"
 H = "handlers"
 D = "data"
+
 
 # Types
 
@@ -99,11 +102,45 @@ def store_policy_instance(policy_type_id, policy_instance_id, instance):
     POLICY_DATA[policy_type_id][I][policy_instance_id][H] = {}
 
 
+def delete_policy_instance_if_applicable(policy_type_id, policy_instance_id):
+    """
+    delete a policy instance if all known statuses are DELETED
+
+    pops a1s waiting mailbox
+    """
+    # pop through a1s mailbox, updating a1s db of all policy statuses
+    for msg in a1rmr.dequeue_all_waiting_messages(21024):
+        # try to parse the messages as responses. Drop those that are malformed
+        # NOTE: we don't use the parameters "policy_type_id, policy_instance" from above here,
+        # because we are popping the whole mailbox, which might include other statuses
+        pay = json.loads(msg["payload"])
+        if "policy_type_id" in pay and "policy_instance_id" in pay and "handler_id" in pay and "status" in pay:
+            set_policy_instance_status(pay["policy_type_id"], pay["policy_instance_id"], pay["handler_id"], pay["status"])
+        else:
+            logger.debug("Dropping message")
+            logger.debug(pay)
+
+    # raise if not valid
+    instance_is_valid(policy_type_id, policy_instance_id)
+
+    # see if we can delete
+    vector = get_policy_instance_statuses(policy_type_id, policy_instance_id)
+    if vector != []:
+        all_deleted = True
+        for i in vector:
+            if i != "DELETED":
+                all_deleted = False
+                break  # have at least one not DELETED, do nothing
+
+        # blow away from a1 db
+        if all_deleted:
+            del POLICY_DATA[policy_type_id][I][policy_instance_id]
+
+
 def get_policy_instance(policy_type_id, policy_instance_id):
     """
     Retrieve a policy instance
     """
-    type_is_valid(policy_type_id)
     instance_is_valid(policy_type_id, policy_instance_id)
     return POLICY_DATA[policy_type_id][I][policy_instance_id][D]
 
@@ -112,17 +149,15 @@ def get_policy_instance_statuses(policy_type_id, policy_instance_id):
     """
     Retrieve the status vector for a policy instance
     """
-    type_is_valid(policy_type_id)
     instance_is_valid(policy_type_id, policy_instance_id)
 
-    return [{"handler_id": k, "status": v} for k, v in POLICY_DATA[policy_type_id][I][policy_instance_id][H].items()]
+    return [v for _, v in POLICY_DATA[policy_type_id][I][policy_instance_id][H].items()]
 
 
 def set_policy_instance_status(policy_type_id, policy_instance_id, handler_id, status):
     """
     Update the status of a handler id of a policy instance
     """
-    type_is_valid(policy_type_id)
     instance_is_valid(policy_type_id, policy_instance_id)
 
     POLICY_DATA[policy_type_id][I][policy_instance_id][H][handler_id] = status

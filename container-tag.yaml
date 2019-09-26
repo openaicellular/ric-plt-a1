@@ -1,4 +1,4 @@
 # The Jenkins job uses this string for the tag in the image name
 # for example nexus3.o-ran-sc.org:10004/my-image-name:my-tag
 ---
-tag: 0.13.0-NOT_FOR_USE_YET
+tag: 0.14.0-NOT_FOR_USE_YET

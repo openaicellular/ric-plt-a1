@@ -45,10 +45,28 @@ def client():
 
 def _fake_dequeue(_filter_type):
     """
-    for monkeypatching a1rmnr.dequeue_all_messages
+    for monkeypatching a1rmnr.dequeue_all_messages with a good status
     """
     fake_msg = {}
     pay = b'{"policy_type_id": 20000, "policy_instance_id": "admission_control_policy", "handler_id": "test_receiver", "status": "OK"}'
+    fake_msg["payload"] = pay
+    new_messages = [fake_msg]
+    return new_messages
+
+
+def _fake_dequeue_none(_filter_type):
+    """
+    for monkeypatching a1rmnr.dequeue_all_messages with no waiting messages
+    """
+    return []
+
+
+def _fake_dequeue_deleted(_filter_type):
+    """
+    for monkeypatching a1rmnr.dequeue_all_messages with a DELETED status
+    """
+    fake_msg = {}
+    pay = b'{"policy_type_id": 20000, "policy_instance_id": "admission_control_policy", "handler_id": "test_receiver", "status": "DELETED"}'
     fake_msg["payload"] = pay
     new_messages = [fake_msg]
     return new_messages
@@ -89,6 +107,7 @@ def test_xapp_put_good(client, monkeypatch, adm_type_good, adm_instance_good):
     assert res.json == []
 
     # instance 404 because type not there yet
+    monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue_none)
     res = client.get(ADM_CTRL_POLICIES)
     assert res.status_code == 404
 
@@ -118,32 +137,66 @@ def test_xapp_put_good(client, monkeypatch, adm_type_good, adm_instance_good):
     # create a good instance
     _test_put_patch(monkeypatch)
     res = client.put(ADM_CTRL_INSTANCE, json=adm_instance_good)
-    assert res.status_code == 201
+    assert res.status_code == 202
 
     # instance 200 and in list
     res = client.get(ADM_CTRL_POLICIES)
     assert res.status_code == 200
     assert res.json == [ADM_CTRL]
 
-    # get the instance
-    res = client.get(ADM_CTRL_INSTANCE)
-    assert res.status_code == 200
-    assert res.json == adm_instance_good
+    def get_instance_good(expected):
+        # get the instance
+        res = client.get(ADM_CTRL_INSTANCE)
+        assert res.status_code == 200
+        assert res.json == adm_instance_good
 
-    # get the instance status
+        # get the instance status
+        res = client.get(ADM_CTRL_INSTANCE_STATUS)
+        assert res.status_code == 200
+        assert res.get_data(as_text=True) == expected
+
+    # try a status get but pretend we didn't get any ACKs yet to test NOT IN EFFECT
+    monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue_none)
+    get_instance_good("NOT IN EFFECT")
+
+    # now pretend we did get a good ACK
     monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue)
-    res = client.get(ADM_CTRL_INSTANCE_STATUS)
-    assert res.status_code == 200
-    assert res.json == [{"handler_id": "test_receiver", "status": "OK"}]
+    get_instance_good("IN EFFECT")
 
-    # assert that rmr bad states don't cause problems
+    # delete it
+    res = client.delete(ADM_CTRL_INSTANCE)
+    assert res.status_code == 202
+    res = client.delete(ADM_CTRL_INSTANCE)  # should be able to do multiple deletes
+    assert res.status_code == 202
+
+    # status after a delete, but there are no messages yet, should still return
+    monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue)
+    get_instance_good("IN EFFECT")
+
+    # now pretend we deleted successfully
+    monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue_deleted)
+    res = client.get(ADM_CTRL_INSTANCE_STATUS)  # cant get status
+    assert res.status_code == 404
+    res = client.get(ADM_CTRL_INSTANCE)  # cant get instance
+    assert res.status_code == 404
+    # list still 200 but no instance
+    res = client.get(ADM_CTRL_POLICIES)
+    assert res.status_code == 200
+    assert res.json == []
+
+
+def test_xapp_put_good_bad_rmr(client, monkeypatch, adm_instance_good):
+    """
+    assert that rmr bad states don't cause problems
+    """
+    _test_put_patch(monkeypatch)
     monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(10))
     res = client.put(ADM_CTRL_INSTANCE, json=adm_instance_good)
-    assert res.status_code == 201
+    assert res.status_code == 202
 
     monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(5))
     res = client.put(ADM_CTRL_INSTANCE, json=adm_instance_good)
-    assert res.status_code == 201
+    assert res.status_code == 202
 
 
 def test_bad_instances(client, monkeypatch, adm_type_good):
