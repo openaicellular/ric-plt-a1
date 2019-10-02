@@ -18,13 +18,13 @@ from setuptools import setup, find_packages
 
 setup(
     name="a1",
-    version="0.14.0",
+    version="0.14.1",
     packages=find_packages(exclude=["tests.*", "tests"]),
     author="Tommy Carpenter",
     description="RIC A1 Mediator for policy/intent changes",
     url="https://gerrit.o-ran-sc.org/r/admin/repos/ric-plt/a1",
     entry_points={"console_scripts": ["run.py=a1.run:main"]},
     # we require jsonschema, should be in that list, but connexion already requires a specific version of it
-    install_requires=["requests", "Flask", "connexion[swagger-ui]", "gevent", "rmr>=0.10.8"],
+    install_requires=["requests", "Flask", "connexion[swagger-ui]", "gevent", "rmr>=0.13.2"],
     package_data={"a1": ["openapi.yaml"]},
 )

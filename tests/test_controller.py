@@ -76,6 +76,13 @@ def _test_put_patch(monkeypatch):
     rmr_mocks.patch_rmr(monkeypatch)
     monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(0))  # good sends for this whole batch
 
+    # we need this because free expects a real sbuf
+    # TODO: move this into rmr_mocks
+    def noop(_sbuf):
+        pass
+
+    monkeypatch.setattr("rmr.rmr.rmr_free_msg", noop)
+
     # we need to repatch alloc (already patched in patch_rmr) to fix the transactionid, alloc is called in send and recieve
     def fake_alloc(_unused, _alsounused):
         sbuf = rmr_mocks.Rmr_mbuf_t()

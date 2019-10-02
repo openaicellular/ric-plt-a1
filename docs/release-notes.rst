@@ -29,6 +29,17 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
     * Release 1.0.0 will be the Release A version of A1
 
+[0.14.1] - 10/2/2019
+::
+
+    * Upgrade rmr to 1.9.0
+    * Upgrade rmr-python to 0.13.2
+    * Use the new helpers module in rmr-python for the rec all functionality
+    * Switch rmr mode to a multithreaded mode that continuously reads from rmr and populates an internal queue of messages with a deterministic queue size (2048) which is better behavior for A1
+    * Fix a memory leak (python obj is garbage collected but not the underlying C memory allocation)
+
+
+
 [0.14.0] - 10/1/2019
 ::
 

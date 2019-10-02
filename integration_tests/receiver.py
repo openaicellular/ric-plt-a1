@@ -27,8 +27,7 @@ PORT = os.environ.get("TEST_RCV_PORT", "4560")
 DELAY = int(os.environ.get("TEST_RCV_SEC_DELAY", 0))
 HANDLER_ID = os.environ.get("HANDLER_ID", "test_receiver")
 
-# TODO: should these be made constants?
-mrc = rmr.rmr_init(PORT.encode("utf-8"), rmr.RMR_MAX_RCV_BYTES, 0x00)
+mrc = rmr.rmr_init(PORT.encode("utf-8"), rmr.RMR_MAX_RCV_BYTES, rmr.RMRFL_MTCALL)
 
 while rmr.rmr_ready(mrc) == 0:
     time.sleep(1)

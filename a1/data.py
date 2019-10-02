@@ -23,10 +23,10 @@ Hopefully, the access functions are a good api so nothing else has to change whe
 For now, the database is in memory.
 We use dict data structures (KV) with the expectation of having to move this into Redis
 """
+import json
 from a1.exceptions import PolicyTypeNotFound, PolicyInstanceNotFound, PolicyTypeAlreadyExists
 from a1 import get_module_logger
 from a1 import a1rmr
-import json
 
 logger = get_module_logger(__name__)
 
@@ -109,7 +109,7 @@ def delete_policy_instance_if_applicable(policy_type_id, policy_instance_id):
     pops a1s waiting mailbox
     """
     # pop through a1s mailbox, updating a1s db of all policy statuses
-    for msg in a1rmr.dequeue_all_waiting_messages(21024):
+    for msg in a1rmr.dequeue_all_waiting_messages([21024]):
         # try to parse the messages as responses. Drop those that are malformed
         # NOTE: we don't use the parameters "policy_type_id, policy_instance" from above here,
         # because we are popping the whole mailbox, which might include other statuses
