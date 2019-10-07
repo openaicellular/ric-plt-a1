@@ -101,7 +101,7 @@ def _test_put_patch(monkeypatch):
 # Actual Tests
 
 
-def test_xapp_put_good(client, monkeypatch, adm_type_good, adm_instance_good):
+def test_workflow(client, monkeypatch, adm_type_good, adm_instance_good):
     """ test policy put good"""
 
     # no type there yet
@@ -143,6 +143,8 @@ def test_xapp_put_good(client, monkeypatch, adm_type_good, adm_instance_good):
 
     # create a good instance
     _test_put_patch(monkeypatch)
+    # assert that rmr bad states don't cause problems
+    monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(10))
     res = client.put(ADM_CTRL_INSTANCE, json=adm_instance_good)
     assert res.status_code == 202
 
@@ -170,6 +172,10 @@ def test_xapp_put_good(client, monkeypatch, adm_type_good, adm_instance_good):
     monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue)
     get_instance_good("IN EFFECT")
 
+    # cant delete type until there are no instances
+    res = client.delete(ADM_CTRL_TYPE)
+    assert res.status_code == 400
+
     # delete it
     res = client.delete(ADM_CTRL_INSTANCE)
     assert res.status_code == 202
@@ -186,42 +192,31 @@ def test_xapp_put_good(client, monkeypatch, adm_type_good, adm_instance_good):
     assert res.status_code == 404
     res = client.get(ADM_CTRL_INSTANCE)  # cant get instance
     assert res.status_code == 404
+
     # list still 200 but no instance
     res = client.get(ADM_CTRL_POLICIES)
     assert res.status_code == 200
     assert res.json == []
 
+    # delete the type
+    res = client.delete(ADM_CTRL_TYPE)
+    assert res.status_code == 204
 
-def test_xapp_put_good_bad_rmr(client, monkeypatch, adm_instance_good):
-    """
-    assert that rmr bad states don't cause problems
-    """
-    _test_put_patch(monkeypatch)
-    monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(10))
-    res = client.put(ADM_CTRL_INSTANCE, json=adm_instance_good)
-    assert res.status_code == 202
-
-    monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(5))
-    res = client.put(ADM_CTRL_INSTANCE, json=adm_instance_good)
-    assert res.status_code == 202
+    # cant touch this
+    res = client.get(ADM_CTRL_TYPE)
+    assert res.status_code == 404
+    res = client.delete(ADM_CTRL_TYPE)
+    assert res.status_code == 404
 
 
 def test_bad_instances(client, monkeypatch, adm_type_good):
     """
-    Test bad send failures
+    test various failure modes
     """
+    # put the type (needed for some of the tests below)
     rmr_mocks.patch_rmr(monkeypatch)
-
-    # TODO: reenable this after delete!
-    # put the type
-    # res = client.put(ADM_CTRL_TYPE, json=adm_type_good)
-    # assert res.status_code == 201
-
-    # illegal type range
-    res = client.put("/a1-p/policytypes/19999", json=adm_type_good)
-    assert res.status_code == 400
-    res = client.put("/a1-p/policytypes/21024", json=adm_type_good)
-    assert res.status_code == 400
+    res = client.put(ADM_CTRL_TYPE, json=adm_type_good)
+    assert res.status_code == 201
 
     # bad body
     res = client.put(ADM_CTRL_INSTANCE, json={"not": "expected"})
@@ -230,6 +225,29 @@ def test_bad_instances(client, monkeypatch, adm_type_good):
     # bad media type
     res = client.put(ADM_CTRL_INSTANCE, data="notajson")
     assert res.status_code == 415
+
+    # delete a non existent instance
+    res = client.delete(ADM_CTRL_INSTANCE + "DARKNESS")
+    assert res.status_code == 404
+
+    # get a non existent instance
+    monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue)
+    res = client.get(ADM_CTRL_INSTANCE + "DARKNESS")
+    assert res.status_code == 404
+
+    # delete the type (as cleanup)
+    res = client.delete(ADM_CTRL_TYPE)
+    assert res.status_code == 204
+
+
+def test_illegal_types(client, monkeypatch, adm_type_good):
+    """
+    Test illegal types
+    """
+    res = client.put("/a1-p/policytypes/19999", json=adm_type_good)
+    assert res.status_code == 400
+    res = client.put("/a1-p/policytypes/21024", json=adm_type_good)
+    assert res.status_code == 400
 
 
 def test_healthcheck(client):

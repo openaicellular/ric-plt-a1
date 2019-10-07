@@ -19,6 +19,10 @@ Custom Exceptions
 """
 
 
+class CantDeleteNonEmptyType(BaseException):
+    """tried to delete a type that isn't empty"""
+
+
 class PolicyInstanceNotFound(BaseException):
     """a policy instance cannot be found"""
 

@@ -35,7 +35,7 @@ def _try_func_return(func):
     """
     try:
         return func()
-    except (ValidationError, exceptions.PolicyTypeAlreadyExists) as exc:
+    except (ValidationError, exceptions.PolicyTypeAlreadyExists, exceptions.CantDeleteNonEmptyType) as exc:
         logger.exception(exc)
         return "", 400
     except (exceptions.PolicyTypeNotFound, exceptions.PolicyInstanceNotFound) as exc:
@@ -104,8 +104,12 @@ def delete_policy_type(policy_type_id):
     """
     Handles DELETE /a1-p/policytypes/policy_type_id
     """
-    logger.error(policy_type_id)
-    return "", 501
+
+    def delete_policy_type_handler():
+        data.delete_policy_type(policy_type_id)
+        return "", 204
+
+    return _try_func_return(delete_policy_type_handler)
 
 
 # Policy instances
@@ -115,31 +119,14 @@ def get_all_instances_for_type(policy_type_id):
     """
     Handles GET /a1-p/policytypes/policy_type_id/policies
     """
-
-    def get_all_instance_handler():
-        # try to clean up instances for this type
-        for policy_instance_id in data.get_instance_list(policy_type_id):
-            data.delete_policy_instance_if_applicable(policy_type_id, policy_instance_id)
-
-        # re-fetch this list as it may have changed
-        return data.get_instance_list(policy_type_id), 200
-
-    return _try_func_return(get_all_instance_handler)
+    return _try_func_return(lambda: data.get_instance_list(policy_type_id))
 
 
 def get_policy_instance(policy_type_id, policy_instance_id):
     """
     Handles GET /a1-p/policytypes/polidyid/policies/policy_instance_id
     """
-
-    def get_instance_handler():
-        # delete if applicable (will raise if not applicable to begin with)
-        data.delete_policy_instance_if_applicable(policy_type_id, policy_instance_id)
-
-        # raise 404 now that we may have deleted, or get the instance otherwise
-        return data.get_policy_instance(policy_type_id, policy_instance_id), 200
-
-    return _try_func_return(get_instance_handler)
+    return _try_func_return(lambda: data.get_policy_instance(policy_type_id, policy_instance_id))
 
 
 def get_policy_instance_status(policy_type_id, policy_instance_id):
@@ -153,9 +140,6 @@ def get_policy_instance_status(policy_type_id, policy_instance_id):
     """
 
     def get_status_handler():
-        # delete if applicable (will raise if not applicable to begin with)
-        data.delete_policy_instance_if_applicable(policy_type_id, policy_instance_id)
-
         vector = data.get_policy_instance_statuses(policy_type_id, policy_instance_id)
         for i in vector:
             if i == "OK":
@@ -202,6 +186,8 @@ def delete_policy_instance(policy_type_id, policy_instance_id):
         """
         here we send out the DELETEs but we don't delete the instance until a GET is called where we check the statuses
         """
+        data.instance_is_valid(policy_type_id, policy_instance_id)
+
         # send rmr (best effort)
         body = _gen_body_to_handler("DELETE", policy_type_id, policy_instance_id)
         a1rmr.send(json.dumps(body), message_type=policy_type_id)

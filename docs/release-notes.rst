@@ -23,11 +23,22 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <http://keepachangelog.com/>`__
 and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
-[1.0.0] - TBD
+[1.1.0] - TBD
 
 ::
 
-    * Release 1.0.0 will be the Release A version of A1
+    * Represents a resillent version of 1.0.0 that uses Redis for persistence
+
+
+[1.0.0] - 10/7/2019
+
+::
+
+    * Represents v1.0.0 of the A1 API for O-RAN-SC Release A
+    * Finished here:
+      - Implement type DELETE
+      - Clean up where policy instance cleanups happen
+
 
 [0.14.1] - 10/2/2019
 ::

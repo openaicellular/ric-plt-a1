@@ -39,7 +39,7 @@ This project follows semver. When changes are made, the versions are in:
 
 4) ``integration_tests/a1mediator/Chart.yaml``
 
-6) ``a1/openapi.yml`` (this is an API version, not a software version)
+6) ``a1/openapi.yaml`` (this is an API version, not a software version; no need to bump on patch changes)
 
 7) in the it/dep repo that contains a1 helm chart, ``values.yaml``, ``Chart.yml``
 
