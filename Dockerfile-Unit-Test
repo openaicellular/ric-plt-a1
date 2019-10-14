@@ -29,11 +29,11 @@ FROM python:3.7-alpine
 # dir that rmr routing file temp goes into
 RUN mkdir -p /opt/route/
 
-# Gevent needs gcc; TODO: this will get fixed
+# Gevent needs gcc
 RUN apk add gcc musl-dev
 
-# Upgrade pip, install tox
-RUN pip install --upgrade pip && pip install tox
+# Upgrade pip, install tox (gevent is installed as a speed hack in local dev where tox is run many times)
+RUN pip install --upgrade pip && pip install tox gevent
 
 # copies
 COPY --from=0 /usr/local/lib64/libnng.so /usr/local/lib64/libnng.so

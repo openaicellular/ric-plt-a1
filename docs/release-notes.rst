@@ -23,11 +23,18 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <http://keepachangelog.com/>`__
 and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
-[1.1.0] - TBD
+[1.x.x] - TBD
 
 ::
 
     * Represents a resillent version of 1.0.0 that uses Redis for persistence
+
+[1.0.1]
+
+::
+
+    * Moves the "database" access calls to mimick the SDL API, in preparation for moving to SDL
+    * Does not yet actually use SDL or Redis, but the transition to those will be much shorter after this change.
 
 
 [1.0.0] - 10/7/2019

@@ -65,11 +65,22 @@ def _fake_dequeue_deleted(_filter_type):
     """
     for monkeypatching a1rmnr.dequeue_all_messages with a DELETED status
     """
-    fake_msg = {}
+    new_msgs = []
+
+    # insert some that don't exist to make sure nothing blows up
+    pay = b'{"policy_type_id": 20666, "policy_instance_id": "admission_control_policy", "handler_id": "test_receiver", "status": "DELETED"}'
+    fake_msg = {"payload": pay}
+    new_msgs.append(fake_msg)
+
+    pay = b'{"policy_type_id": 20000, "policy_instance_id": "darkness", "handler_id": "test_receiver", "status": "DELETED"}'
+    fake_msg = {"payload": pay}
+    new_msgs.append(fake_msg)
+
     pay = b'{"policy_type_id": 20000, "policy_instance_id": "admission_control_policy", "handler_id": "test_receiver", "status": "DELETED"}'
-    fake_msg["payload"] = pay
-    new_messages = [fake_msg]
-    return new_messages
+    fake_msg = {"payload": pay}
+    new_msgs.append(fake_msg)
+
+    return new_msgs
 
 
 def _test_put_patch(monkeypatch):
@@ -101,7 +112,7 @@ def _test_put_patch(monkeypatch):
 # Actual Tests
 
 
-def test_workflow(client, monkeypatch, adm_type_good, adm_instance_good):
+def test_workflow_nothing_there_yet(client, monkeypatch, adm_type_good, adm_instance_good):
     """ test policy put good"""
 
     # no type there yet
@@ -118,9 +129,15 @@ def test_workflow(client, monkeypatch, adm_type_good, adm_instance_good):
     res = client.get(ADM_CTRL_POLICIES)
     assert res.status_code == 404
 
+
+def test_workflow(client, monkeypatch, adm_type_good, adm_instance_good):
     # put the type
     res = client.put(ADM_CTRL_TYPE, json=adm_type_good)
     assert res.status_code == 201
+
+    # cant replace types
+    res = client.put(ADM_CTRL_TYPE, json=adm_type_good)
+    assert res.status_code == 400
 
     # type there now
     res = client.get(ADM_CTRL_TYPE)
@@ -131,6 +148,7 @@ def test_workflow(client, monkeypatch, adm_type_good, adm_instance_good):
     assert res.json == [20000]
 
     # instance 200 but empty list
+    monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue_none)
     res = client.get(ADM_CTRL_POLICIES)
     assert res.status_code == 200
     assert res.json == []
@@ -145,6 +163,10 @@ def test_workflow(client, monkeypatch, adm_type_good, adm_instance_good):
     _test_put_patch(monkeypatch)
     # assert that rmr bad states don't cause problems
     monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(10))
+    res = client.put(ADM_CTRL_INSTANCE, json=adm_instance_good)
+    assert res.status_code == 202
+
+    # replace is allowed on instances
     res = client.put(ADM_CTRL_INSTANCE, json=adm_instance_good)
     assert res.status_code == 202
 

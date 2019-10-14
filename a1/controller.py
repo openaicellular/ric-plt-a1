@@ -65,7 +65,7 @@ def _gen_body_to_handler(operation, policy_type_id, policy_instance_id, payload=
 def get_healthcheck():
     """
     Handles healthcheck GET
-    Currently, this basically checks the server is alive.a1rmr
+    Currently, this basically checks the server is alive
     """
     return "", 200
 

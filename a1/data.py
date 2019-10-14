@@ -24,21 +24,81 @@ For now, the database is in memory.
 We use dict data structures (KV) with the expectation of having to move this into Redis
 """
 import json
+import msgpack
 from a1.exceptions import PolicyTypeNotFound, PolicyInstanceNotFound, PolicyTypeAlreadyExists, CantDeleteNonEmptyType
 from a1 import get_module_logger
 from a1 import a1rmr
 
 logger = get_module_logger(__name__)
 
-# This is essentially mockouts for future KV
-# Note that the D subkey won't be needed when in redis, since you can store data at x anx x_y
-POLICY_DATA = {}
-I = "instances"
-H = "handlers"
-D = "data"
+
+class SDLWrapper:
+    """
+    This is a wrapper around the expected SDL Python interface.
+    The usage of POLICY_DATA will be replaced with  SDL when SDL for python is available.
+    The eventual SDL API is expected to be very close to what is here.
+
+    We use msgpack for binary (de)serialization: https://msgpack.org/index.html
+    """
+
+    def __init__(self):
+        self.POLICY_DATA = {}
+
+    def set(self, key, value):
+        """set a key"""
+        self.POLICY_DATA[key] = msgpack.packb(value, use_bin_type=True)
+
+    def get(self, key):
+        """get a key"""
+        if key in self.POLICY_DATA:
+            return msgpack.unpackb(self.POLICY_DATA[key], raw=False)
+        return None
+
+    def find_and_get(self, prefix):
+        """get all k v pairs that start with prefix"""
+        return {k: msgpack.unpackb(v, raw=False) for k, v in self.POLICY_DATA.items() if k.startswith(prefix)}
+
+    def delete(self, key):
+        """ delete a key"""
+        del self.POLICY_DATA[key]
+
+
+SDL = SDLWrapper()
+
+TYPE_PREFIX = "a1.policy_type."
+INSTANCE_PREFIX = "a1.policy_instance."
+HANDLER_PREFIX = "a1.policy_handler."
 
 
 # Internal helpers
+
+
+def _generate_type_key(policy_type_id):
+    """
+    generate a key for a policy type
+    """
+    return "{0}{1}".format(TYPE_PREFIX, policy_type_id)
+
+
+def _generate_instance_key(policy_type_id, policy_instance_id):
+    """
+    generate a key for a policy instance
+    """
+    return "{0}{1}.{2}".format(INSTANCE_PREFIX, policy_type_id, policy_instance_id)
+
+
+def _generate_handler_prefix(policy_type_id, policy_instance_id):
+    """
+    generate the prefix to a handler key
+    """
+    return "{0}{1}.{2}.".format(HANDLER_PREFIX, policy_type_id, policy_instance_id)
+
+
+def _generate_handler_key(policy_type_id, policy_instance_id, handler_id):
+    """
+    generate a key for a policy handler
+    """
+    return "{0}{1}".format(_generate_handler_prefix(policy_type_id, policy_instance_id), handler_id)
 
 
 def _get_statuses(policy_type_id, policy_instance_id):
@@ -46,7 +106,8 @@ def _get_statuses(policy_type_id, policy_instance_id):
     shared helper to get statuses for an instance
     """
     instance_is_valid(policy_type_id, policy_instance_id)
-    return [v for _, v in POLICY_DATA[policy_type_id][I][policy_instance_id][H].items()]
+    prefixes_for_handler = "{0}{1}.{2}.".format(HANDLER_PREFIX, policy_type_id, policy_instance_id)
+    return list(SDL.find_and_get(prefixes_for_handler).values())
 
 
 def _get_instance_list(policy_type_id):
@@ -54,7 +115,19 @@ def _get_instance_list(policy_type_id):
     shared helper to get instance list for a type
     """
     type_is_valid(policy_type_id)
-    return list(POLICY_DATA[policy_type_id][I].keys())
+    prefixes_for_type = "{0}{1}.".format(INSTANCE_PREFIX, policy_type_id)
+    instancekeys = SDL.find_and_get(prefixes_for_type).keys()
+    return [k.split(prefixes_for_type)[1] for k in instancekeys]
+
+
+def _clear_handlers(policy_type_id, policy_instance_id):
+    """
+    delete all the handlers for a policy instance
+    """
+    all_handlers_pref = _generate_handler_prefix(policy_type_id, policy_instance_id)
+    keys = SDL.find_and_get(all_handlers_pref)
+    for k in keys:
+        SDL.delete(k)
 
 
 def _clean_up_type(policy_type_id):
@@ -67,19 +140,24 @@ def _clean_up_type(policy_type_id):
         # try to parse the messages as responses. Drop those that are malformed
         pay = json.loads(msg["payload"])
         if "policy_type_id" in pay and "policy_instance_id" in pay and "handler_id" in pay and "status" in pay:
-            """
-            NOTE: can't raise an exception here e.g.:
-                instance_is_valid(pti, pii)
-            because this is called on many functions; just drop bad status messages.
-            We def don't want bad messages that happen to hit a1s mailbox to blow up anything
-
-            NOTE2: we don't use the parameters "policy_type_id, policy_instance" from above here,
+            # We don't use the parameters "policy_type_id, policy_instance" from above here,
             # because we are popping the whole mailbox, which might include other statuses
-            """
             pti = pay["policy_type_id"]
             pii = pay["policy_instance_id"]
-            if pti in POLICY_DATA and pii in POLICY_DATA[pti][I]:  # manual check per comment above
-                POLICY_DATA[pti][I][pii][H][pay["handler_id"]] = pay["status"]
+
+            try:
+                """
+                can't raise an exception here e.g.:
+                because this is called on many functions; just drop bad status messages.
+                We def don't want bad messages that happen to hit a1s mailbox to blow up anything
+
+                """
+                type_is_valid(pti)
+                instance_is_valid(pti, pii)
+                SDL.set(_generate_handler_key(pti, pii, pay["handler_id"]), pay["status"])
+            except (PolicyTypeNotFound, PolicyInstanceNotFound):
+                pass
+
         else:
             logger.debug("Dropping message")
             logger.debug(pay)
@@ -108,7 +186,8 @@ def _clean_up_type(policy_type_id):
 
             # blow away from a1 db
             if all_deleted:
-                del POLICY_DATA[policy_type_id][I][policy_instance_id]
+                _clear_handlers(policy_type_id, policy_instance_id)  # delete all the handlers
+                SDL.delete(_generate_instance_key(policy_type_id, policy_instance_id))  # delete instance
 
 
 # Types
@@ -118,15 +197,16 @@ def get_type_list():
     """
     retrieve all type ids
     """
-    return list(POLICY_DATA.keys())
+    typekeys = SDL.find_and_get(TYPE_PREFIX).keys()
+    # policy types are ints but they get butchered to strings in the KV
+    return [int(k.split(TYPE_PREFIX)[1]) for k in typekeys]
 
 
 def type_is_valid(policy_type_id):
     """
     check that a type is valid
     """
-    if policy_type_id not in POLICY_DATA:
-        logger.error("%s not found", policy_type_id)
+    if SDL.get(_generate_type_key(policy_type_id)) is None:
         raise PolicyTypeNotFound()
 
 
@@ -134,12 +214,10 @@ def store_policy_type(policy_type_id, body):
     """
     store a policy type if it doesn't already exist
     """
-    if policy_type_id in POLICY_DATA:
+    key = _generate_type_key(policy_type_id)
+    if SDL.get(key) is not None:
         raise PolicyTypeAlreadyExists()
-
-    POLICY_DATA[policy_type_id] = {}
-    POLICY_DATA[policy_type_id][D] = body
-    POLICY_DATA[policy_type_id][I] = {}
+    SDL.set(key, body)
 
 
 def delete_policy_type(policy_type_id):
@@ -148,7 +226,7 @@ def delete_policy_type(policy_type_id):
     """
     pil = get_instance_list(policy_type_id)
     if pil == []:  # empty, can delete
-        del POLICY_DATA[policy_type_id]
+        SDL.delete(_generate_type_key(policy_type_id))
     else:
         raise CantDeleteNonEmptyType()
 
@@ -158,7 +236,7 @@ def get_policy_type(policy_type_id):
     retrieve a type
     """
     type_is_valid(policy_type_id)
-    return POLICY_DATA[policy_type_id][D]
+    return SDL.get(_generate_type_key(policy_type_id))
 
 
 # Instances
@@ -169,7 +247,7 @@ def instance_is_valid(policy_type_id, policy_instance_id):
     check that an instance is valid
     """
     type_is_valid(policy_type_id)
-    if policy_instance_id not in POLICY_DATA[policy_type_id][I]:
+    if SDL.get(_generate_instance_key(policy_type_id, policy_instance_id)) is None:
         raise PolicyInstanceNotFound
 
 
@@ -178,12 +256,11 @@ def store_policy_instance(policy_type_id, policy_instance_id, instance):
     Store a policy instance
     """
     type_is_valid(policy_type_id)
-
-    # store the instance
-    # Reset the statuses because this is a new policy instance, even if it was overwritten
-    POLICY_DATA[policy_type_id][I][policy_instance_id] = {}
-    POLICY_DATA[policy_type_id][I][policy_instance_id][D] = instance
-    POLICY_DATA[policy_type_id][I][policy_instance_id][H] = {}
+    key = _generate_instance_key(policy_type_id, policy_instance_id)
+    if SDL.get(key) is not None:
+        # Reset the statuses because this is a new policy instance, even if it was overwritten
+        _clear_handlers(policy_type_id, policy_instance_id)  # delete all the handlers
+    SDL.set(key, instance)
 
 
 def get_policy_instance(policy_type_id, policy_instance_id):
@@ -192,7 +269,7 @@ def get_policy_instance(policy_type_id, policy_instance_id):
     """
     _clean_up_type(policy_type_id)
     instance_is_valid(policy_type_id, policy_instance_id)
-    return POLICY_DATA[policy_type_id][I][policy_instance_id][D]
+    return SDL.get(_generate_instance_key(policy_type_id, policy_instance_id))
 
 
 def get_policy_instance_statuses(policy_type_id, policy_instance_id):
