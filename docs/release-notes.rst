@@ -29,7 +29,20 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
     * Represents a resillent version of 1.0.0 that uses Redis for persistence
 
-[1.0.1]
+[1.0.2] - 10/17/2019
+
+::
+
+    * a1 now has a seperate, continuous polling thread
+      this will enable operations like database cleanup (based on ACKs) and external notifications in real time,
+      rather than when the API is invoked
+    * all rmr send and receive operations are now in this thread
+    * introduces a thread safe job queue between the two threads
+    * Not done yet: database cleanups in the thread
+    * Bump rmr python version
+    * Clean up some logging
+
+[1.0.1] - 10/15/2019
 
 ::
 

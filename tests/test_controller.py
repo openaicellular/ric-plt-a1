@@ -14,12 +14,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
-import tempfile
-import os
 
+import time
 from rmr.rmr_mocks import rmr_mocks
-from a1 import app
-import pytest
+from a1 import run
 
 
 ADM_CTRL = "admission_control_policy"
@@ -30,23 +28,8 @@ ADM_CTRL_TYPE = "/a1-p/policytypes/20000"
 TEST_TYPE = "/a1-p/policytypes/20001"
 
 
-# http://flask.pocoo.org/docs/1.0/testing/
-@pytest.fixture
-def client():
-    db_fd, app.app.config["DATABASE"] = tempfile.mkstemp()
-    app.app.config["TESTING"] = True
-    cl = app.app.test_client()
-
-    yield cl
-
-    os.close(db_fd)
-    os.unlink(app.app.config["DATABASE"])
-
-
-def _fake_dequeue(_filter_type):
-    """
-    for monkeypatching a1rmnr.dequeue_all_messages with a good status
-    """
+def _fake_dequeue(_mrc, _filter_type):
+    """for monkeypatching with a good status"""
     fake_msg = {}
     pay = b'{"policy_type_id": 20000, "policy_instance_id": "admission_control_policy", "handler_id": "test_receiver", "status": "OK"}'
     fake_msg["payload"] = pay
@@ -54,17 +37,13 @@ def _fake_dequeue(_filter_type):
     return new_messages
 
 
-def _fake_dequeue_none(_filter_type):
-    """
-    for monkeypatching a1rmnr.dequeue_all_messages with no waiting messages
-    """
+def _fake_dequeue_none(_mrc, _filter_type):
+    """for monkeypatching with no waiting messages"""
     return []
 
 
-def _fake_dequeue_deleted(_filter_type):
-    """
-    for monkeypatching a1rmnr.dequeue_all_messages with a DELETED status
-    """
+def _fake_dequeue_deleted(_mrc, _filter_type):
+    """for monkeypatching  with a DELETED status"""
     new_msgs = []
 
     # insert some that don't exist to make sure nothing blows up
@@ -85,7 +64,8 @@ def _fake_dequeue_deleted(_filter_type):
 
 def _test_put_patch(monkeypatch):
     rmr_mocks.patch_rmr(monkeypatch)
-    monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(0))  # good sends for this whole batch
+    # assert that rmr bad states don't cause problems
+    monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(10))
 
     # we need this because free expects a real sbuf
     # TODO: move this into rmr_mocks
@@ -109,12 +89,24 @@ def _test_put_patch(monkeypatch):
     monkeypatch.setattr("rmr.rmr.generate_and_set_transaction_id", fake_set_transactionid)
 
 
+# Module level Hack
+
+
+RMR_THREAD = None
+
+
+def setup_module():
+    """module level setup"""
+    global RMR_THREAD
+    RMR_THREAD = run.start_rmr_thread(real_init=False)
+
+
 # Actual Tests
 
 
 def test_workflow_nothing_there_yet(client, monkeypatch, adm_type_good, adm_instance_good):
     """ test policy put good"""
-
+    monkeypatch.setattr("rmr.helpers.rmr_rcvall_msgs", _fake_dequeue_none)
     # no type there yet
     res = client.get(ADM_CTRL_TYPE)
     assert res.status_code == 404
@@ -125,12 +117,15 @@ def test_workflow_nothing_there_yet(client, monkeypatch, adm_type_good, adm_inst
     assert res.json == []
 
     # instance 404 because type not there yet
-    monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue_none)
     res = client.get(ADM_CTRL_POLICIES)
     assert res.status_code == 404
 
 
 def test_workflow(client, monkeypatch, adm_type_good, adm_instance_good):
+    """
+    test a full A1 workflow
+    """
+    monkeypatch.setattr("rmr.helpers.rmr_rcvall_msgs", _fake_dequeue_none)
     # put the type
     res = client.put(ADM_CTRL_TYPE, json=adm_type_good)
     assert res.status_code == 201
@@ -148,7 +143,6 @@ def test_workflow(client, monkeypatch, adm_type_good, adm_instance_good):
     assert res.json == [20000]
 
     # instance 200 but empty list
-    monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue_none)
     res = client.get(ADM_CTRL_POLICIES)
     assert res.status_code == 200
     assert res.json == []
@@ -161,8 +155,6 @@ def test_workflow(client, monkeypatch, adm_type_good, adm_instance_good):
 
     # create a good instance
     _test_put_patch(monkeypatch)
-    # assert that rmr bad states don't cause problems
-    monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(10))
     res = client.put(ADM_CTRL_INSTANCE, json=adm_instance_good)
     assert res.status_code == 202
 
@@ -186,12 +178,13 @@ def test_workflow(client, monkeypatch, adm_type_good, adm_instance_good):
         assert res.status_code == 200
         assert res.get_data(as_text=True) == expected
 
-    # try a status get but pretend we didn't get any ACKs yet to test NOT IN EFFECT
-    monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue_none)
+    # try a status get but we didn't get any ACKs yet to test NOT IN EFFECT
+    time.sleep(1)  # wait for the rmr thread
     get_instance_good("NOT IN EFFECT")
 
     # now pretend we did get a good ACK
-    monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue)
+    monkeypatch.setattr("rmr.helpers.rmr_rcvall_msgs", _fake_dequeue)
+    time.sleep(1)  # wait for the rmr thread
     get_instance_good("IN EFFECT")
 
     # cant delete type until there are no instances
@@ -205,11 +198,13 @@ def test_workflow(client, monkeypatch, adm_type_good, adm_instance_good):
     assert res.status_code == 202
 
     # status after a delete, but there are no messages yet, should still return
-    monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue)
+    monkeypatch.setattr("rmr.helpers.rmr_rcvall_msgs", _fake_dequeue)
+    time.sleep(1)  # wait for the rmr thread
     get_instance_good("IN EFFECT")
 
     # now pretend we deleted successfully
-    monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue_deleted)
+    monkeypatch.setattr("rmr.helpers.rmr_rcvall_msgs", _fake_dequeue_deleted)
+    time.sleep(1)  # wait for the rmr thread
     res = client.get(ADM_CTRL_INSTANCE_STATUS)  # cant get status
     assert res.status_code == 404
     res = client.get(ADM_CTRL_INSTANCE)  # cant get instance
@@ -253,7 +248,8 @@ def test_bad_instances(client, monkeypatch, adm_type_good):
     assert res.status_code == 404
 
     # get a non existent instance
-    monkeypatch.setattr("a1.a1rmr.dequeue_all_waiting_messages", _fake_dequeue)
+    monkeypatch.setattr("rmr.helpers.rmr_rcvall_msgs", _fake_dequeue)
+    time.sleep(1)
     res = client.get(ADM_CTRL_INSTANCE + "DARKNESS")
     assert res.status_code == 404
 
@@ -278,3 +274,8 @@ def test_healthcheck(client):
     """
     res = client.get("/a1-p/healthcheck")
     assert res.status_code == 200
+
+
+def teardown_module():
+    """module teardown"""
+    RMR_THREAD.stop()

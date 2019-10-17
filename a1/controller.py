@@ -35,11 +35,9 @@ def _try_func_return(func):
     """
     try:
         return func()
-    except (ValidationError, exceptions.PolicyTypeAlreadyExists, exceptions.CantDeleteNonEmptyType) as exc:
-        logger.exception(exc)
+    except (ValidationError, exceptions.PolicyTypeAlreadyExists, exceptions.CantDeleteNonEmptyType):
         return "", 400
-    except (exceptions.PolicyTypeNotFound, exceptions.PolicyInstanceNotFound) as exc:
-        logger.exception(exc)
+    except (exceptions.PolicyTypeNotFound, exceptions.PolicyInstanceNotFound):
         return "", 404
     except BaseException as exc:
         # catch all, should never happen...
@@ -170,7 +168,7 @@ def create_or_replace_policy_instance(policy_type_id, policy_instance_id):
 
         # send rmr (best effort)
         body = _gen_body_to_handler("CREATE", policy_type_id, policy_instance_id, payload=instance)
-        a1rmr.send(json.dumps(body), message_type=policy_type_id)
+        a1rmr.queue_work({"payload": json.dumps(body), "msg type": policy_type_id})
 
         return "", 202
 
@@ -190,7 +188,7 @@ def delete_policy_instance(policy_type_id, policy_instance_id):
 
         # send rmr (best effort)
         body = _gen_body_to_handler("DELETE", policy_type_id, policy_instance_id)
-        a1rmr.send(json.dumps(body), message_type=policy_type_id)
+        a1rmr.queue_work({"payload": json.dumps(body), "msg type": policy_type_id})
 
         return "", 202
 

@@ -23,11 +23,9 @@ Hopefully, the access functions are a good api so nothing else has to change whe
 For now, the database is in memory.
 We use dict data structures (KV) with the expectation of having to move this into Redis
 """
-import json
 import msgpack
 from a1.exceptions import PolicyTypeNotFound, PolicyInstanceNotFound, PolicyTypeAlreadyExists, CantDeleteNonEmptyType
 from a1 import get_module_logger
-from a1 import a1rmr
 
 logger = get_module_logger(__name__)
 
@@ -132,36 +130,9 @@ def _clear_handlers(policy_type_id, policy_instance_id):
 
 def _clean_up_type(policy_type_id):
     """
-    pop through a1s mailbox, updating a1s db of all policy statuses
     for all instances of type, see if it can be deleted
     """
     type_is_valid(policy_type_id)
-    for msg in a1rmr.dequeue_all_waiting_messages([21024]):
-        # try to parse the messages as responses. Drop those that are malformed
-        pay = json.loads(msg["payload"])
-        if "policy_type_id" in pay and "policy_instance_id" in pay and "handler_id" in pay and "status" in pay:
-            # We don't use the parameters "policy_type_id, policy_instance" from above here,
-            # because we are popping the whole mailbox, which might include other statuses
-            pti = pay["policy_type_id"]
-            pii = pay["policy_instance_id"]
-
-            try:
-                """
-                can't raise an exception here e.g.:
-                because this is called on many functions; just drop bad status messages.
-                We def don't want bad messages that happen to hit a1s mailbox to blow up anything
-
-                """
-                type_is_valid(pti)
-                instance_is_valid(pti, pii)
-                SDL.set(_generate_handler_key(pti, pii, pay["handler_id"]), pay["status"])
-            except (PolicyTypeNotFound, PolicyInstanceNotFound):
-                pass
-
-        else:
-            logger.debug("Dropping message")
-            logger.debug(pay)
-
     for policy_instance_id in _get_instance_list(policy_type_id):
         # see if we can delete
         vector = _get_statuses(policy_type_id, policy_instance_id)
@@ -286,3 +257,16 @@ def get_instance_list(policy_type_id):
     """
     _clean_up_type(policy_type_id)
     return _get_instance_list(policy_type_id)
+
+
+# Statuses
+
+
+def set_status(policy_type_id, policy_instance_id, handler_id, status):
+    """
+    update the database status for a handler
+    called from a1's rmr thread
+    """
+    type_is_valid(policy_type_id)
+    instance_is_valid(policy_type_id, policy_instance_id)
+    SDL.set(_generate_handler_key(policy_type_id, policy_instance_id, handler_id), status)
