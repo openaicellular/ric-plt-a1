@@ -43,17 +43,26 @@ This project follows semver. When changes are made, the versions are in:
 
 7) in the it/dep repo that contains a1 helm chart, ``values.yaml``, ``Chart.yml``
 
-Version bumping rmr-python
-==========================
-rmr-python is a critial dependency of A1. Bumping the rmr version dependency requires changes in:
 
-1) ``setup.py``
+Version bumping rmr
+====================
+rmr is a critical dependency of A1. Bumping the rmr version dependency requires changes in:
 
-2) ``Dockerfile``
+1) ``Dockerfile``
+
+2) ``Dockerfile-Unit-Test``
 
 3) ``integration_tests/Dockerfile``
 
+rmr-python is the python binding to rmr . Installing rmr per the above does not install it.
+Bumping the rmr python version dependency requires changes in:
+
+1) ``setup.py``
+
+2) ``integration_tests/Dockerfile``
+
 Run the integration tests after attempting this.
+
 
 Unit Testing
 ============
@@ -152,7 +161,7 @@ several env variables as follows:
    set -x LD_LIBRARY_PATH /usr/local/lib/; set -x RMR_SEED_RT /opt/route/local.rt ; set -x TEST_RCV_PORT 4563; set -x TEST_RCV_RETURN_MINT 10001; set -x TEST_RCV_SEC_DELAY 5; set -x TEST_RCV_RETURN_PAYLOAD '{"ACK_FROM": "DELAYED_TEST", "status": "SUCCESS"}' ; python receiver.py
 
 To test the async nature of A1, trigger a call to ``test_policy``, which
-will target the delayed receicer, then immediately call
+will target the delayed receiver, then immediately call
 ``control_admission``. The ``control_admission`` policy return should be
 returned immediately, whereas the ``test_policy`` should return after
 about ``TEST_RCV_SEC_DELAY 5``. The ``test_policy`` should not block A1

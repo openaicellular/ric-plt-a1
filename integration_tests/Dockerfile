@@ -17,7 +17,7 @@
 # install a well known working rmr
 FROM python:3.7-alpine
 RUN apk update && apk add autoconf automake build-base cmake libtool ninja pkgconfig git
-RUN git clone --branch 1.9.0 https://gerrit.o-ran-sc.org/r/ric-plt/lib/rmr \
+RUN git clone --branch 1.10.1 https://gerrit.o-ran-sc.org/r/ric-plt/lib/rmr \
     && cd rmr \
     && mkdir build \
     && cd build \
@@ -34,7 +34,7 @@ COPY receiver.py /
 
 # Install RMr python bindings
 RUN pip install --upgrade pip
-RUN pip install rmr==0.13.2
+RUN pip install rmr==0.13.5
 
 # rmr setups
 RUN mkdir -p /opt/route/

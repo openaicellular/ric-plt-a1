@@ -189,6 +189,7 @@ stages:
 
   # DELETE the instance and make sure subsequent GETs return properly
   - name: delete the instance
+    delay_after: 3 # give it a few seconds for rmr
     request:
       url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy
       method: DELETE
@@ -204,7 +205,6 @@ stages:
       body: []
 
   - name: cant get instance status
-    delay_before: 3 # give it a few seconds for rmr
     request:
       url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy/status
       method: GET

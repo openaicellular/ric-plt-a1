@@ -128,39 +128,6 @@ def _clear_handlers(policy_type_id, policy_instance_id):
         SDL.delete(k)
 
 
-def _clean_up_type(policy_type_id):
-    """
-    for all instances of type, see if it can be deleted
-    """
-    type_is_valid(policy_type_id)
-    for policy_instance_id in _get_instance_list(policy_type_id):
-        # see if we can delete
-        vector = _get_statuses(policy_type_id, policy_instance_id)
-
-        """
-        TODO: not being able to delete if the list is [] is prolematic.
-        There are cases, such as a bad routing file, where this type will never be able to be deleted because it never went to any xapps
-        However, A1 cannot distinguish between the case where [] was never going to work, and the case where it hasn't worked *yet*
-
-        However, removing this constraint also leads to problems.
-        Deleting the instance when the vector is empty, for example doing so “shortly after” the PUT, can lead to a worse race condition where the xapps get the policy after that, implement it, but because the DELETE triggered “too soon”, you can never get the status or do the delete on it again, so the xapps are all implementing the instance roguely.
-
-        This requires some thought to address.
-        For now we stick with the "less bad problem".
-        """
-        if vector != []:
-            all_deleted = True
-            for i in vector:
-                if i != "DELETED":
-                    all_deleted = False
-                    break  # have at least one not DELETED, do nothing
-
-            # blow away from a1 db
-            if all_deleted:
-                _clear_handlers(policy_type_id, policy_instance_id)  # delete all the handlers
-                SDL.delete(_generate_instance_key(policy_type_id, policy_instance_id))  # delete instance
-
-
 # Types
 
 
@@ -238,7 +205,6 @@ def get_policy_instance(policy_type_id, policy_instance_id):
     """
     Retrieve a policy instance
     """
-    _clean_up_type(policy_type_id)
     instance_is_valid(policy_type_id, policy_instance_id)
     return SDL.get(_generate_instance_key(policy_type_id, policy_instance_id))
 
@@ -247,7 +213,6 @@ def get_policy_instance_statuses(policy_type_id, policy_instance_id):
     """
     Retrieve the status vector for a policy instance
     """
-    _clean_up_type(policy_type_id)
     return _get_statuses(policy_type_id, policy_instance_id)
 
 
@@ -255,7 +220,6 @@ def get_instance_list(policy_type_id):
     """
     retrieve all instance ids for a type
     """
-    _clean_up_type(policy_type_id)
     return _get_instance_list(policy_type_id)
 
 
@@ -270,3 +234,37 @@ def set_status(policy_type_id, policy_instance_id, handler_id, status):
     type_is_valid(policy_type_id)
     instance_is_valid(policy_type_id, policy_instance_id)
     SDL.set(_generate_handler_key(policy_type_id, policy_instance_id, handler_id), status)
+
+
+def clean_up_instance(policy_type_id, policy_instance_id):
+    """
+    see if we can delete an instance based on it's status
+    """
+    type_is_valid(policy_type_id)
+    instance_is_valid(policy_type_id, policy_instance_id)
+
+    """
+    TODO: not being able to delete if the list is [] is prolematic.
+    There are cases, such as a bad routing file, where this type will never be able to be deleted because it never went to any xapps
+    However, A1 cannot distinguish between the case where [] was never going to work, and the case where it hasn't worked *yet*
+
+    However, removing this constraint also leads to problems.
+    Deleting the instance when the vector is empty, for example doing so “shortly after” the PUT, can lead to a worse race condition where the xapps get the policy after that, implement it, but because the DELETE triggered “too soon”, you can never get the status or do the delete on it again, so the xapps are all implementing the instance roguely.
+
+    This requires some thought to address.
+    For now we stick with the "less bad problem".
+    """
+
+    vector = _get_statuses(policy_type_id, policy_instance_id)
+    if vector != []:
+        all_deleted = True
+        for i in vector:
+            if i != "DELETED":
+                all_deleted = False
+                break  # have at least one not DELETED, do nothing
+
+        # blow away from a1 db
+        if all_deleted:
+            _clear_handlers(policy_type_id, policy_instance_id)  # delete all the handlers
+            SDL.delete(_generate_instance_key(policy_type_id, policy_instance_id))  # delete instance
+            logger.debug("type %s instance %s deleted", policy_type_id, policy_instance_id)
