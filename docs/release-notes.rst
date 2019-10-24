@@ -29,6 +29,16 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
     * Represents a resillent version of 1.0.0 that uses Redis for persistence
 
+[1.0.4]
+
+::
+
+    * Only external change here is to healthcheck the rmr thread as part of a1s healthcheck. k8s will now respin a1 if that is failing.
+    * Refactors (simplifies) how we wait for rmr initialization; it is now called as part of __init__
+    * Refactors (simplifies) how the thread is actually launched; it is now internal to the object and also a part of __init__
+    * Cleans up unit testing; a1rmr now exposes a replace_rcv_func; useful for unit testing, harmless if not called otherwise
+    * Upgrades to rmr-python 1.0.0 for simpler message allocation
+
 [1.0.3] - 10/22/2019
 
 ::

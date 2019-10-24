@@ -1,3 +1,6 @@
+"""
+a1s rmr functionality
+"""
 # ==================================================================================
 #       Copyright (c) 2019 Nokia
 #       Copyright (c) 2018-2019 AT&T Intellectual Property.
@@ -29,124 +32,73 @@ logger = get_module_logger(__name__)
 
 RETRY_TIMES = int(os.environ.get("RMR_RETRY_TIMES", 4))
 
-_SEND_QUEUE = queue.Queue()  # thread safe queue https://docs.python.org/3/library/queue.html
+# Note; yes, globals are bad, but this is a private (to this module) global
+# No other module can import/access this (well, python doesn't enforce this, but all linters will complain)
+__RMR_LOOP__ = None
 
 
-def _init_rmr():
+class _RmrLoop:
     """
-    init an rmr context
-    This gets monkeypatched out for unit testing
-    """
-    # rmr.RMRFL_MTCALL puts RMR into a multithreaded mode, where a receiving thread populates an
-    # internal ring of messages, and receive calls read from that
-    # currently the size is 2048 messages, so this is fine for the foreseeable future
-    logger.debug("Waiting for rmr to initialize..")
-    mrc = rmr.rmr_init(b"4562", rmr.RMR_MAX_RCV_BYTES, rmr.RMRFL_MTCALL)
-    while rmr.rmr_ready(mrc) == 0:
-        time.sleep(0.5)
-
-    return mrc
-
-
-def _send(mrc, payload, message_type=0):
-    """
-    Sends a message up to RETRY_TIMES
-    If the message is sent successfully, it returns the transactionid
-    Does nothing otherwise
-    """
-    # TODO: investigate moving this below and allocating the space based on the payload size
-    sbuf = rmr.rmr_alloc_msg(mrc, 4096)
-    payload = payload if isinstance(payload, bytes) else payload.encode("utf-8")
-
-    # retry RETRY_TIMES to send the message
-    for _ in range(0, RETRY_TIMES):
-        # setup the send message
-        rmr.set_payload_and_length(payload, sbuf)
-        rmr.generate_and_set_transaction_id(sbuf)
-        sbuf.contents.state = 0
-        sbuf.contents.mtype = message_type
-        pre_send_summary = rmr.message_summary(sbuf)
-        logger.debug("Pre message send summary: %s", pre_send_summary)
-        transaction_id = pre_send_summary["transaction id"]  # save the transactionid because we need it later
-
-        # send
-        sbuf = rmr.rmr_send_msg(mrc, sbuf)
-        post_send_summary = rmr.message_summary(sbuf)
-        logger.debug("Post message send summary: %s", rmr.message_summary(sbuf))
-
-        # check success or failure
-        if post_send_summary["message state"] == 0 and post_send_summary["message status"] == "RMR_OK":
-            # we are good
-            logger.debug("Message sent successfully!")
-            rmr.rmr_free_msg(sbuf)
-            return transaction_id
-
-    # we failed all RETRY_TIMES
-    logger.debug("Send failed all %s times, stopping", RETRY_TIMES)
-    rmr.rmr_free_msg(sbuf)
-    return None
-
-
-# Public
-
-
-def queue_work(item):
-    """
-    push an item into the work queue
-    currently the only type of work is to send out messages
-    """
-    _SEND_QUEUE.put(item)
-
-
-class RmrLoop:
-    """
-    class represents an rmr loop meant to be called as a longstanding separate thread
+    class represents an rmr loop that constantly reads from rmr and performs operations based on waiting messages
+    this launches a thread, it should probably only be called once; the public facing method to access these ensures this
     """
 
-    def __init__(self, _init_func_override=None, rcv_func_override=None):
-        self._rmr_is_ready = False
-        self._keep_going = True
-        self._init_func_override = _init_func_override  # useful for unit testing
-        self._rcv_func_override = rcv_func_override  # useful for unit testing to mock certain recieve scenarios
-        self._rcv_func = None
+    def __init__(self, init_func_override=None, rcv_func_override=None):
+        self.keep_going = True
+        self.rcv_func = None
+        self.last_ran = time.time()
+        self.work_queue = queue.Queue()  # thread safe queue https://docs.python.org/3/library/queue.html
 
-    def rmr_is_ready(self):
-        """returns whether rmr has been initialized"""
-        return self._rmr_is_ready
+        # intialize rmr context
+        if init_func_override:
+            self.mrc = init_func_override()
+        else:
+            logger.debug("Waiting for rmr to initialize..")
+            # rmr.RMRFL_MTCALL puts RMR into a multithreaded mode, where a receiving thread populates an
+            # internal ring of messages, and receive calls read from that
+            # currently the size is 2048 messages, so this is fine for the foreseeable future
+            self.mrc = rmr.rmr_init(b"4562", rmr.RMR_MAX_RCV_BYTES, rmr.RMRFL_MTCALL)
+            while rmr.rmr_ready(self.mrc) == 0:
+                time.sleep(0.5)
 
-    def stop(self):
-        """sets a flag for the loop to end"""
-        self._keep_going = False
+        # set the receive function
+        self.rcv_func = rcv_func_override if rcv_func_override else lambda: helpers.rmr_rcvall_msgs(self.mrc, [21024])
+
+        # start the work loop
+        self.thread = Thread(target=self.loop)
+        self.thread.start()
 
     def loop(self):
         """
-        This loop runs in an a1 thread forever, and has 3 jobs:
+        This loop runs forever, and has 3 jobs:
         - send out any messages that have to go out (create instance, delete instance)
         - read a1s mailbox and update the status of all instances based on acks from downstream policy handlers
         - clean up the database (eg delete the instance) under certain conditions based on those statuses (NOT DONE YET)
         """
-
-        # get a context
-        mrc = self._init_func_override() if self._init_func_override else _init_rmr()
-        self._rmr_is_ready = True
-        logger.debug("Rmr is ready")
-
-        # set the receive function called below
-        self._rcv_func = (
-            self._rcv_func_override if self._rcv_func_override else lambda: helpers.rmr_rcvall_msgs(mrc, [21024])
-        )
-
         # loop forever
         logger.debug("Work loop starting")
-        while self._keep_going:
+        while self.keep_going:
+
             # send out all messages waiting for us
-            while not _SEND_QUEUE.empty():
-                work_item = _SEND_QUEUE.get(block=False, timeout=None)
-                _send(mrc, payload=work_item["payload"], message_type=work_item["msg type"])
+            while not self.work_queue.empty():
+                work_item = self.work_queue.get(block=False, timeout=None)
+
+                pay = work_item["payload"].encode("utf-8")
+                for _ in range(0, RETRY_TIMES):
+                    # Waiting on an rmr bugfix regarding the over-allocation: https://rancodev.atlassian.net/browse/RICPLT-2490
+                    sbuf = rmr.rmr_alloc_msg(self.mrc, 4096, pay, True, work_item["msg type"])
+                    pre_send_summary = rmr.message_summary(sbuf)
+                    sbuf = rmr.rmr_send_msg(self.mrc, sbuf)  # send
+                    post_send_summary = rmr.message_summary(sbuf)
+                    logger.debug("Pre-send summary: %s, Post-send summary: %s", pre_send_summary, post_send_summary)
+                    rmr.rmr_free_msg(sbuf)  # free
+                    if post_send_summary["message state"] == 0 and post_send_summary["message status"] == "RMR_OK":
+                        logger.debug("Message sent successfully!")
+                        break
 
             # read our mailbox and update statuses
             updated_instances = set()
-            for msg in self._rcv_func():
+            for msg in self.rcv_func():
                 try:
                     pay = json.loads(msg["payload"])
                     pti = pay["policy_type_id"]
@@ -162,18 +114,47 @@ class RmrLoop:
             for ut in updated_instances:
                 data.clean_up_instance(ut[0], ut[1])
 
-        # TODO: what's a reasonable sleep time? we don't want to hammer redis too much, and a1 isn't a real time component
-        time.sleep(1)
+            # TODO: what's a reasonable sleep time? we don't want to hammer redis too much, and a1 isn't a real time component
+            self.last_ran = time.time()
+            time.sleep(1)
+
+
+# Public
 
 
 def start_rmr_thread(init_func_override=None, rcv_func_override=None):
     """
     Start a1s rmr thread
-    Also called during unit testing
     """
-    rmr_loop = RmrLoop(init_func_override, rcv_func_override)
-    thread = Thread(target=rmr_loop.loop)
-    thread.start()
-    while not rmr_loop.rmr_is_ready():
-        time.sleep(0.5)
-    return rmr_loop  # return the handle; useful during unit testing
+    global __RMR_LOOP__
+    if __RMR_LOOP__ is None:
+        __RMR_LOOP__ = _RmrLoop(init_func_override, rcv_func_override)
+
+
+def stop_rmr_thread():
+    """
+    stops the rmr thread
+    """
+    __RMR_LOOP__.keep_going = False
+
+
+def queue_work(item):
+    """
+    push an item into the work queue
+    currently the only type of work is to send out messages
+    """
+    __RMR_LOOP__.work_queue.put(item)
+
+
+def healthcheck_rmr_thread(seconds=30):
+    """
+    returns a boolean representing whether the rmr loop is healthy, by checking two attributes:
+    1. is it running?,
+    2. is it stuck in a long (> seconds) loop?
+    """
+    return __RMR_LOOP__.thread.is_alive() and ((time.time() - __RMR_LOOP__.last_ran) < seconds)
+
+
+def replace_rcv_func(rcv_func):
+    """purely for the ease of unit testing to test different rcv scenarios"""
+    __RMR_LOOP__.rcv_func = rcv_func

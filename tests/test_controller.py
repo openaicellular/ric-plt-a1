@@ -77,7 +77,7 @@ def _test_put_patch(monkeypatch):
     monkeypatch.setattr("rmr.rmr.rmr_free_msg", noop)
 
     # we need to repatch alloc (already patched in patch_rmr) to fix the transactionid, alloc is called in send and recieve
-    def fake_alloc(_unused, _alsounused):
+    def fake_alloc(_unused1, _unused2, _unused3, _unused4, _unused5):
         sbuf = rmr_mocks.Rmr_mbuf_t()
         sbuf.contents.xaction = b"d49b53e478b711e9a1130242ac110002"
         return sbuf
@@ -94,18 +94,14 @@ def _test_put_patch(monkeypatch):
 # Module level Hack
 
 
-RMR_THREAD = None
-
-
 def setup_module():
     """module level setup"""
-    global RMR_THREAD
 
     def noop():
         pass
 
     # launch the thread with a fake init func and a patched rcv func; we will "repatch" later
-    RMR_THREAD = a1rmr.start_rmr_thread(init_func_override=noop, rcv_func_override=_fake_dequeue_none)
+    a1rmr.start_rmr_thread(init_func_override=noop, rcv_func_override=_fake_dequeue_none)
 
 
 # Actual Tests
@@ -188,7 +184,7 @@ def test_workflow(client, monkeypatch, adm_type_good, adm_instance_good):
     get_instance_good("NOT IN EFFECT")
 
     # now pretend we did get a good ACK
-    RMR_THREAD._rcv_func = _fake_dequeue
+    a1rmr.replace_rcv_func(_fake_dequeue)
     time.sleep(1)  # wait for the rmr thread
     get_instance_good("IN EFFECT")
 
@@ -207,7 +203,7 @@ def test_workflow(client, monkeypatch, adm_type_good, adm_instance_good):
     get_instance_good("IN EFFECT")
 
     # now pretend we deleted successfully
-    RMR_THREAD._rcv_func = _fake_dequeue_deleted
+    a1rmr.replace_rcv_func(_fake_dequeue_deleted)
     time.sleep(1)  # wait for the rmr thread
     # list still 200 but no instance
     res = client.get(ADM_CTRL_POLICIES)
@@ -251,7 +247,7 @@ def test_bad_instances(client, monkeypatch, adm_type_good):
     assert res.status_code == 404
 
     # get a non existent instance
-    RMR_THREAD._rcv_func = _fake_dequeue
+    a1rmr.replace_rcv_func(_fake_dequeue)
     time.sleep(1)
     res = client.get(ADM_CTRL_INSTANCE + "DARKNESS")
     assert res.status_code == 404
@@ -261,7 +257,7 @@ def test_bad_instances(client, monkeypatch, adm_type_good):
     assert res.status_code == 204
 
 
-def test_illegal_types(client, monkeypatch, adm_type_good):
+def test_illegal_types(client, adm_type_good):
     """
     Test illegal types
     """
@@ -281,4 +277,4 @@ def test_healthcheck(client):
 
 def teardown_module():
     """module teardown"""
-    RMR_THREAD.stop()
+    a1rmr.stop_rmr_thread()

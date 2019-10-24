@@ -63,9 +63,14 @@ def _gen_body_to_handler(operation, policy_type_id, policy_instance_id, payload=
 def get_healthcheck():
     """
     Handles healthcheck GET
-    Currently, this basically checks the server is alive
+    Currently, this checks:
+    1. whether the a1 webserver is up (if it isn't, this won't even be called, so even entering this function confirms it is)
+    2. checks whether the rmr thread is running and has completed a loop recently
+    TODO: make "seconds" to pass in a configurable parameter?
     """
-    return "", 200
+    if a1rmr.healthcheck_rmr_thread():
+        return "", 200
+    return "rmr thread is unhealthy", 500
 
 
 # Policy types

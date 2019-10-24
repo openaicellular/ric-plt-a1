@@ -34,7 +34,7 @@ COPY receiver.py /
 
 # Install RMr python bindings
 RUN pip install --upgrade pip
-RUN pip install rmr==0.13.5
+RUN pip install rmr==1.0.0
 
 # rmr setups
 RUN mkdir -p /opt/route/
