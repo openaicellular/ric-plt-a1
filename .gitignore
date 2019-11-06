@@ -1,7 +1,11 @@
 *.log
 NOTES.txt
-docs/*
 rmr/*
+docs_and_diagrams/
+
+# documentation
+.tox
+docs/_build/
 
 .pytest_cache/
 xunit-results.xml

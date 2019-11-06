@@ -1,27 +1,18 @@
-.. ==================================================================================
-..       Copyright (c) 2019 Nokia
-..       Copyright (c) 2018-2019 AT&T Intellectual Property.
-..
-..   Licensed under the Apache License, Version 2.0 (the "License");
-..   you may not use this file except in compliance with the License.
-..   You may obtain a copy of the License at
-..
-..          http://www.apache.org/licenses/LICENSE-2.0
-..
-..   Unless required by applicable law or agreed to in writing, software
-..   distributed under the License is distributed on an "AS IS" BASIS,
-..   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-..   See the License for the specific language governing permissions and
-..   limitations under the License.
-.. ==================================================================================
+.. This work is licensed under a Creative Commons Attribution 4.0 International License.
+.. http://creativecommons.org/licenses/by/4.0
 
-A1 Mediator Release Notes
-=========================
+Release Notes
+===============
 
 All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <http://keepachangelog.com/>`__
 and this project adheres to `Semantic Versioning <http://semver.org/>`__.
+
+.. contents::
+   :depth: 3
+   :local:
+
 
 [1.x.x] - TBD
 
@@ -110,6 +101,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
 [0.12.1] - 9/20/2019
 ::
+
     * switch to rmr 1.8.1 to pick up a non blocking variant of rmr that deals with bad routing tables (no hanging connections / blocking calls)
     * improve test receiver to behave with this setup
     * add integration test for this case

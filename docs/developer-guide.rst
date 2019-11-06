@@ -1,25 +1,15 @@
-.. ==================================================================================
-..       Copyright (c) 2019 Nokia
-..       Copyright (c) 2018-2019 AT&T Intellectual Property.
-..
-..   Licensed under the Apache License, Version 2.0 (the "License");
-..   you may not use this file except in compliance with the License.
-..   You may obtain a copy of the License at
-..
-..          http://www.apache.org/licenses/LICENSE-2.0
-..
-..   Unless required by applicable law or agreed to in writing, software
-..   distributed under the License is distributed on an "AS IS" BASIS,
-..   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-..   See the License for the specific language governing permissions and
-..   limitations under the License.
-.. ==================================================================================
+.. This work is licensed under a Creative Commons Attribution 4.0 International License.
+.. http://creativecommons.org/licenses/by/4.0
 
-A1 Dev Guide
-============
+Developer-Guide
+===============
+
+.. contents::
+   :depth: 3
+   :local:
 
 Tech Stack
-==========
+----------
 
 -  OpenAPI3
 -  Connexion
@@ -27,7 +17,7 @@ Tech Stack
 -  Python3.7
 
 Version bumping
-===============
+---------------
 
 This project follows semver. When changes are made, the versions are in:
 
@@ -45,7 +35,7 @@ This project follows semver. When changes are made, the versions are in:
 
 
 Version bumping rmr
-====================
+--------------------
 rmr is a critical dependency of A1. Bumping the rmr version dependency requires changes in:
 
 1) ``Dockerfile``
@@ -65,7 +55,7 @@ Run the integration tests after attempting this.
 
 
 Unit Testing
-============
+------------
 Note,  before this will work, for the first time on the machine running the tests, run ``./install_deps.sh``. This is only needed once on the machine.
 Also, this requires the python packages ``tox`` and ``pytest``.
 
@@ -81,7 +71,7 @@ Alternatively, you can run the unit tests in Docker (this is somewhat less nice 
    docker build  --no-cache -t a1test:latest -f Dockerfile-Unit-Test
 
 Integration testing
-===================
+-------------------
 This tests A1’s external API with two test receivers. This depends on helm+k8s, meaning you cannot run this if this is not installed.
 
 Unlike the unit tests, however, this does not require rmr to be installed on the base system, as everything
@@ -116,7 +106,7 @@ Unless you're a core A1 developer, you should probably stop here. The below inst
 are for running A1 locally, without docker, and is much more involved (however useful when developing a1).
 
 Running locally
-===============
+---------------
 
 1. Before this will work, for the first time on that machine, run ``./install_deps.sh``
 
@@ -139,9 +129,9 @@ Running locally
 
    ::
 
-   sudo pip install -e .
-   set -x LD_LIBRARY_PATH /usr/local/lib/; set -x RMR_SEED_RT /opt/route/local.rt ; set -x RMR_RCV_RETRY_INTERVAL 500; set -x RMR_RETRY_TIMES 10;
-   /usr/bin/run.py
+     sudo pip install -e .
+     set -x LD_LIBRARY_PATH /usr/local/lib/; set -x RMR_SEED_RT /opt/route/local.rt ; set -x RMR_RCV_RETRY_INTERVAL 500; set -x RMR_RETRY_TIMES 10;
+     /usr/bin/run.py
 
 
 There are also two test receivers in ``integration_tests`` you can run locally.
