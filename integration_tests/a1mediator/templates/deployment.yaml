@@ -30,9 +30,13 @@ spec:
             value: {{ .Values.rmrservice.name }}
           - name: PYTHONUNBUFFERED
             value: "1"
-          - name: RMR_RETRY_TIMES
+          - name: A1_RMR_RETRY_TIMES
             value: "{{ .Values.rmr_timeout_config.rcv_retry_times }}"
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          - name: INSTANCE_DELETE_NO_RESP_TTL
+            value: "5"
+          - name: INSTANCE_DELETE_RESP_TTL
+            value: "10"
+          image: "a1:latest"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http

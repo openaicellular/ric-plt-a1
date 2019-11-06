@@ -44,4 +44,4 @@ COPY setup.py tox.ini /tmp/
 WORKDIR /tmp
 
 # Run the unit tests
-RUN tox
+RUN tox -e py37, flake8

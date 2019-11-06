@@ -16,7 +16,7 @@
 # ==================================================================================
 openapi: 3.0.0
 info:
-  version: 1.0.0
+  version: 1.1.0
   title: RIC A1
 paths:
   '/a1-p/healthcheck':
@@ -273,12 +273,21 @@ paths:
           description: >
             successfully retrieved the status
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                enum:
-                 - IN EFFECT
-                 - NOT IN EFFECT
+                type: object
+                properties:
+                  instance_status:
+                    type: string
+                    enum:
+                     - IN EFFECT
+                     - NOT IN EFFECT
+                  has_been_deleted:
+                    type: boolean
+                  created_at:
+                    type: string
+                    format: date-time
+
         '404':
           description: >
             there is no policy instance with this policy_instance_id or there is no policy type with this policy_type_id

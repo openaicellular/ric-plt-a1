@@ -23,11 +23,18 @@ Hopefully, the access functions are a good api so nothing else has to change whe
 For now, the database is in memory.
 We use dict data structures (KV) with the expectation of having to move this into Redis
 """
+import os
+import time
+from threading import Thread
 import msgpack
 from a1.exceptions import PolicyTypeNotFound, PolicyInstanceNotFound, PolicyTypeAlreadyExists, CantDeleteNonEmptyType
 from a1 import get_module_logger
 
 logger = get_module_logger(__name__)
+
+
+INSTANCE_DELETE_NO_RESP_TTL = int(os.environ.get("INSTANCE_DELETE_NO_RESP_TTL", 5))
+INSTANCE_DELETE_RESP_TTL = int(os.environ.get("INSTANCE_DELETE_RESP_TTL", 5))
 
 
 class SDLWrapper:
@@ -65,6 +72,7 @@ SDL = SDLWrapper()
 
 TYPE_PREFIX = "a1.policy_type."
 INSTANCE_PREFIX = "a1.policy_instance."
+METADATA_PREFIX = "a1.policy_inst_metadata."
 HANDLER_PREFIX = "a1.policy_handler."
 
 
@@ -85,6 +93,13 @@ def _generate_instance_key(policy_type_id, policy_instance_id):
     return "{0}{1}.{2}".format(INSTANCE_PREFIX, policy_type_id, policy_instance_id)
 
 
+def _generate_instance_metadata_key(policy_type_id, policy_instance_id):
+    """
+    generate a key for a policy instance metadata
+    """
+    return "{0}{1}.{2}".format(METADATA_PREFIX, policy_type_id, policy_instance_id)
+
+
 def _generate_handler_prefix(policy_type_id, policy_instance_id):
     """
     generate the prefix to a handler key
@@ -99,11 +114,28 @@ def _generate_handler_key(policy_type_id, policy_instance_id, handler_id):
     return "{0}{1}".format(_generate_handler_prefix(policy_type_id, policy_instance_id), handler_id)
 
 
+def _type_is_valid(policy_type_id):
+    """
+    check that a type is valid
+    """
+    if SDL.get(_generate_type_key(policy_type_id)) is None:
+        raise PolicyTypeNotFound()
+
+
+def _instance_is_valid(policy_type_id, policy_instance_id):
+    """
+    check that an instance is valid
+    """
+    _type_is_valid(policy_type_id)
+    if SDL.get(_generate_instance_key(policy_type_id, policy_instance_id)) is None:
+        raise PolicyInstanceNotFound
+
+
 def _get_statuses(policy_type_id, policy_instance_id):
     """
     shared helper to get statuses for an instance
     """
-    instance_is_valid(policy_type_id, policy_instance_id)
+    _instance_is_valid(policy_type_id, policy_instance_id)
     prefixes_for_handler = "{0}{1}.{2}.".format(HANDLER_PREFIX, policy_type_id, policy_instance_id)
     return list(SDL.find_and_get(prefixes_for_handler).values())
 
@@ -112,7 +144,7 @@ def _get_instance_list(policy_type_id):
     """
     shared helper to get instance list for a type
     """
-    type_is_valid(policy_type_id)
+    _type_is_valid(policy_type_id)
     prefixes_for_type = "{0}{1}.".format(INSTANCE_PREFIX, policy_type_id)
     instancekeys = SDL.find_and_get(prefixes_for_type).keys()
     return [k.split(prefixes_for_type)[1] for k in instancekeys]
@@ -128,6 +160,32 @@ def _clear_handlers(policy_type_id, policy_instance_id):
         SDL.delete(k)
 
 
+def _get_metadata(policy_type_id, policy_instance_id):
+    """
+    get instance metadata
+    """
+    _instance_is_valid(policy_type_id, policy_instance_id)
+    metadata_key = _generate_instance_metadata_key(policy_type_id, policy_instance_id)
+    return SDL.get(metadata_key)
+
+
+def _delete_after(policy_type_id, policy_instance_id, ttl):
+    """
+    this is a blocking function, must call this in a thread to not block!
+    waits ttl seconds, then deletes the instance
+    """
+    _instance_is_valid(policy_type_id, policy_instance_id)
+
+    time.sleep(ttl)
+
+    # ready to delete
+    _clear_handlers(policy_type_id, policy_instance_id)  # delete all the handlers
+    SDL.delete(_generate_instance_key(policy_type_id, policy_instance_id))  # delete instance
+    SDL.delete(_generate_instance_metadata_key(policy_type_id, policy_instance_id))  # delete instance metadata
+    logger.debug("type %s instance %s deleted", policy_type_id, policy_instance_id)
+    raise PolicyInstanceNotFound()
+
+
 # Types
 
 
@@ -138,14 +196,6 @@ def get_type_list():
     typekeys = SDL.find_and_get(TYPE_PREFIX).keys()
     # policy types are ints but they get butchered to strings in the KV
     return [int(k.split(TYPE_PREFIX)[1]) for k in typekeys]
-
-
-def type_is_valid(policy_type_id):
-    """
-    check that a type is valid
-    """
-    if SDL.get(_generate_type_key(policy_type_id)) is None:
-        raise PolicyTypeNotFound()
 
 
 def store_policy_type(policy_type_id, body):
@@ -173,47 +223,37 @@ def get_policy_type(policy_type_id):
     """
     retrieve a type
     """
-    type_is_valid(policy_type_id)
+    _type_is_valid(policy_type_id)
     return SDL.get(_generate_type_key(policy_type_id))
 
 
 # Instances
 
 
-def instance_is_valid(policy_type_id, policy_instance_id):
-    """
-    check that an instance is valid
-    """
-    type_is_valid(policy_type_id)
-    if SDL.get(_generate_instance_key(policy_type_id, policy_instance_id)) is None:
-        raise PolicyInstanceNotFound
-
-
 def store_policy_instance(policy_type_id, policy_instance_id, instance):
     """
     Store a policy instance
     """
-    type_is_valid(policy_type_id)
+    _type_is_valid(policy_type_id)
+    creation_timestamp = time.time()
+
+    # store the instance
     key = _generate_instance_key(policy_type_id, policy_instance_id)
     if SDL.get(key) is not None:
         # Reset the statuses because this is a new policy instance, even if it was overwritten
         _clear_handlers(policy_type_id, policy_instance_id)  # delete all the handlers
     SDL.set(key, instance)
 
+    metadata_key = _generate_instance_metadata_key(policy_type_id, policy_instance_id)
+    SDL.set(metadata_key, {"created_at": creation_timestamp, "has_been_deleted": False})
+
 
 def get_policy_instance(policy_type_id, policy_instance_id):
     """
     Retrieve a policy instance
     """
-    instance_is_valid(policy_type_id, policy_instance_id)
+    _instance_is_valid(policy_type_id, policy_instance_id)
     return SDL.get(_generate_instance_key(policy_type_id, policy_instance_id))
-
-
-def get_policy_instance_statuses(policy_type_id, policy_instance_id):
-    """
-    Retrieve the status vector for a policy instance
-    """
-    return _get_statuses(policy_type_id, policy_instance_id)
 
 
 def get_instance_list(policy_type_id):
@@ -223,48 +263,57 @@ def get_instance_list(policy_type_id):
     return _get_instance_list(policy_type_id)
 
 
+def delete_policy_instance(policy_type_id, policy_instance_id):
+    """
+    initially sets has_been_deleted
+    then launches a thread that waits until the relevent timer expires, and finally deletes the instance
+    """
+    _instance_is_valid(policy_type_id, policy_instance_id)
+
+    # set the metadata first
+    deleted_timestamp = time.time()
+    metadata_key = _generate_instance_metadata_key(policy_type_id, policy_instance_id)
+    existing_metadata = _get_metadata(policy_type_id, policy_instance_id)
+    SDL.set(
+        metadata_key,
+        {"created_at": existing_metadata["created_at"], "has_been_deleted": True, "deleted_at": deleted_timestamp},
+    )
+
+    # wait, then delete
+    vector = _get_statuses(policy_type_id, policy_instance_id)
+    if vector == []:
+        # handler is empty; we wait for t1 to expire then goodnight
+        clos = lambda: _delete_after(policy_type_id, policy_instance_id, INSTANCE_DELETE_NO_RESP_TTL)
+    else:
+        # handler is not empty, we wait max t1,t2 to expire then goodnight
+        clos = lambda: _delete_after(
+            policy_type_id, policy_instance_id, max(INSTANCE_DELETE_RESP_TTL, INSTANCE_DELETE_NO_RESP_TTL)
+        )
+    Thread(target=clos).start()
+
+
 # Statuses
 
 
-def set_status(policy_type_id, policy_instance_id, handler_id, status):
+def set_policy_instance_status(policy_type_id, policy_instance_id, handler_id, status):
     """
     update the database status for a handler
     called from a1's rmr thread
     """
-    type_is_valid(policy_type_id)
-    instance_is_valid(policy_type_id, policy_instance_id)
+    _type_is_valid(policy_type_id)
+    _instance_is_valid(policy_type_id, policy_instance_id)
     SDL.set(_generate_handler_key(policy_type_id, policy_instance_id, handler_id), status)
 
 
-def clean_up_instance(policy_type_id, policy_instance_id):
+def get_policy_instance_status(policy_type_id, policy_instance_id):
     """
-    see if we can delete an instance based on it's status
+    Gets the status of an instance
     """
-    type_is_valid(policy_type_id)
-    instance_is_valid(policy_type_id, policy_instance_id)
-
-    """
-    TODO: not being able to delete if the list is [] is prolematic.
-    There are cases, such as a bad routing file, where this type will never be able to be deleted because it never went to any xapps
-    However, A1 cannot distinguish between the case where [] was never going to work, and the case where it hasn't worked *yet*
-
-    However, removing this constraint also leads to problems.
-    Deleting the instance when the vector is empty, for example doing so “shortly after” the PUT, can lead to a worse race condition where the xapps get the policy after that, implement it, but because the DELETE triggered “too soon”, you can never get the status or do the delete on it again, so the xapps are all implementing the instance roguely.
-
-    This requires some thought to address.
-    For now we stick with the "less bad problem".
-    """
-
-    vector = _get_statuses(policy_type_id, policy_instance_id)
-    if vector != []:
-        all_deleted = True
-        for i in vector:
-            if i != "DELETED":
-                all_deleted = False
-                break  # have at least one not DELETED, do nothing
-
-        # blow away from a1 db
-        if all_deleted:
-            _clear_handlers(policy_type_id, policy_instance_id)  # delete all the handlers
-            SDL.delete(_generate_instance_key(policy_type_id, policy_instance_id))  # delete instance
-            logger.debug("type %s instance %s deleted", policy_type_id, policy_instance_id)
+    _instance_is_valid(policy_type_id, policy_instance_id)
+    metadata = _get_metadata(policy_type_id, policy_instance_id)
+    metadata["instance_status"] = "NOT IN EFFECT"
+    for i in _get_statuses(policy_type_id, policy_instance_id):
+        if i == "OK":
+            metadata["instance_status"] = "IN EFFECT"
+            break
+    return metadata

@@ -176,7 +176,9 @@ stages:
       method: GET
     response:
       status_code: 200
-      # tavern doesn't yet let you check string statuses!!!
+      body:
+        instance_status: "IN EFFECT"
+        has_been_deleted: False
 
   - name: instance list 200 and contains the instance
     request:
@@ -189,12 +191,24 @@ stages:
 
   # DELETE the instance and make sure subsequent GETs return properly
   - name: delete the instance
-    delay_after: 3 # give it a few seconds for rmr
+    delay_after: 4
     request:
       url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy
       method: DELETE
     response:
       status_code: 202
+
+  - name: status should now be not in effect but still there
+    delay_before: 3 # give it a few seconds for rmr
+    delay_after: 8 # 3 + 11 > 10; that is, wait until t2 expires
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy/status
+      method: GET
+    response:
+      status_code: 200
+      body:
+        instance_status: "NOT IN EFFECT"
+        has_been_deleted: True
 
   - name: instance list 200 but no instance
     request:
@@ -367,6 +381,16 @@ stages:
     response:
       status_code: 202
 
+  - name: test the delay status get, not in effect yet
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20001/policies/delaytest/status
+      method: GET
+    response:
+      status_code: 200
+      body:
+        instance_status: "NOT IN EFFECT"
+        has_been_deleted: False
+
   - name: test the delay policy get
     request:
       url: http://localhost:10000/a1-p/policytypes/20001/policies/delaytest
@@ -376,16 +400,6 @@ stages:
       body:
         test: foo
 
-  - name: test the delay status get
-    max_retries: 3
-    delay_before: 6  # give it a few seconds for rmr ; delay reciever sleeps for 5 seconds by default
-    request:
-      url: http://localhost:10000/a1-p/policytypes/20001/policies/delaytest/status
-      method: GET
-    response:
-      status_code: 200
-      # tavern doesn't let you check non json yet!
-
   - name: instance list 200 and there
     request:
       url: http://localhost:10000/a1-p/policytypes/20001/policies
@@ -394,6 +408,55 @@ stages:
       status_code: 200
       body:
        - delaytest
+
+  - name: test the delay status get
+    max_retries: 3
+    delay_before: 6  # give it a few seconds for rmr ; delay reciever sleeps for 5 seconds by default
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20001/policies/delaytest/status
+      method: GET
+    response:
+      status_code: 200
+      body:
+        instance_status: "IN EFFECT"
+        has_been_deleted: False
+
+  # DELETE the instance and make sure subsequent GETs return properly
+  - name: delete the instance
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20001/policies/delaytest
+      method: DELETE
+    response:
+      status_code: 202
+
+  - name: test the delay status get immediately
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20001/policies/delaytest/status
+      method: GET
+    response:
+      status_code: 200
+      body:
+        instance_status: "IN EFFECT"
+        has_been_deleted: True
+
+  - name: test the delay status get after delay but before timers
+    delay_before: 7
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20001/policies/delaytest/status
+      method: GET
+    response:
+      status_code: 200
+      body:
+        instance_status: "NOT IN EFFECT"
+        has_been_deleted: True
+
+  - name: test the delay status get after delay and after the timers
+    delay_before: 7
+    request:
+      url: http://localhost:10000/a1-p/policytypes/20001/policies/delaytest/status
+      method: GET
+    response:
+      status_code: 404
 
 ---
 
