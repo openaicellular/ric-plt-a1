@@ -35,6 +35,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
     * Changes the API for ../status to return a richer structure
     * Clean up unused items in the integration tests helm chart
     * Removed "RMR_RCV_RETRY_INTERVAL" leftovers since this isn't used anymore
+    * Uses the standard RIC logging library
 
 [1.0.4]
 -------

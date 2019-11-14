@@ -22,11 +22,11 @@ from flask import Response
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 import connexion
-from a1 import get_module_logger
+from mdclogpy import Logger
 from a1 import a1rmr, exceptions, data
 
 
-logger = get_module_logger(__name__)
+mdc_logger = Logger(name=__name__)
 
 
 def _try_func_return(func):
@@ -41,7 +41,7 @@ def _try_func_return(func):
         return "", 404
     except BaseException as exc:
         # catch all, should never happen...
-        logger.exception(exc)
+        mdc_logger.exception(exc)
         return Response(status=500)
 
 

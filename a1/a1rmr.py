@@ -23,11 +23,11 @@ import time
 import json
 from threading import Thread
 from rmr import rmr, helpers
-from a1 import get_module_logger
+from mdclogpy import Logger
 from a1 import data
 from a1.exceptions import PolicyTypeNotFound, PolicyInstanceNotFound
 
-logger = get_module_logger(__name__)
+mdc_logger = Logger(name=__name__)
 
 
 RETRY_TIMES = int(os.environ.get("A1_RMR_RETRY_TIMES", 4))
@@ -53,7 +53,7 @@ class _RmrLoop:
         if init_func_override:
             self.mrc = init_func_override()
         else:
-            logger.debug("Waiting for rmr to initialize..")
+            mdc_logger.debug("Waiting for rmr to initialize..")
             # rmr.RMRFL_MTCALL puts RMR into a multithreaded mode, where a receiving thread populates an
             # internal ring of messages, and receive calls read from that
             # currently the size is 2048 messages, so this is fine for the foreseeable future
@@ -76,7 +76,7 @@ class _RmrLoop:
         - clean up the database (eg delete the instance) under certain conditions based on those statuses (NOT DONE YET)
         """
         # loop forever
-        logger.debug("Work loop starting")
+        mdc_logger.debug("Work loop starting")
         while self.keep_going:
 
             # send out all messages waiting for us
@@ -90,10 +90,12 @@ class _RmrLoop:
                     pre_send_summary = rmr.message_summary(sbuf)
                     sbuf = rmr.rmr_send_msg(self.mrc, sbuf)  # send
                     post_send_summary = rmr.message_summary(sbuf)
-                    logger.debug("Pre-send summary: %s, Post-send summary: %s", pre_send_summary, post_send_summary)
+                    mdc_logger.debug(
+                        "Pre-send summary: {0}, Post-send summary: {1}".format(pre_send_summary, post_send_summary)
+                    )
                     rmr.rmr_free_msg(sbuf)  # free
                     if post_send_summary["message state"] == 0 and post_send_summary["message status"] == "RMR_OK":
-                        logger.debug("Message sent successfully!")
+                        mdc_logger.debug("Message sent successfully!")
                         break
 
             # read our mailbox and update statuses
@@ -103,9 +105,9 @@ class _RmrLoop:
                     pti = pay["policy_type_id"]
                     pii = pay["policy_instance_id"]
                     data.set_policy_instance_status(pti, pii, pay["handler_id"], pay["status"])
-                except (PolicyTypeNotFound, PolicyInstanceNotFound, KeyError, json.decoder.JSONDecodeError):
+                except (PolicyTypeNotFound, PolicyInstanceNotFound, KeyError, TypeError, json.decoder.JSONDecodeError):
                     # TODO: in the future we may also have to catch SDL errors
-                    logger.debug(("Dropping malformed or non applicable message", msg))
+                    mdc_logger.debug("Dropping malformed or non applicable message: {0}".format(msg))
 
             # TODO: what's a reasonable sleep time? we don't want to hammer redis too much, and a1 isn't a real time component
             self.last_ran = time.time()

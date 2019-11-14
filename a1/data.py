@@ -1,3 +1,11 @@
+"""
+Represents A1s database and database access functions.
+In the future, this may change to use a different backend, possibly dramatically.
+Hopefully, the access functions are a good api so nothing else has to change when this happens
+
+For now, the database is in memory.
+We use dict data structures (KV) with the expectation of having to move this into Redis
+"""
 # ==================================================================================
 #       Copyright (c) 2019 Nokia
 #       Copyright (c) 2018-2019 AT&T Intellectual Property.
@@ -14,23 +22,14 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
-
-"""
-Represents A1s database and database access functions.
-In the future, this may change to use a different backend, possibly dramatically.
-Hopefully, the access functions are a good api so nothing else has to change when this happens
-
-For now, the database is in memory.
-We use dict data structures (KV) with the expectation of having to move this into Redis
-"""
 import os
 import time
 from threading import Thread
 import msgpack
+from mdclogpy import Logger
 from a1.exceptions import PolicyTypeNotFound, PolicyInstanceNotFound, PolicyTypeAlreadyExists, CantDeleteNonEmptyType
-from a1 import get_module_logger
 
-logger = get_module_logger(__name__)
+mdc_logger = Logger(name=__name__)
 
 
 INSTANCE_DELETE_NO_RESP_TTL = int(os.environ.get("INSTANCE_DELETE_NO_RESP_TTL", 5))
@@ -182,8 +181,7 @@ def _delete_after(policy_type_id, policy_instance_id, ttl):
     _clear_handlers(policy_type_id, policy_instance_id)  # delete all the handlers
     SDL.delete(_generate_instance_key(policy_type_id, policy_instance_id))  # delete instance
     SDL.delete(_generate_instance_metadata_key(policy_type_id, policy_instance_id))  # delete instance metadata
-    logger.debug("type %s instance %s deleted", policy_type_id, policy_instance_id)
-    raise PolicyInstanceNotFound()
+    mdc_logger.debug("type {0} instance {1} deleted".format(policy_type_id, policy_instance_id))
 
 
 # Types

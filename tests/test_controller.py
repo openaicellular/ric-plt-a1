@@ -57,8 +57,10 @@ def _fake_dequeue_deleted():
     new_msgs.append(fake_msg)
 
     # insert a bad one with a malformed body to make sure we keep going
-    fake_msg = {"payload": "asdf"}
-    new_msgs.append(fake_msg)
+    new_msgs.append({"payload": "asdf"})
+
+    # not even a json
+    new_msgs.append("asdf")
 
     pay = b'{"policy_type_id": 20000, "policy_instance_id": "admission_control_policy", "handler_id": "test_receiver", "status": "DELETED"}'
     fake_msg = {"payload": pay}

@@ -1,3 +1,6 @@
+"""
+contains the app; broken out here for ease of unit testing
+"""
 # ==================================================================================
 #       Copyright (c) 2019 Nokia
 #       Copyright (c) 2018-2019 AT&T Intellectual Property.
@@ -14,23 +17,8 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
-import logging
 import connexion
 
 
-def get_module_logger(mod_name):
-    """
-    To use this, do logger = get_module_logger(__name__)
-    """
-    logger = logging.getLogger(mod_name)
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter(
-        '%(asctime)s [%(name)-12s] %(levelname)-8s %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(logging.DEBUG)
-    return logger
-
-
-app = connexion.App(__name__, specification_dir='.')
-app.add_api('openapi.yaml', arguments={'title': 'My Title'})
+app = connexion.App(__name__, specification_dir=".")
+app.add_api("openapi.yaml", arguments={"title": "My Title"})

@@ -18,20 +18,21 @@ A1 entrypoint
 #   limitations under the License.
 # ==================================================================================
 from gevent.pywsgi import WSGIServer
-from a1 import get_module_logger, app
+from mdclogpy import Logger
+from a1 import app
 from a1 import a1rmr
 
 
-logger = get_module_logger(__name__)
+mdc_logger = Logger(name=__name__)
 
 
 def main():
     """Entrypoint"""
     # start rmr thread
-    logger.debug("Initializing rmr thread. A1s webserver will not start until rmr initialization is complete.")
+    mdc_logger.debug("Initializing rmr thread. A1s webserver will not start until rmr initialization is complete.")
     a1rmr.start_rmr_thread()
 
     # start webserver
-    logger.debug("Starting gevent server")
+    mdc_logger.debug("Starting gevent server")
     http_server = WSGIServer(("", 10000), app)
     http_server.serve_forever()
