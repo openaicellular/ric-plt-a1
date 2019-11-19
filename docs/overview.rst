@@ -1,15 +1,18 @@
 .. This work is licensed under a Creative Commons Attribution 4.0 International License.
 .. SPDX-License-Identifier: CC-BY-4.0
 
+A1 Mediator
+===========
+
 API
-====
+---
 
 You can see the API (OpenAPI3 spec) at ``a1/openapi.yml``. You can also
 see the “pretty” version if you run the container at
 ``http://localhost:10000/ui/``.
 
 Policy Overview
-===============
+----------------
 There are two "object types" associated with policy: policy types and policy instances.
 
 Policy types define the name, description, and most importantly the schema of all instances of that type. Think of policy types as defining a JSON schema for the messages sent from A1 to xapps.
@@ -28,16 +31,16 @@ Xapps supporting A1
 
 
 Integrating Xapps with A1
-=========================
+-------------------------
 
 A1 to Xapps
------------
+~~~~~~~~~~~
 When A1 sends a message to xapps, the schema for messages from A1 to the xapp is defined here: https://gerrit.o-ran-sc.org/r/gitweb?p=ric-plt/a1.git;a=blob;f=a1/openapi.yaml;h=fed4b77546264cc8a390504dae725ca15060d81a;hb=97f5cc3e3d42e1525af61560d01c4a824b0b2ad9#l324
 
 All policy instance requests get sent from A1 using message type 20010
 
 Xapps to A1
------------
+~~~~~~~~~~~
 There are three scenarios in which Xapps are to send a message to A1:
 
 1. When an xapp receives a CREATE or UPDATE message for a policy instance. Xapps must respond to these requests by sending a message of type 20011 to A1. The schema for that message is here: https://gerrit.o-ran-sc.org/r/gitweb?p=ric-plt/a1.git;a=blob;f=a1/openapi.yaml;h=fed4b77546264cc8a390504dae725ca15060d81a;hb=97f5cc3e3d42e1525af61560d01c4a824b0b2ad9#l358

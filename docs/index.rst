@@ -10,8 +10,8 @@ Welcome to O-RAN SC A1 Documentation
 
    overview.rst
    developer-guide.rst
-   release-notes.rst
    installation-guide.rst
+   release-notes.rst
 ..
    user-guide.rst
    api-docs.rst
