@@ -15,12 +15,14 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
 
 [1.x.x] - TBD
+-------------
 
 ::
 
     * Represents a resillent version of 1.0.0 that uses Redis for persistence
 
-[1.0.4]
+[1.0.4] - 10/24/2019
+--------------------
 
 ::
 
@@ -31,6 +33,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
     * Upgrades to rmr-python 1.0.0 for simpler message allocation
 
 [1.0.3] - 10/22/2019
+--------------------
 
 ::
 
@@ -41,6 +44,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
     * Still an item left to do in this work; refactor the thread slightly to tie in a healthcheck with a1s healthcheck. We need k8s to restart a1 if that thread dies too.
 
 [1.0.2] - 10/17/2019
+--------------------
 
 ::
 
@@ -54,6 +58,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
     * Clean up some logging
 
 [1.0.1] - 10/15/2019
+--------------------
 
 ::
 
@@ -62,6 +67,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
 
 [1.0.0] - 10/7/2019
+-------------------
 
 ::
 
@@ -72,6 +78,8 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
 
 [0.14.1] - 10/2/2019
+--------------------
+
 ::
 
     * Upgrade rmr to 1.9.0
@@ -83,6 +91,8 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
 
 [0.14.0] - 10/1/2019
+--------------------
+
 ::
 
     * Implement instance delete
@@ -92,6 +102,8 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
     * Add rmr-version.yaml for CICD jobs
 
 [0.13.0] - 9/25/2019
+--------------------
+
 ::
 
     * Implement GET all policy type ids
@@ -100,6 +112,8 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
 
 [0.12.1] - 9/20/2019
+--------------------
+
 ::
 
     * switch to rmr 1.8.1 to pick up a non blocking variant of rmr that deals with bad routing tables (no hanging connections / blocking calls)
@@ -110,6 +124,8 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
 
 [0.12.0] - 9/19/2019
+--------------------
+
 ::
 
     * Implement type PUT
@@ -120,6 +136,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
     * lots more tests (unit and integration)
 
 [0.11.0] - 9/17/2019
+--------------------
 
 ::
 
@@ -133,6 +150,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
 
 [0.10.3] - 8/20/2019
+--------------------
 
 ::
 
@@ -142,12 +160,14 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
 
 [0.10.2] - 8/14/2019
+--------------------
 
 ::
 
     * Update to later rmr-python
 
 [0.10.1] - 8/9/2019
+-------------------
 
 ::
 
@@ -156,6 +176,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
 
 [0.10.0] - 7/30/2019
+--------------------
 
 ::
 
@@ -191,7 +212,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
 
 [0.8.2] - 6/5/2019
--------------------
+------------------
 
 ::
 
@@ -227,7 +248,6 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    * Restructures the integration tests to run as a single tox command
    * Re-ogranizes the README and splits out the Developers guide, which is not needed by users.
 
-.. _section-1:
 
 [0.7.1] - 5/23/2019
 -------------------
@@ -237,7 +257,6 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    * Adds a defense mechanism against A1 getting queue-overflowed with messages A1 doesnt care about; A1 now ignores all incoming messages it's not waiting for, so it's queue size should now always be "tiny", i.e., never exceeding the number of valid requests it's waiting for ACKs back for
    * Adds a test "bombarding" script that tests this
 
-.. _section-2:
 
 [0.7.0] - 5/22/19
 -----------------
@@ -252,7 +271,6 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    * Return a 400 if am xapp does not expect a body, but the PUT provides one
    * Adds a new test policy to the example RIC manifest and a new delayed receiver to test the aformentiond race condition
 
-.. _section-3:
 
 [0.6.0]
 -------
@@ -263,7 +281,6 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    * Fix bad api spec RE GET
    * Fix a (big) bug where transactionid wasn't being checked, which wouldn't have worked on sending two policies to the same downstream policy handler
 
-.. _section-4:
 
 [0.5.1] - 5/13/2019
 -------------------
@@ -273,7 +290,6 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    * Rip some testing structures out of here that should have been in rmr (those are now in rmr 0.9.0, upgrade to that)
    * Run Python BLACK for formatting
 
-.. _section-5:
 
 [0.5.0] - 5/10/2019
 -------------------
@@ -283,7 +299,6 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    * Fix a blocking execution bug by moving from rmr's timeout to a non blocking call + retry loop + asyncronous sleep
    * Changes the ENV RMR_RCV_TIMEOUT to RMR_RCV_RETRY_INTERVAL
 
-.. _section-6:
 
 [0.4.0] - 5/9.2019
 ------------------
@@ -295,7 +310,6 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    * Add a 502 with different reasons if the xapp replies but with a bad/malformed/missing status
    * Make testing much more modular, in anticipating of moving some unit test functionality into rmr itself
 
-.. _section-7:
 
 [0.3.4] - 5/8/2019
 ------------------
@@ -306,7 +320,6 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    * Add unit tests for utils
    * Add missing lic
 
-.. _section-8:
 
 [0.3.3]
 -------
@@ -317,7 +330,6 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    * Go from deb RMR installation to git
    * Remove obnoxious receiver logging
 
-.. _section-9:
 
 [0.3.2]
 -------
@@ -326,7 +338,6 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
    * Upgrade A1 to rmr 0.6.0
 
-.. _section-10:
 
 [0.3.1]
 -------
@@ -335,7 +346,6 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
    * Add license headers
 
-.. _section-11:
 
 [0.3.0]
 -------
@@ -347,7 +357,6 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    * Read the policyname to rmr type mapping from manifest
    * Do PUT payload validation based on the manifest
 
-.. _section-12:
 
 [0.2.0]
 -------
@@ -360,7 +369,6 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    * Update the OpenAPI
    * Include a test docker compose file
 
-.. _section-13:
 
 [0.1.0]
 -------

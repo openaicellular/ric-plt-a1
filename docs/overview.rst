@@ -4,6 +4,10 @@
 A1 Mediator
 ===========
 
+Code
+----
+https://gerrit.o-ran-sc.org/r/admin/repos/ric-plt/a1
+
 API
 ---
 
