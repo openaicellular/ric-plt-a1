@@ -17,7 +17,7 @@ test_name: test admission control
 stages:
   - name: type not there yet
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000
+      url: http://localhost:10000/a1-p/policytypes/6660666
       method: GET
     response:
       status_code: 404
@@ -32,19 +32,19 @@ stages:
 
   - name: instance list 404
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000/policies
+      url: http://localhost:10000/a1-p/policytypes/6660666/policies
       method: GET
     response:
       status_code: 404
 
   - name: put the type
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000
+      url: http://localhost:10000/a1-p/policytypes/6660666
       method: PUT
       json:
         name: Admission Control
         description: various parameters to control admission of dual connection
-        policy_type_id: 20000
+        policy_type_id: 6660666
         create_schema:
           "$schema": http://json-schema.org/draft-07/schema#
           type: object
@@ -80,7 +80,7 @@ stages:
 
   - name: type there now
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000
+      url: http://localhost:10000/a1-p/policytypes/6660666
       method: GET
     response:
       status_code: 200
@@ -91,11 +91,11 @@ stages:
       method: GET
     response:
       status_code: 200
-      body: [20000]
+      body: [6660666]
 
   - name: instance list 200 but empty
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000/policies
+      url: http://localhost:10000/a1-p/policytypes/6660666/policies
       method: GET
     response:
       status_code: 200
@@ -103,21 +103,21 @@ stages:
 
   - name: test the admission control policy get not there yet
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy
+      url: http://localhost:10000/a1-p/policytypes/6660666/policies/admission_control_policy
       method: GET
     response:
       status_code: 404
 
   - name: test the admission control policy status get not there yet
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy/status
+      url: http://localhost:10000/a1-p/policytypes/6660666/policies/admission_control_policy/status
       method: GET
     response:
       status_code: 404
 
   - name: bad body for admission control policy
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy
+      url: http://localhost:10000/a1-p/policytypes/6660666/policies/admission_control_policy
       method: PUT
       json:
         not: "expected"
@@ -128,7 +128,7 @@ stages:
 
   - name: not a json
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy
+      url: http://localhost:10000/a1-p/policytypes/6660666/policies/admission_control_policy
       method: PUT
       data: "asdf"
     response:
@@ -137,7 +137,7 @@ stages:
   # put it properly
   - name: put the admission control policy instance
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy
+      url: http://localhost:10000/a1-p/policytypes/6660666/policies/admission_control_policy
       method: PUT
       json:
         enforce: true
@@ -152,14 +152,14 @@ stages:
   - name: cant delete type with instances
     delay_before: 3  # wait for the type acks to come back first
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000
+      url: http://localhost:10000/a1-p/policytypes/6660666
       method: DELETE
     response:
       status_code: 400
 
   - name: test the admission control policy get
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy
+      url: http://localhost:10000/a1-p/policytypes/6660666/policies/admission_control_policy
       method: GET
     response:
       status_code: 200
@@ -172,7 +172,7 @@ stages:
   - name: test the admission control policy status get
     delay_before: 3 # give it a few seconds for rmr
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy/status
+      url: http://localhost:10000/a1-p/policytypes/6660666/policies/admission_control_policy/status
       method: GET
     response:
       status_code: 200
@@ -182,7 +182,7 @@ stages:
 
   - name: instance list 200 and contains the instance
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000/policies
+      url: http://localhost:10000/a1-p/policytypes/6660666/policies
       method: GET
     response:
       status_code: 200
@@ -193,7 +193,7 @@ stages:
   - name: delete the instance
     delay_after: 4
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy
+      url: http://localhost:10000/a1-p/policytypes/6660666/policies/admission_control_policy
       method: DELETE
     response:
       status_code: 202
@@ -202,7 +202,7 @@ stages:
     delay_before: 3 # give it a few seconds for rmr
     delay_after: 8 # 3 + 11 > 10; that is, wait until t2 expires
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy/status
+      url: http://localhost:10000/a1-p/policytypes/6660666/policies/admission_control_policy/status
       method: GET
     response:
       status_code: 200
@@ -212,7 +212,7 @@ stages:
 
   - name: instance list 200 but no instance
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000/policies
+      url: http://localhost:10000/a1-p/policytypes/6660666/policies
       method: GET
     response:
       status_code: 200
@@ -220,35 +220,35 @@ stages:
 
   - name: cant get instance status
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy/status
+      url: http://localhost:10000/a1-p/policytypes/6660666/policies/admission_control_policy/status
       method: GET
     response:
       status_code: 404
 
   - name: cant get instance
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000/policies/admission_control_policy
+      url: http://localhost:10000/a1-p/policytypes/6660666/policies/admission_control_policy
       method: GET
     response:
       status_code: 404
 
   - name: delete ac type
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000
+      url: http://localhost:10000/a1-p/policytypes/6660666
       method: DELETE
     response:
       status_code: 204
 
   - name: cant delete again
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000
+      url: http://localhost:10000/a1-p/policytypes/6660666
       method: DELETE
     response:
       status_code: 404
 
   - name: cant get
     request:
-      url: http://localhost:10000/a1-p/policytypes/20000
+      url: http://localhost:10000/a1-p/policytypes/6660666
       method: DELETE
     response:
       status_code: 404
@@ -525,12 +525,12 @@ stages:
 
   - name: bad int range 1
     request:
-      url: http://localhost:10000/a1-p/policytypes/19999
+      url: http://localhost:10000/a1-p/policytypes/0
       method: PUT
       json:
         name: test policy
         description: just for testing
-        policy_type_id: 19999
+        policy_type_id: 0
         create_schema:
           "$schema": http://json-schema.org/draft-07/schema#
           type: object
@@ -539,12 +539,12 @@ stages:
 
   - name: bad int range 2
     request:
-      url: http://localhost:10000/a1-p/policytypes/21024
+      url: http://localhost:10000/a1-p/policytypes/2147483648
       method: PUT
       json:
         name: test policy
         description: just for testing
-        policy_type_id: 21024
+        policy_type_id: 2147483648
         create_schema:
           "$schema": http://json-schema.org/draft-07/schema#
           type: object

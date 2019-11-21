@@ -32,6 +32,12 @@ mdc_logger = Logger(name=__name__)
 
 RETRY_TIMES = int(os.environ.get("A1_RMR_RETRY_TIMES", 4))
 
+
+A1_POLICY_REQUEST = 20010
+A1_POLICY_RESPONSE = 20011
+A1_POLICY_QUERY = 20012
+
+
 # Note; yes, globals are bad, but this is a private (to this module) global
 # No other module can import/access this (well, python doesn't enforce this, but all linters will complain)
 __RMR_LOOP__ = None
@@ -62,7 +68,10 @@ class _RmrLoop:
                 time.sleep(0.5)
 
         # set the receive function
-        self.rcv_func = rcv_func_override if rcv_func_override else lambda: helpers.rmr_rcvall_msgs(self.mrc, [21024])
+        # TODO: when policy query is implemented, add A1_POLICY_QUERY
+        self.rcv_func = (
+            rcv_func_override if rcv_func_override else lambda: helpers.rmr_rcvall_msgs(self.mrc, [A1_POLICY_RESPONSE])
+        )
 
         # start the work loop
         self.thread = Thread(target=self.loop)
@@ -86,7 +95,9 @@ class _RmrLoop:
                 pay = work_item["payload"].encode("utf-8")
                 for _ in range(0, RETRY_TIMES):
                     # Waiting on an rmr bugfix regarding the over-allocation: https://rancodev.atlassian.net/browse/RICPLT-2490
-                    sbuf = rmr.rmr_alloc_msg(self.mrc, 4096, pay, True, work_item["msg type"])
+                    sbuf = rmr.rmr_alloc_msg(self.mrc, 4096, pay, True, A1_POLICY_REQUEST)
+                    # TODO: after next rmr is released, this can be done in the alloc call. but that's not avail in pypi yet
+                    sbuf.contents.sub_id = work_item["ptid"]
                     pre_send_summary = rmr.message_summary(sbuf)
                     sbuf = rmr.rmr_send_msg(self.mrc, sbuf)  # send
                     post_send_summary = rmr.message_summary(sbuf)

@@ -19,21 +19,24 @@ tests for controller
 # ==================================================================================
 
 import time
+import json
 from rmr.rmr_mocks import rmr_mocks
 from a1 import a1rmr
 
-
-ADM_CTRL = "admission_control_policy"
-ADM_CTRL_POLICIES = "/a1-p/policytypes/20000/policies"
-ADM_CTRL_INSTANCE = ADM_CTRL_POLICIES + "/" + ADM_CTRL
+RCV_ID = "test_receiver"
+ADM_CRTL_TID = 6660666
+ADM_CTRL_IID = "admission_control_policy"
+ADM_CTRL_POLICIES = "/a1-p/policytypes/{0}/policies".format(ADM_CRTL_TID)
+ADM_CTRL_INSTANCE = ADM_CTRL_POLICIES + "/" + ADM_CTRL_IID
 ADM_CTRL_INSTANCE_STATUS = ADM_CTRL_INSTANCE + "/status"
-ADM_CTRL_TYPE = "/a1-p/policytypes/20000"
-TEST_TYPE = "/a1-p/policytypes/20001"
+ADM_CTRL_TYPE = "/a1-p/policytypes/{0}".format(ADM_CRTL_TID)
 
 
 def _fake_dequeue():
     """for monkeypatching with a good status"""
-    pay = b'{"policy_type_id": 20000, "policy_instance_id": "admission_control_policy", "handler_id": "test_receiver", "status": "OK"}'
+    pay = json.dumps(
+        {"policy_type_id": ADM_CRTL_TID, "policy_instance_id": ADM_CTRL_IID, "handler_id": RCV_ID, "status": "OK"}
+    ).encode()
     fake_msg = {"payload": pay}
     return [fake_msg]
 
@@ -47,12 +50,16 @@ def _fake_dequeue_deleted():
     """for monkeypatching  with a DELETED status"""
     new_msgs = []
 
-    # insert some that don't exist to make sure nothing blows up
-    pay = b'{"policy_type_id": 20666, "policy_instance_id": "admission_control_policy", "handler_id": "test_receiver", "status": "DELETED"}'
+    # non existent type
+    pay = json.dumps(
+        {"policy_type_id": 911, "policy_instance_id": ADM_CTRL_IID, "handler_id": RCV_ID, "status": "DELETED"}
+    ).encode()
     fake_msg = {"payload": pay}
     new_msgs.append(fake_msg)
 
-    pay = b'{"policy_type_id": 20000, "policy_instance_id": "darkness", "handler_id": "test_receiver", "status": "DELETED"}'
+    pay = json.dumps(
+        {"policy_type_id": ADM_CRTL_TID, "policy_instance_id": "darkness", "handler_id": RCV_ID, "status": "DELETED"}
+    ).encode()
     fake_msg = {"payload": pay}
     new_msgs.append(fake_msg)
 
@@ -62,7 +69,9 @@ def _fake_dequeue_deleted():
     # not even a json
     new_msgs.append("asdf")
 
-    pay = b'{"policy_type_id": 20000, "policy_instance_id": "admission_control_policy", "handler_id": "test_receiver", "status": "DELETED"}'
+    pay = json.dumps(
+        {"policy_type_id": ADM_CRTL_TID, "policy_instance_id": ADM_CTRL_IID, "handler_id": RCV_ID, "status": "DELETED"}
+    ).encode()
     fake_msg = {"payload": pay}
     new_msgs.append(fake_msg)
 
@@ -130,7 +139,7 @@ def _put_ac_type(client, typedef):
     # type in type list
     res = client.get("/a1-p/policytypes")
     assert res.status_code == 200
-    assert res.json == [20000]
+    assert res.json == [ADM_CRTL_TID]
 
     # instance 200 but empty list
     res = client.get(ADM_CTRL_POLICIES)
@@ -172,7 +181,7 @@ def _put_ac_instance(client, monkeypatch, instancedef):
     # instance 200 and in list
     res = client.get(ADM_CTRL_POLICIES)
     assert res.status_code == 200
-    assert res.json == [ADM_CTRL]
+    assert res.json == [ADM_CTRL_IID]
 
 
 def _delete_instance(client):
@@ -354,9 +363,9 @@ def test_illegal_types(client, adm_type_good):
     """
     Test illegal types
     """
-    res = client.put("/a1-p/policytypes/19999", json=adm_type_good)
+    res = client.put("/a1-p/policytypes/0", json=adm_type_good)
     assert res.status_code == 400
-    res = client.put("/a1-p/policytypes/21024", json=adm_type_good)
+    res = client.put("/a1-p/policytypes/2147483648", json=adm_type_good)
     assert res.status_code == 400
 
 

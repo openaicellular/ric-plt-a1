@@ -321,8 +321,8 @@ components:
       description: >
         represents a policy type identifier. Currently this is restricted to an integer range.
       type: integer
-      minimum: 20000
-      maximum: 21023
+      minimum: 1
+      maximum: 2147483647
 
     policy_instance_id:
       description: >

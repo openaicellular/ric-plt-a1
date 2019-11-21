@@ -22,7 +22,6 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
     * Represents a resillent version of 1.0.0 that uses Redis for persistence
 
 
-
 [x.x.x] - TBD
 -------------
 
@@ -36,6 +35,8 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
     * Clean up unused items in the integration tests helm chart
     * Removed "RMR_RCV_RETRY_INTERVAL" leftovers since this isn't used anymore
     * Uses the standard RIC logging library
+    * Switch the backend routing scheme to using subscription id with constant message types, per request.
+    * Given the above, policy type ids can be any valid 32bit greater than 0
 
 [1.0.4]
 -------

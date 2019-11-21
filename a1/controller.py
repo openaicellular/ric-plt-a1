@@ -166,7 +166,7 @@ def create_or_replace_policy_instance(policy_type_id, policy_instance_id):
 
         # send rmr (best effort)
         body = _gen_body_to_handler("CREATE", policy_type_id, policy_instance_id, payload=instance)
-        a1rmr.queue_work({"payload": json.dumps(body), "msg type": policy_type_id})
+        a1rmr.queue_work({"payload": json.dumps(body), "ptid": policy_type_id})
 
         return "", 202
 
@@ -187,7 +187,7 @@ def delete_policy_instance(policy_type_id, policy_instance_id):
 
         # send rmr (best effort)
         body = _gen_body_to_handler("DELETE", policy_type_id, policy_instance_id)
-        a1rmr.queue_work({"payload": json.dumps(body), "msg type": policy_type_id})
+        a1rmr.queue_work({"payload": json.dumps(body), "ptid": policy_type_id})
 
         return "", 202
 

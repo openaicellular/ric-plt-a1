@@ -47,7 +47,7 @@ def adm_type_good():
     return {
         "name": "Admission Control",
         "description": "various parameters to control admission of dual connection",
-        "policy_type_id": 20000,
+        "policy_type_id": 6660666,
         "create_schema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",

@@ -62,7 +62,7 @@ while True:
 
         val = json.dumps(payload).encode("utf-8")
         rmr.set_payload_and_length(val, sbuf)
-        sbuf.contents.mtype = 21024
+        sbuf.contents.mtype = 20011
         print("Pre reply summary: {}".format(rmr.message_summary(sbuf)))
         time.sleep(DELAY)
 
