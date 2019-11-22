@@ -76,7 +76,6 @@ stages:
             - window_length
             - trigger_threshold
             - blocking_rate
-          additionalProperties: false
     response:
       status_code: 201
 

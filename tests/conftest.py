@@ -45,37 +45,34 @@ def adm_type_good():
     represents a good put for adm control type
     """
     return {
-        "name": "Admission Control",
-        "description": "various parameters to control admission of dual connection",
+        "name": "Policy for Rate Control",
         "policy_type_id": 6660666,
+        "description": "This policy is associated with rate control. An instance of the policy specifies the traffic class to which it applies and parameters to use to control how much it must be throttled in case of an overload. Each instance of the policy that is created MUST be associated with a unique class ID (identifyed by the key 'class', which is used by the xAPP to differentiate traffic. If an agent tries to create a policy with the SAME class id, it will be rejected by the xAPP, even if it has a unique policy instance id. ",
         "create_schema": {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
+            "additionalProperties": False,
             "properties": {
-                "enforce": {"type": "boolean", "default": True},
+                "class": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 256,
+                    "description": "integer id representing class to which we are applying policy",
+                },
+                "enforce": {
+                    "type": "boolean",
+                    "description": "Whether to enable or disable enforcement of policy on this class",
+                },
                 "window_length": {
                     "type": "integer",
-                    "default": 1,
-                    "minimum": 1,
-                    "maximum": 60,
-                    "description": "Sliding window length (in minutes)",
+                    "minimum": 15,
+                    "maximum": 300,
+                    "description": "Sliding window length in seconds",
                 },
-                "blocking_rate": {
-                    "type": "number",
-                    "default": 10,
-                    "minimum": 1,
-                    "maximum": 100,
-                    "description": "% Connections to block",
-                },
-                "trigger_threshold": {
-                    "type": "integer",
-                    "default": 10,
-                    "minimum": 1,
-                    "description": "Minimum number of events in window to trigger blocking",
-                },
+                "trigger_threshold": {"type": "integer", "minimum": 1},
+                "blocking_rate": {"type": "number", "minimum": 0, "maximum": 100},
             },
-            "required": ["enforce", "blocking_rate", "trigger_threshold", "window_length"],
-            "additionalProperties": False,
+            "required": ["class", "enforce", "blocking_rate", "trigger_threshold", "window_length"],
         },
     }
 
@@ -85,4 +82,4 @@ def adm_instance_good():
     """
     represents a good put for adm control instance
     """
-    return {"enforce": True, "window_length": 10, "blocking_rate": 20, "trigger_threshold": 10}
+    return {"class": 12, "enforce": True, "window_length": 20, "blocking_rate": 20, "trigger_threshold": 10}

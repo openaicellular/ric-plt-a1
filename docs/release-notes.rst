@@ -37,6 +37,8 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
     * Uses the standard RIC logging library
     * Switch the backend routing scheme to using subscription id with constant message types, per request.
     * Given the above, policy type ids can be any valid 32bit greater than 0
+    * Decouple the API between northbound and A1 from A1 with xapps. This is now two seperate OpenAPI files
+    * Update example for AC Xapp
 
 [1.0.4]
 -------
