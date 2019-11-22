@@ -48,32 +48,34 @@ stages:
         create_schema:
           "$schema": http://json-schema.org/draft-07/schema#
           type: object
+          additionalProperties: false
           properties:
+            class:
+              type: integer
+              minimum: 1
+              maximum: 256
+              description: integer id representing class to which we are applying policy
             enforce:
               type: boolean
-              default: true
+              description: Whether to enable or disable enforcement of policy on this class
             window_length:
               type: integer
-              default: 1
-              minimum: 1
-              maximum: 60
-              description: Sliding window length (in minutes)
-            blocking_rate:
-              type: number
-              default: 10
-              minimum: 1
-              maximum: 100
-              description: "% Connections to block"
+              minimum: 15
+              maximum: 300
+              description: Sliding window length in seconds
             trigger_threshold:
               type: integer
-              default: 10
               minimum: 1
-              description: Minimum number of events in window to trigger blocking
+            blocking_rate:
+              type: number
+              minimum: 0
+              maximum: 100
           required:
+            - class
             - enforce
-            - blocking_rate
-            - trigger_threshold
             - window_length
+            - trigger_threshold
+            - blocking_rate
           additionalProperties: false
     response:
       status_code: 201
@@ -140,8 +142,9 @@ stages:
       url: http://localhost:10000/a1-p/policytypes/6660666/policies/admission_control_policy
       method: PUT
       json:
+        class: 12
         enforce: true
-        window_length: 10
+        window_length: 20
         blocking_rate: 20
         trigger_threshold: 10
       headers:
@@ -164,10 +167,12 @@ stages:
     response:
       status_code: 200
       body:
+        class: 12
         enforce: true
-        window_length: 10
+        window_length: 20
         blocking_rate: 20
         trigger_threshold: 10
+
 
   - name: test the admission control policy status get
     delay_before: 3 # give it a few seconds for rmr
