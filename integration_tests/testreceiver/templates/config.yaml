@@ -5,7 +5,8 @@ metadata:
 data:
   local.rt: |
     newrt|start
-    rte|21024|a1rmrservice:4562
+    # we actaully use rts so i dont even think this is used
+    rte|20011|a1rmrservice:4562
     newrt|end
 
 ---
@@ -17,5 +18,5 @@ metadata:
 data:
   local.rt: |
     newrt|start
-    rte|21024|a1rmrservice:4562
+    rte|20011|a1rmrservice:4562
     newrt|end

@@ -8,13 +8,6 @@ image:
 # name of the secret that allows for privagte registry docker pulls.
 # if the value is "lfhelper", there is a helper function included in this chart, and it uses imageCredentials .
 # imageCredentials is referenced in secrets.yaml, and uses a helper function to formulate the docker reg username and password into a valid dockerconfig.json.
-# Note, if the value of lf_docker_reg_secret is changed, these image credentials are ignored and not used.
-lf_docker_reg_secret: lfhelper
-imageCredentials:
-  registry: nexus3.o-ran-sc.org:10004/ric-plt-a1
-  username:
-  password:
-
 # This is the service for A1's external facing HTTP API
 httpservice:
   name: a1httpservice
