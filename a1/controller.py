@@ -17,7 +17,6 @@ Main a1 controller
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
-import json
 from flask import Response
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
@@ -43,18 +42,6 @@ def _try_func_return(func):
         # catch all, should never happen...
         mdc_logger.exception(exc)
         return Response(status=500)
-
-
-def _gen_body_to_handler(operation, policy_type_id, policy_instance_id, payload=None):
-    """
-    used to create the payloads that get sent to downstream policy handlers
-    """
-    return {
-        "operation": operation,
-        "policy_type_id": policy_type_id,
-        "policy_instance_id": policy_instance_id,
-        "payload": payload,
-    }
 
 
 # Healthcheck
@@ -164,9 +151,8 @@ def create_or_replace_policy_instance(policy_type_id, policy_instance_id):
         # store the instance
         data.store_policy_instance(policy_type_id, policy_instance_id, instance)
 
-        # send rmr (best effort)
-        body = _gen_body_to_handler("CREATE", policy_type_id, policy_instance_id, payload=instance)
-        a1rmr.queue_work({"payload": json.dumps(body), "ptid": policy_type_id})
+        # queue rmr send (best effort)
+        a1rmr.queue_instance_send(("CREATE", policy_type_id, policy_instance_id, instance))
 
         return "", 202
 
@@ -185,9 +171,8 @@ def delete_policy_instance(policy_type_id, policy_instance_id):
         """
         data.delete_policy_instance(policy_type_id, policy_instance_id)
 
-        # send rmr (best effort)
-        body = _gen_body_to_handler("DELETE", policy_type_id, policy_instance_id)
-        a1rmr.queue_work({"payload": json.dumps(body), "ptid": policy_type_id})
+        # queue rmr send (best effort)
+        a1rmr.queue_instance_send(("DELETE", policy_type_id, policy_instance_id, ""))
 
         return "", 202
 

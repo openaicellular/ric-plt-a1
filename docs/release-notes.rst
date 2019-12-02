@@ -14,16 +14,16 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    :depth: 3
    :local:
 
-[1.x.x] - TBD
+[x.x.x] - TBD
 -------------
 
 ::
 
-    * Represents a resillent version of 1.0.0 that uses Redis for persistence
+    * Represents a resillent version of x.x.x that uses Redis for persistence
 
 
-[x.x.x] - TBD
--------------
+[2.0.0] - 12/9/2019
+-------------------
 
 ::
 
@@ -31,7 +31,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
     * Eliminates the barrier to deleting an instance when no xapp evdr replied (via timeouts)
     * Add two new ENV variables that control timeouts
     * Make unit tests more modular so new workflows can be tested easily
-    * Changes the API for ../status to return a richer structure
+    * Fixes the API for ../status to return a richer structure. This is an (albeit tiny) API change.
     * Clean up unused items in the integration tests helm chart
     * Removed "RMR_RCV_RETRY_INTERVAL" leftovers since this isn't used anymore
     * Uses the standard RIC logging library
@@ -39,6 +39,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
     * Given the above, policy type ids can be any valid 32bit greater than 0
     * Decouple the API between northbound and A1 from A1 with xapps. This is now two seperate OpenAPI files
     * Update example for AC Xapp
+    * Updgrade rmr and rmr-python to utilize new features; lots of cleanups because of that
 
 [1.0.4]
 -------

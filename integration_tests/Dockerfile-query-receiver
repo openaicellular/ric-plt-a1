@@ -17,7 +17,7 @@
 # install a well known working rmr
 FROM python:3.7-alpine
 RUN apk update && apk add autoconf automake build-base cmake libtool ninja pkgconfig git
-RUN git clone --branch 1.10.1 https://gerrit.o-ran-sc.org/r/ric-plt/lib/rmr \
+RUN git clone --branch 1.10.2 https://gerrit.o-ran-sc.org/r/ric-plt/lib/rmr \
     && cd rmr \
     && mkdir build \
     && cd build \
@@ -30,11 +30,11 @@ FROM python:3.7-alpine
 # copies
 COPY --from=0 /usr/local/lib64/libnng.so /usr/local/lib64/libnng.so
 COPY --from=0 /usr/local/lib64/librmr_nng.so /usr/local/lib64/librmr_nng.so
-COPY receiver.py /
+COPY query_tester.py /
 
 # Install RMr python bindings
 RUN pip install --upgrade pip
-RUN pip install rmr==1.0.0
+RUN pip install rmr==2.2.0
 
 # rmr setups
 RUN mkdir -p /opt/route/
@@ -42,4 +42,4 @@ ENV LD_LIBRARY_PATH /usr/local/lib:/usr/local/lib64
 ENV RMR_SEED_RT /opt/route/local.rt
 
 WORKDIR /
-CMD ["python","-u","receiver.py"]
+CMD ["python","-u","query_tester.py"]

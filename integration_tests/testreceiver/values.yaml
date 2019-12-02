@@ -13,3 +13,8 @@ delayrmrservice:
   name: delayreceiverrmrservice
   type: ClusterIP
   port: 4563
+
+queryrmrservice:
+  name: queryreceiverrmrservice
+  type: ClusterIP
+  port: 4564

@@ -464,6 +464,109 @@ stages:
 
 ---
 
+test_name: test query
+
+stages:
+  - name: type not there yet
+    request:
+      url: http://localhost:10000/a1-p/policytypes/1006001
+      method: GET
+    response:
+      status_code: 404
+
+  - name: put the type
+    request:
+      url: http://localhost:10000/a1-p/policytypes/1006001
+      method: PUT
+      json:
+        name: query test
+        description: test
+        policy_type_id: 1006001
+        create_schema:
+          "$schema": http://json-schema.org/draft-07/schema#
+          type: object
+          additionalProperties: false
+          properties:
+            foo:
+              type: string
+          required:
+            - foo
+    response:
+      status_code: 201
+
+  - name: type there now
+    request:
+      url: http://localhost:10000/a1-p/policytypes/1006001
+      method: GET
+    response:
+      status_code: 200
+
+  - name: instance list 200 but empty
+    request:
+      url: http://localhost:10000/a1-p/policytypes/1006001/policies
+      method: GET
+    response:
+      status_code: 200
+      body: []
+
+  - name: instance 1
+    request:
+      url: http://localhost:10000/a1-p/policytypes/1006001/policies/qt1
+      method: PUT
+      json:
+        foo: "bar1"
+      headers:
+        content-type: application/json
+    response:
+      status_code: 202
+
+  - name: instance 2
+    request:
+      url: http://localhost:10000/a1-p/policytypes/1006001/policies/qt2
+      method: PUT
+      json:
+        foo: "bar2"
+      headers:
+        content-type: application/json
+    response:
+      status_code: 202
+
+  - name: instance list
+    request:
+      url: http://localhost:10000/a1-p/policytypes/1006001/policies
+      method: GET
+    response:
+      status_code: 200
+      body: [qt1, qt2]
+
+  # after the query, a1 should send, query receiver should send back, and the policy should be in effect
+
+  - name: test the query status get
+    max_retries: 3
+    delay_before: 6  # give it a few seconds for rmr ; delay reciever sleeps for 5 seconds by default
+    request:
+      url: http://localhost:10000/a1-p/policytypes/1006001/policies/qt1/status
+      method: GET
+    response:
+      status_code: 200
+      body:
+        instance_status: "IN EFFECT"
+        has_been_deleted: False
+
+  - name: test the query status get 2
+    max_retries: 3
+    delay_before: 6  # give it a few seconds for rmr ; delay reciever sleeps for 5 seconds by default
+    request:
+      url: http://localhost:10000/a1-p/policytypes/1006001/policies/qt2/status
+      method: GET
+    response:
+      status_code: 200
+      body:
+        instance_status: "IN EFFECT"
+        has_been_deleted: False
+
+---
+
 test_name: test bad routing file endpoint
 
 stages:
@@ -554,5 +657,3 @@ stages:
           type: object
     response:
       status_code: 400
-
-

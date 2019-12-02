@@ -1,3 +1,6 @@
+"""
+rmr messages
+"""
 # ==================================================================================
 #       Copyright (c) 2019 Nokia
 #       Copyright (c) 2018-2019 AT&T Intellectual Property.
@@ -14,17 +17,15 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
-from setuptools import setup, find_packages
 
-setup(
-    name="a1",
-    version="2.0.0",
-    packages=find_packages(exclude=["tests.*", "tests"]),
-    author="Tommy Carpenter",
-    description="RIC A1 Mediator for policy/intent changes",
-    url="https://gerrit.o-ran-sc.org/r/admin/repos/ric-plt/a1",
-    entry_points={"console_scripts": ["run.py=a1.run:main"]},
-    # we require jsonschema, should be in that list, but connexion already requires a specific version of it
-    install_requires=["requests", "Flask", "connexion[swagger-ui]", "gevent", "msgpack", "rmr>=2.2.0", "mdclogpy"],
-    package_data={"a1": ["openapi.yaml"]},
-)
+
+def a1_to_handler(operation, policy_type_id, policy_instance_id, payload=None):
+    """
+    used to create the payloads that get sent to downstream policy handlers
+    """
+    return {
+        "operation": operation,
+        "policy_type_id": policy_type_id,
+        "policy_instance_id": policy_instance_id,
+        "payload": payload,
+    }

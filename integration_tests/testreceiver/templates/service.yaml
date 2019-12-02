@@ -31,3 +31,21 @@ spec:
   selector:
     app.kubernetes.io/name: {{ include "testreceiver.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.queryrmrservice.name }}
+  labels:
+{{ include "testreceiver.labels" . | indent 4 }}
+spec:
+  type: {{ .Values.queryrmrservice.type }}
+  ports:
+    - port: {{ .Values.queryrmrservice.port }}
+      targetPort: {{ .Values.queryrmrservice.port }}
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ include "testreceiver.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}

@@ -18,5 +18,19 @@ metadata:
 data:
   local.rt: |
     newrt|start
+    # we actaully use rts so i dont even think this is used
     rte|20011|a1rmrservice:4562
+    newrt|end
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: queryreceiverconf
+data:
+  local.rt: |
+    newrt|start
+    # this query is initiated in the query receiver so this is certainly needed
+    rte|20012|a1rmrservice:4562
     newrt|end
