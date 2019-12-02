@@ -1,6 +1,0 @@
-{
-    "enforce":true,
-    "window_length":10,
-    "blocking_rate":20,
-    "trigger_threshold":10
-}

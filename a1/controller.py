@@ -22,11 +22,11 @@ from flask import Response
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 import connexion
-from a1 import get_module_logger
+from mdclogpy import Logger
 from a1 import a1rmr, exceptions, data
 
 
-logger = get_module_logger(__name__)
+mdc_logger = Logger(name=__name__)
 
 
 def _try_func_return(func):
@@ -41,7 +41,7 @@ def _try_func_return(func):
         return "", 404
     except BaseException as exc:
         # catch all, should never happen...
-        logger.exception(exc)
+        mdc_logger.exception(exc)
         return Response(status=500)
 
 
@@ -142,14 +142,7 @@ def get_policy_instance_status(policy_type_id, policy_instance_id):
         3. "NOT IN EFFECT" otherwise (no statuses, or none are OK but not all are deleted)
     """
 
-    def get_status_handler():
-        vector = data.get_policy_instance_statuses(policy_type_id, policy_instance_id)
-        for i in vector:
-            if i == "OK":
-                return "IN EFFECT", 200
-        return "NOT IN EFFECT", 200
-
-    return _try_func_return(get_status_handler)
+    return _try_func_return(lambda: data.get_policy_instance_status(policy_type_id, policy_instance_id))
 
 
 def create_or_replace_policy_instance(policy_type_id, policy_instance_id):
@@ -173,7 +166,7 @@ def create_or_replace_policy_instance(policy_type_id, policy_instance_id):
 
         # send rmr (best effort)
         body = _gen_body_to_handler("CREATE", policy_type_id, policy_instance_id, payload=instance)
-        a1rmr.queue_work({"payload": json.dumps(body), "msg type": policy_type_id})
+        a1rmr.queue_work({"payload": json.dumps(body), "ptid": policy_type_id})
 
         return "", 202
 
@@ -188,12 +181,13 @@ def delete_policy_instance(policy_type_id, policy_instance_id):
     def delete_instance_handler():
         """
         here we send out the DELETEs but we don't delete the instance until a GET is called where we check the statuses
+        We also set the status as deleted which would be reflected in a GET to ../status (before the DELETE completes)
         """
-        data.instance_is_valid(policy_type_id, policy_instance_id)
+        data.delete_policy_instance(policy_type_id, policy_instance_id)
 
         # send rmr (best effort)
         body = _gen_body_to_handler("DELETE", policy_type_id, policy_instance_id)
-        a1rmr.queue_work({"payload": json.dumps(body), "msg type": policy_type_id})
+        a1rmr.queue_work({"payload": json.dumps(body), "ptid": policy_type_id})
 
         return "", 202
 

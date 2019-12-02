@@ -1,5 +1,6 @@
 .. This work is licensed under a Creative Commons Attribution 4.0 International License.
 .. http://creativecommons.org/licenses/by/4.0
+.. Copyright (C) 2019 AT&T Intellectual Property
 
 Release Notes
 ===============
@@ -13,7 +14,6 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    :depth: 3
    :local:
 
-
 [1.x.x] - TBD
 -------------
 
@@ -21,8 +21,27 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
     * Represents a resillent version of 1.0.0 that uses Redis for persistence
 
-[1.0.4] - 10/24/2019
---------------------
+
+[x.x.x] - TBD
+-------------
+
+::
+
+    * Implements new logic around when instances are deleted. See flowcharts in docs/. Basically timeouts now trigger to actually delete instances from a1s database, and these timeouts are configurable.
+    * Eliminates the barrier to deleting an instance when no xapp evdr replied (via timeouts)
+    * Add two new ENV variables that control timeouts
+    * Make unit tests more modular so new workflows can be tested easily
+    * Changes the API for ../status to return a richer structure
+    * Clean up unused items in the integration tests helm chart
+    * Removed "RMR_RCV_RETRY_INTERVAL" leftovers since this isn't used anymore
+    * Uses the standard RIC logging library
+    * Switch the backend routing scheme to using subscription id with constant message types, per request.
+    * Given the above, policy type ids can be any valid 32bit greater than 0
+    * Decouple the API between northbound and A1 from A1 with xapps. This is now two seperate OpenAPI files
+    * Update example for AC Xapp
+
+[1.0.4]
+-------
 
 ::
 

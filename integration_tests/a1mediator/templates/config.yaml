@@ -5,8 +5,8 @@ metadata:
 data:
   local.rt: |
     newrt|start
-    rte|20000|testreceiverrmrservice:4560
-    rte|20001|delayreceiverrmrservice:4563
+    mse|20010|6660666|testreceiverrmrservice:4560
+    mse|20010|20001|delayreceiverrmrservice:4563
     # purposefully bad route to make sure rmr doesn't block on non listening receivers:
-    rte|20002|testreceiverrmrservice:4563
+    rte|20010|testreceiverrmrservice:4563
     newrt|end
