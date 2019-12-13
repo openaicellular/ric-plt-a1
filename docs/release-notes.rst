@@ -40,6 +40,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
     * Decouple the API between northbound and A1 from A1 with xapps. This is now two seperate OpenAPI files
     * Update example for AC Xapp
     * Updgrade rmr and rmr-python to utilize new features; lots of cleanups because of that
+    * Implements a POLICY QUERY feature where A1 listens for queries for a policy type. A1 then responds via multiple RTS messages every policy instance of that policy type (and expects an ACK back from xapps as usual). This feature can be used for xapp recovery etc.
 
 [1.0.4]
 -------
