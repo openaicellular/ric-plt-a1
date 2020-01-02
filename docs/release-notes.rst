@@ -14,12 +14,17 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    :depth: 3
    :local:
 
-[x.x.x] - TBD
--------------
+[2.1.0] - 1/8/2020
+------------------
 
 ::
 
-    * Represents a resillent version of x.x.x that uses Redis for persistence
+    * Represents a resillent version of 2.0.0 that uses Redis for persistence
+    * Now relies on SDL and dbaas; SDL is the python interface library to dbaas
+    * Adds a 503 http code to nearly all http methods, as A1 now depends on an upstream system
+    * Integration tests have a copy of a dbaas helm chart, however the goal is to simplify that deployment per https://jira.o-ran-sc.org/browse/RIC-45
+    * Unit tests have a mockup of SDL, however again the goal is to simplify as SDL grows per https://jira.o-ran-sc.org/browse/RIC-44
+
 
 
 [2.0.0] - 12/9/2019

@@ -2,8 +2,8 @@
 Main a1 controller
 """
 # ==================================================================================
-#       Copyright (c) 2019 Nokia
-#       Copyright (c) 2018-2019 AT&T Intellectual Property.
+#       Copyright (c) 2019-2020 Nokia
+#       Copyright (c) 2018-2020 AT&T Intellectual Property.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 import connexion
 from mdclogpy import Logger
+from ricsdl.exceptions import RejectedByBackend, NotConnected, BackendError
 from a1 import a1rmr, exceptions, data
 
 
@@ -38,9 +39,18 @@ def _try_func_return(func):
         return "", 400
     except (exceptions.PolicyTypeNotFound, exceptions.PolicyInstanceNotFound):
         return "", 404
-    except BaseException as exc:
+    except (RejectedByBackend, NotConnected, BackendError):
+        """
+        These are SDL errors. At the time of development here, we do not have a good understanding which of these errors are "try again later it may work"
+        and which are "never going to work". There is some discussion that RejectedByBackend is in the latter category, suggesting it should map to 400,
+        but until we understand the root cause of these errors, it's confusing to clients to give them a 400 (a "your fault" code) because they won't know how to fix
+        For now, we log, and 503, and investigate the logs later to improve the handling/reporting.
+        """
+        # mdc_logger.exception(exc)  # waiting for https://jira.o-ran-sc.org/browse/RIC-39
+        return "", 503
+    except BaseException:
         # catch all, should never happen...
-        mdc_logger.exception(exc)
+        # mdc_logger.exception(exc)  # waiting for https://jira.o-ran-sc.org/browse/RIC-39
         return Response(status=500)
 
 

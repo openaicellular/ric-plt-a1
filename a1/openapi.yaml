@@ -1,6 +1,6 @@
 # ==================================================================================
-#       Copyright (c) 2019 Nokia
-#       Copyright (c) 2018-2019 AT&T Intellectual Property.
+#       Copyright (c) 2019-2020 Nokia
+#       Copyright (c) 2018-2020 AT&T Intellectual Property.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 # ==================================================================================
 openapi: 3.0.0
 info:
-  version: 2.0.0
+  version: 2.1.0
   title: RIC A1
 paths:
   '/a1-p/healthcheck':
@@ -48,6 +48,8 @@ paths:
                 items:
                   "$ref": "#/components/schemas/policy_type_id"
               example: [20000, 20020]
+        503:
+          description: "Potentially transient backend database error. Client should attempt to retry later."
 
   '/a1-p/policytypes/{policy_type_id}':
     parameters:
@@ -72,6 +74,8 @@ paths:
         '404':
           description: >
             policy type not found
+        '503':
+          description: "Potentially transient backend database error. Client should attempt to retry later."
     delete:
       description: >
         Delete this policy type. Can only be performed if there are no instances of this type
@@ -89,6 +93,8 @@ paths:
         '404':
           description: >
             policy type not found
+        '503':
+          description: "Potentially transient backend database error. Client should attempt to retry later."
     put:
       description: >
         Create a new policy type .
@@ -137,6 +143,8 @@ paths:
           description: "policy type successfully created"
         '400':
           description: "illegal ID, or object already existed"
+        '503':
+          description: "Potentially transient backend database error. Client should attempt to retry later."
 
   '/a1-p/policytypes/{policy_type_id}/policies':
     parameters:
@@ -160,6 +168,8 @@ paths:
                 items:
                   "$ref": "#/components/schemas/policy_instance_id"
               example: ["3d2157af-6a8f-4a7c-810f-38c2f824bf12", "06911bfc-c127-444a-8eb1-1bffad27cc3d"]
+        '503':
+          description: "Potentially transient backend database error. Client should attempt to retry later."
 
 
   '/a1-p/policytypes/{policy_type_id}/policies/{policy_instance_id}':
@@ -195,6 +205,8 @@ paths:
         '404':
           description: >
             there is no policy instance with this policy_instance_id or there is no policy type with this policy_type_id
+        '503':
+          description: "Potentially transient backend database error. Client should attempt to retry later."
 
     delete:
       description: >
@@ -209,8 +221,9 @@ paths:
             policy instance deletion initiated
         '404':
           description: >
-            there is no policy instance with this policy_instance_id
-            or there is no policy type with this policy_type_id
+            there is no policy instance with this policy_instance_id or there is no policy type with this policy_type_id
+        '503':
+          description: "Potentially transient backend database error. Client should attempt to retry later."
 
     put:
       description: >
@@ -243,6 +256,8 @@ paths:
         '404':
           description: >
             There is no policy type with this policy_type_id
+        '503':
+          description: "Potentially transient backend database error. Client should attempt to retry later."
 
   '/a1-p/policytypes/{policy_type_id}/policies/{policy_instance_id}/status':
     parameters:
@@ -291,6 +306,8 @@ paths:
         '404':
           description: >
             there is no policy instance with this policy_instance_id or there is no policy type with this policy_type_id
+        '503':
+          description: "Potentially transient backend database error. Client should attempt to retry later."
 
 components:
   schemas:

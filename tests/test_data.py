@@ -1,6 +1,6 @@
 # ==================================================================================
-#       Copyright (c) 2019 Nokia
-#       Copyright (c) 2018-2019 AT&T Intellectual Property.
+#       Copyright (c) 2019-2020 Nokia
+#       Copyright (c) 2018-2020 AT&T Intellectual Property.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -15,13 +15,18 @@
 #   limitations under the License.
 # ==================================================================================
 from a1 import data
+from .a1test_helpers import MockSDLWrapper
+
+
+def setup_module():
+    """module level setup"""
+    data.SDL = MockSDLWrapper()  # patch SDL
 
 
 def test_sdl_raw():
     """
     test raw sdl functions
     """
-    data.SDL = data.SDLWrapper()
     data.SDL.set("as.df1", "data")
     data.SDL.set("as.df2", "data2")
     assert data.SDL.get("as.df1") == "data"

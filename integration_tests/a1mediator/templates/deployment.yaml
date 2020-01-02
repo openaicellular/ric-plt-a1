@@ -36,6 +36,11 @@ spec:
             value: "5"
           - name: INSTANCE_DELETE_RESP_TTL
             value: "10"
+          - name: DBAAS_SERVICE_HOST
+            value: "dbaas"
+          - name: DBAAS_SERVICE_PORT
+            value: "6379"
+
           image: "a1:latest"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:

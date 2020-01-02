@@ -2,8 +2,8 @@
 tests for controller
 """
 # ==================================================================================
-#       Copyright (c) 2019 Nokia
-#       Copyright (c) 2018-2019 AT&T Intellectual Property.
+#       Copyright (c) 2019-2020 Nokia
+#       Copyright (c) 2018-2020 AT&T Intellectual Property.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ tests for controller
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
-
 import time
 import json
 from rmr.rmr_mocks import rmr_mocks
-from a1 import a1rmr
+from a1 import a1rmr, data
+from .a1test_helpers import MockSDLWrapper
 
 RCV_ID = "test_receiver"
 ADM_CRTL_TID = 6660666
@@ -231,6 +231,8 @@ def _verify_instance_and_status(client, expected_instance, expected_status, expe
 def setup_module():
     """module level setup"""
 
+    data.SDL = MockSDLWrapper()  # patch SDL
+
     def noop():
         pass
 
@@ -245,6 +247,8 @@ def test_workflow(client, monkeypatch, adm_type_good, adm_instance_good):
     """
     test a full A1 workflow
     """
+
+    # put type and instance
     _put_ac_type(client, adm_type_good)
     _put_ac_instance(client, monkeypatch, adm_instance_good)
 
@@ -343,6 +347,14 @@ def test_bad_instances(client, monkeypatch, adm_type_good):
     # delete the type (as cleanup)
     res = client.delete(ADM_CTRL_TYPE)
     assert res.status_code == 204
+
+    # test 503 handlers
+    res = client.put("/a1-p/policytypes/111", json=adm_type_good)
+    assert res.status_code == 503
+    res = client.put("/a1-p/policytypes/112", json=adm_type_good)
+    assert res.status_code == 503
+    res = client.put("/a1-p/policytypes/113", json=adm_type_good)
+    assert res.status_code == 503
 
 
 def test_illegal_types(client, adm_type_good):
