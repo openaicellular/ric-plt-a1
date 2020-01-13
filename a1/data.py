@@ -67,10 +67,9 @@ class SDLWrapper:
 
     def find_and_get(self, prefix):
         """get all k v pairs that start with prefix"""
-        ret_dict = self.sdl.find_and_get(A1NS, "{0}".format(prefix), atomic=True)
-        found = {k: msgpack.unpackb(v, raw=False) for k, v in ret_dict.items()}
-        # TODO: upgrade to sdl 2.0.0 which does the sorting for us
-        return {k: found[k] for k in sorted(found)}
+        # note: SDL "*" usage is inconsistent with real python regex, where it would be ".*"
+        ret_dict = self.sdl.find_and_get(A1NS, "{0}*".format(prefix))
+        return {k: msgpack.unpackb(v, raw=False) for k, v in ret_dict.items()}
 
     def delete(self, key):
         """ delete a key"""

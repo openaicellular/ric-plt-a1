@@ -1,3 +1,6 @@
+"""
+tests data functions
+"""
 # ==================================================================================
 #       Copyright (c) 2019-2020 Nokia
 #       Copyright (c) 2018-2020 AT&T Intellectual Property.
@@ -15,12 +18,12 @@
 #   limitations under the License.
 # ==================================================================================
 from a1 import data
-from .a1test_helpers import MockSDLWrapper
+from ricsdl.syncstorage import SyncStorage
 
 
 def setup_module():
     """module level setup"""
-    data.SDL = MockSDLWrapper()  # patch SDL
+    data.SDL.sdl = SyncStorage(fake_db_backend="dict")
 
 
 def test_sdl_raw():

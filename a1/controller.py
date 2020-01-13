@@ -17,7 +17,6 @@ Main a1 controller
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
-from flask import Response
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 import connexion
@@ -48,10 +47,8 @@ def _try_func_return(func):
         """
         # mdc_logger.exception(exc)  # waiting for https://jira.o-ran-sc.org/browse/RIC-39
         return "", 503
-    except BaseException:
-        # catch all, should never happen...
-        # mdc_logger.exception(exc)  # waiting for https://jira.o-ran-sc.org/browse/RIC-39
-        return Response(status=500)
+
+    # let other types of unexpected exceptions blow up and log
 
 
 # Healthcheck
