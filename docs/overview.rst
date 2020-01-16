@@ -73,3 +73,23 @@ In some cases, the spec is deficient and we are "ahead", in other cases this doe
 7. [Spec is ahead] The spec defines that a query of all policy instances should return the full bodies, however right now the RIC A1m returns a list of IDs (assuming subsequent queries can fetch the bodies).
 
 8. [?] The spec document details some very specific "types", but the RIC A1m allows these to be loaded in (see #1). For example, spec section 4.2.6.2. We believe this should be removed from the spec and rather defined as a type. Xapps can be created that define new types, so the spec will quickly become "stale" if "types" are defined in the spec.
+
+
+Resiliency
+----------
+
+A1 is resilient to the majority of failures, but not all currently (though a solution is known).
+
+A1 uses the RIC SDL library to persist all policy state information: this includes the policy types, policy instances, and policy statuses.
+If state is built up in A1, and A1 fails (where Kubernetes will then restart it), none of this state is lost.
+
+The tiny bit of state that *is currently* in A1 (volatile) is it's "next second" job queue.
+Specifically, when policy instances are created or deleted, A1 creates jobs in a job queue (in memory).
+An rmr thread polls that thread every second, dequeues the jobs, and performs them.
+
+If A1 were killed at *exactly* the right time, you could have jobs lost, meaning the PUT or DELETE of an instance wouldn't actually take.
+This isn't drastic, as the operations are idempotent and could always be re-performed.
+
+In order for A1 to be considered completely resilient, this job queue would need to be moved to SDL.
+SDL uses Redis as a backend, and Redis natively supports queues via LIST, LPUSH, RPOP.
+I've asked the SDL team to consider an extension to SDL to support these Redis operations.

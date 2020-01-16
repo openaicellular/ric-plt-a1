@@ -2,8 +2,8 @@
 a1s rmr functionality
 """
 # ==================================================================================
-#       Copyright (c) 2019 Nokia
-#       Copyright (c) 2018-2019 AT&T Intellectual Property.
+#       Copyright (c) 2019-2020 Nokia
+#       Copyright (c) 2018-2020 AT&T Intellectual Property.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -31,8 +31,6 @@ mdc_logger = Logger(name=__name__)
 
 
 RETRY_TIMES = int(os.environ.get("A1_RMR_RETRY_TIMES", 4))
-
-
 A1_POLICY_REQUEST = 20010
 A1_POLICY_RESPONSE = 20011
 A1_POLICY_QUERY = 20012
@@ -53,6 +51,8 @@ class _RmrLoop:
         self.keep_going = True
         self.rcv_func = None
         self.last_ran = time.time()
+
+        # see docs/overview#resiliency for a discussion of this
         self.instance_send_queue = queue.Queue()  # thread safe queue https://docs.python.org/3/library/queue.html
 
         # intialize rmr context
