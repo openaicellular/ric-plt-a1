@@ -1,10 +1,5 @@
 """
 Represents A1s database and database access functions.
-In the future, this may change to use a different backend, possibly dramatically.
-Hopefully, the access functions are a good api so nothing else has to change when this happens
-
-For now, the database is in memory.
-We use dict data structures (KV) with the expectation of having to move this into Redis
 """
 # ==================================================================================
 #       Copyright (c) 2019-2020 Nokia
@@ -27,9 +22,7 @@ import time
 from threading import Thread
 import msgpack
 from mdclogpy import Logger
-
 from ricsdl.syncstorage import SyncStorage
-
 from a1.exceptions import PolicyTypeNotFound, PolicyInstanceNotFound, PolicyTypeAlreadyExists, CantDeleteNonEmptyType
 
 mdc_logger = Logger(name=__name__)
@@ -272,7 +265,7 @@ def get_instance_list(policy_type_id):
 
 def delete_policy_instance(policy_type_id, policy_instance_id):
     """
-    initially sets has_been_deleted
+    initially sets has_been_deleted in the status
     then launches a thread that waits until the relevent timer expires, and finally deletes the instance
     """
     _instance_is_valid(policy_type_id, policy_instance_id)

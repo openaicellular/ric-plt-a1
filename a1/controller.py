@@ -61,6 +61,7 @@ def get_healthcheck():
     1. whether the a1 webserver is up (if it isn't, this won't even be called, so even entering this function confirms it is)
     2. checks whether the rmr thread is running and has completed a loop recently
     TODO: make "seconds" to pass in a configurable parameter?
+    TODO: I've requested that SDL provide a "I'm connected to the backend" healthcheck that can be integrated here
     """
     if a1rmr.healthcheck_rmr_thread():
         return "", 200
@@ -172,10 +173,6 @@ def delete_policy_instance(policy_type_id, policy_instance_id):
     """
 
     def delete_instance_handler():
-        """
-        here we send out the DELETEs but we don't delete the instance until a GET is called where we check the statuses
-        We also set the status as deleted which would be reflected in a GET to ../status (before the DELETE completes)
-        """
         data.delete_policy_instance(policy_type_id, policy_instance_id)
 
         # queue rmr send (best effort)
