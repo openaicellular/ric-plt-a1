@@ -14,6 +14,15 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    :depth: 3
    :local:
 
+[2.1.2] - 1/22/2020
+-------------------
+
+::
+
+    * Upgrades from sdl 2.0.2 to 2.0.3
+    * Integrates an sdl healthcheck into a1's healthcheck
+
+
 [2.1.1] - 1/14/2020
 -------------------
 

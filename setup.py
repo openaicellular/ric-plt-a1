@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="a1",
-    version="2.1.1",
+    version="2.1.2",
     packages=find_packages(exclude=["tests.*", "tests"]),
     author="Tommy Carpenter",
     description="RIC A1 Mediator for policy/intent changes",
@@ -33,7 +33,7 @@ setup(
         "msgpack",
         "rmr>=2.2.0",
         "mdclogpy",
-        "ricsdl>=2.0.2,<3.0.0",
+        "ricsdl>=2.0.3,<3.0.0",
     ],
     package_data={"a1": ["openapi.yaml"]},
 )

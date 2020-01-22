@@ -60,12 +60,13 @@ def get_healthcheck():
     Currently, this checks:
     1. whether the a1 webserver is up (if it isn't, this won't even be called, so even entering this function confirms it is)
     2. checks whether the rmr thread is running and has completed a loop recently
-    TODO: make "seconds" to pass in a configurable parameter?
-    TODO: I've requested that SDL provide a "I'm connected to the backend" healthcheck that can be integrated here
+    3. checks that our SDL connection is healthy
     """
-    if a1rmr.healthcheck_rmr_thread():
-        return "", 200
-    return "rmr thread is unhealthy", 500
+    if not a1rmr.healthcheck_rmr_thread():
+        return "rmr thread is unhealthy", 500
+    if not data.SDL.healthcheck():
+        return "sdl connection is unhealthy", 500
+    return "", 200
 
 
 # Policy types

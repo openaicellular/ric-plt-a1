@@ -68,6 +68,10 @@ class SDLWrapper:
         """ delete a key"""
         self.sdl.remove(A1NS, {key})
 
+    def healthcheck(self):
+        """checks if the sdl connection is healthy"""
+        return self.sdl.is_active()
+
 
 SDL = SDLWrapper()
 
