@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="a1",
-    version="2.1.2",
+    version="2.1.3",
     packages=find_packages(exclude=["tests.*", "tests"]),
     author="Tommy Carpenter",
     description="RIC A1 Mediator for policy/intent changes",

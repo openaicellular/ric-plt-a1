@@ -1,6 +1,6 @@
 # ==================================================================================
-#       Copyright (c) 2019 Nokia
-#       Copyright (c) 2018-2019 AT&T Intellectual Property.
+#       Copyright (c) 2020 Nokia
+#       Copyright (c) 2020 AT&T Intellectual Property.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -14,32 +14,33 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
-# install a well known working rmr
-FROM python:3.7-alpine
-RUN apk update && apk add autoconf automake build-base cmake libtool ninja pkgconfig git
-RUN git clone --branch 1.10.2 https://gerrit.o-ran-sc.org/r/ric-plt/lib/rmr \
-    && cd rmr \
-    && mkdir build \
-    && cd build \
-    && cmake .. -DPACK_EXTERNALS=1 \
-    && make install
 
-# stage2
-FROM python:3.7-alpine
+# This Dockerfile uses a two stage Docker build
 
-# copies
-COPY --from=0 /usr/local/lib64/libnng.so /usr/local/lib64/libnng.so
-COPY --from=0 /usr/local/lib64/librmr_nng.so /usr/local/lib64/librmr_nng.so
-COPY receiver.py /
+FROM nexus3.o-ran-sc.org:10004/bldr-alpine3-go:1-rmr1.13.1
 
-# Install RMr python bindings
-RUN pip install --upgrade pip
-RUN pip install rmr==2.2.0
+# go will complain if there is a go.mod at the root of the GOPATH so we can't.
+RUN mkdir myxapp
+COPY receiver.go myxapp/receiver.go
+COPY go.mod myxapp/go.mod
 
-# rmr setups
+# do the build
+WORKDIR myxapp
+ENV GO111MODULE on
+ENV GO_ENABLED 0
+ENV GOOS linux
+RUN go build -a -installsuffix cgo -o receiver receiver.go
+
+# 2nd stage
+FROM alpine:3.11
+COPY --from=0 /usr/local/lib64/libnng.so* /usr/local/lib64/
+COPY --from=0 /usr/local/lib64/librmr_nng* /usr/local/lib64/
+COPY --from=0 /go/myxapp/receiver .
+COPY query-config-file.yaml .
+
+# rmr setup
 RUN mkdir -p /opt/route/
 ENV LD_LIBRARY_PATH /usr/local/lib:/usr/local/lib64
 ENV RMR_SEED_RT /opt/route/local.rt
 
-WORKDIR /
-CMD ["python","-u","receiver.py"]
+CMD ["./receiver", "-f", "query-config-file.yaml"]

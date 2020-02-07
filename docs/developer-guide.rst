@@ -35,19 +35,13 @@ This project follows semver. When changes are made, the versions are in:
 
 
 Version bumping rmr
---------------------
-rmr is a critical dependency of A1. Bumping the rmr version dependency requires changes in:
+-------------------
+As of 2020/02/13, A1 and all three integration test receivers use a base image from o-ran-sc.
+The rmr version is in that base image.
+However, the one item in this repo that must be kept in sync is ``rmr-version.yaml``. This controls what rmr gets installed for unit testing.
 
-1) ``Dockerfile``
-
-2) ``Dockerfile-Unit-Test``
-
-3) ``integration_tests/Dockerfile-test-delay-receiver``
-
-4) ``integration_tests/Dockerfile-query-receiver``
-
-5) ``rmr-version.yaml``
-
+Version bumping pyrmr
+---------------------
 rmr-python is the python binding to rmr . Installing rmr per the above does not install it.
 Bumping the rmr python version dependency requires changes in:
 

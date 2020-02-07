@@ -14,6 +14,15 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    :depth: 3
    :local:
 
+[2.1.3] - 2/13/2020
+-------------------
+::
+
+    * This is a pretty big amount of work/changes, however no APIs were changed hence the semver patch
+    * Switches A1's three test receivers (integration tests) over to golang; this was mostly done to learn the go xapp framework and they are identical in functionality.
+    * Upgrades the version of rmr in A1 and all integration receivers to 1.13.*
+    * Uses a much fancier Docker build to reduce the size of a1's image. The python:3.7-alpine image itself is 98MB and A1 is now only ~116MB, so we're done optimizing A1's container size.
+
 [2.1.2] - 1/22/2020
 -------------------
 
