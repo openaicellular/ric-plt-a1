@@ -20,7 +20,7 @@ tests for controller
 import time
 import json
 from rmr.rmr_mocks import rmr_mocks
-from ricsdl.syncstorage import SyncStorage
+from ricxappframe.xapp_sdl import SDLWrapper
 from ricsdl.exceptions import RejectedByBackend, NotConnected, BackendError
 from a1 import a1rmr, data
 
@@ -232,7 +232,8 @@ def _verify_instance_and_status(client, expected_instance, expected_status, expe
 def setup_module():
     """module level setup"""
 
-    data.SDL.sdl = SyncStorage(fake_db_backend="dict")
+    # swap sdl for the fake backend
+    data.SDL = SDLWrapper(use_fake_sdl=True)
 
     def noop():
         pass
@@ -351,7 +352,7 @@ def test_bad_instances(client, monkeypatch, adm_type_good):
 
     # test 503 handlers
 
-    def monkey_set(key, value):
+    def monkey_set(ns, key, value):
         # set a key override function that throws sdl errors on certain keys
         if key == "a1.policy_type.111":
             raise RejectedByBackend()

@@ -29,9 +29,9 @@ This project follows semver. When changes are made, the versions are in:
 
 4) ``integration_tests/a1mediator/Chart.yaml``
 
-6) ``a1/openapi.yaml`` (this is an API version, not a software version; no need to bump on patch changes)
+5) ``a1/openapi.yaml`` (this is an API version, not a software version; no need to bump on patch changes)
 
-7) in the it/dep repo that contains a1 helm chart, ``values.yaml``, ``Chart.yml``
+6) in the ric-plt repo that contains a1 helm chart, ``values.yaml``, ``Chart.yml``
 
 
 Version bumping rmr

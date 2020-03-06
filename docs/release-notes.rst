@@ -14,6 +14,13 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    :depth: 3
    :local:
 
+[2.1.4] - 3/6/2020
+-------------------
+::
+
+    * SDL Wrapper was moved into the python xapp framework; use it from there instead.
+
+
 [2.1.3] - 2/13/2020
 -------------------
 ::
