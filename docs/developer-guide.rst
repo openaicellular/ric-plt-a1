@@ -36,7 +36,7 @@ This project follows semver. When changes are made, the versions are in:
 
 Version bumping rmr
 -------------------
-As of 2020/02/13, A1 and all three integration test receivers use a base image from o-ran-sc.
+As of 2020/02/13, A1, Dockerfile-Unit-Test,  and all three integration test receivers use a base image from o-ran-sc.
 The rmr version is in that base image.
 However, the one item in this repo that must be kept in sync is ``rmr-version.yaml``. This controls what rmr gets installed for unit testing.
 
