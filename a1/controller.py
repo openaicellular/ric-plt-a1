@@ -63,8 +63,10 @@ def get_healthcheck():
     3. checks that our SDL connection is healthy
     """
     if not a1rmr.healthcheck_rmr_thread():
+        mdc_logger.debug("A1 is not healthy due to the rmr thread")
         return "rmr thread is unhealthy", 500
     if not data.SDL.healthcheck():
+        mdc_logger.debug("A1 is not healthy because it does not have a connection to SDL")
         return "sdl connection is unhealthy", 500
     return "", 200
 
@@ -86,6 +88,7 @@ def create_policy_type(policy_type_id):
 
     def put_type_handler():
         data.store_policy_type(policy_type_id, body)
+        mdc_logger.debug("Policy type {} created.".format(policy_type_id))
         return "", 201
 
     body = connexion.request.json
@@ -106,6 +109,7 @@ def delete_policy_type(policy_type_id):
 
     def delete_policy_type_handler():
         data.delete_policy_type(policy_type_id)
+        mdc_logger.debug("Policy type {} deleted.".format(policy_type_id))
         return "", 204
 
     return _try_func_return(delete_policy_type_handler)

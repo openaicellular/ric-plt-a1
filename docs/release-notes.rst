@@ -14,6 +14,19 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    :depth: 3
    :local:
 
+
+[2.1.5] - 3/19/2020
+-------------------
+::
+
+    * Switch to python3.8
+    * Switch to SI95 from NNG (rmr v3 vs rmr v1)
+    * The switch to SI95 led to a rabbit hole in which we eventually discovered that rmr_send may sometimes block for an arbitrary period of time. Because of this issue, a1's sends are now threaded. Please see the longer comment about this in a1rmr.
+    * Bump version of py xapp frame (SDL used only) in A1
+    * Bump version of go xapp frame (0.0.24 -> 0.4.2) in integration tests
+    * Add some additional logging in A1
+
+
 [2.1.4] - 3/6/2020
 -------------------
 ::

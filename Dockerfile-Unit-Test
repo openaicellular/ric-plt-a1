@@ -14,12 +14,10 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
-FROM python:3.7-alpine
+FROM python:3.8-alpine
 
-# copy rmr .sos from the builder image
-COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3-go:1-rmr1.13.1 /usr/local/lib64/libnng.so /usr/local/lib64/libnng.so
-COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3-go:1-rmr1.13.1 /usr/local/lib64/librmr_nng.so /usr/local/lib64/librmr_nng.so
-
+# copy rmr .so from the builder image
+COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3-go:3-rmr-si95-nng-3.6.1 /usr/local/lib64/librmr_si.so /usr/local/lib64/librmr_si.so
 
 # dir that rmr routing file temp goes into
 RUN mkdir -p /opt/route/
@@ -37,4 +35,4 @@ COPY setup.py tox.ini /tmp/
 WORKDIR /tmp
 
 # Run the unit tests
-RUN tox -e py37,flake8
+RUN tox -e py38,flake8

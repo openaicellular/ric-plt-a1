@@ -17,10 +17,9 @@
 
 # This container uses a 2 stage build!
 # Tips and tricks were learned from: https://pythonspeed.com/articles/multi-stage-docker-python/
-FROM python:3.7-alpine AS compile-image
+FROM python:3.8-alpine AS compile-image
 # Gevent needs gcc
 RUN apk update && apk add gcc musl-dev
-# do the install of a1
 
 # Switch to a non-root user for security reasons
 # This is only really needed in stage 2 however this makes the copying easier and straitforward! --user doesn't do the same thing if run as root!
@@ -35,14 +34,13 @@ RUN pip install --user /home/a1user
 
 ###########
 # 2nd stage
-FROM python:3.7-alpine
+FROM python:3.8-alpine
 # dir that rmr routing file temp goes into
 RUN mkdir -p /opt/route/
 # python copy; this basically makes the 2 stage python build work
 COPY --from=compile-image /home/a1user/.local /home/a1user/.local
-# copy rmr .sos from the builder image
-COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3-go:1-rmr1.13.1 /usr/local/lib64/libnng.so /usr/local/lib64/libnng.so
-COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3-go:1-rmr1.13.1 /usr/local/lib64/librmr_nng.so /usr/local/lib64/librmr_nng.so
+# copy rmr .so from the builder image
+COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3-go:3-rmr-si95-nng-3.6.1 /usr/local/lib64/librmr_si.so /usr/local/lib64/librmr_si.so
 # Switch to a non-root user for security reasons. a1 does not currently write into any dirs so no chowns are needed at this time.
 RUN addgroup -S a1user && adduser -S -G a1user a1user
 USER a1user

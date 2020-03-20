@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="a1",
-    version="2.1.4",
+    version="2.1.5",
     packages=find_packages(exclude=["tests.*", "tests"]),
     author="Tommy Carpenter",
     description="RIC A1 Mediator for policy/intent changes",
@@ -30,10 +30,9 @@ setup(
         "Flask",
         "connexion[swagger-ui]",
         "gevent",
-        "rmr>=2.2.0",
+        "rmr>=4.0.0,<5.0.0",
         "mdclogpy",
-        "ricxappframe>=0.2.0",
-        "ricsdl>=2.0.3,<3.0.0",
+        "ricxappframe>=0.4.0",
     ],
     package_data={"a1": ["openapi.yaml"]},
 )

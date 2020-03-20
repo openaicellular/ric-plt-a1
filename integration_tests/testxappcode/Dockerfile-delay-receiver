@@ -16,8 +16,7 @@
 # ==================================================================================
 
 # This Dockerfile uses a two stage Docker build
-
-FROM nexus3.o-ran-sc.org:10004/bldr-alpine3-go:1-rmr1.13.1
+FROM nexus3.o-ran-sc.org:10004/bldr-alpine3-go:3-rmr-si95-nng-3.6.1
 
 # go will complain if there is a go.mod at the root of the GOPATH so we can't.
 RUN mkdir myxapp
@@ -33,8 +32,7 @@ RUN go build -a -installsuffix cgo -o receiver receiver.go
 
 # 2nd stage
 FROM alpine:3.11
-COPY --from=0 /usr/local/lib64/libnng.so* /usr/local/lib64/
-COPY --from=0 /usr/local/lib64/librmr_nng* /usr/local/lib64/
+COPY --from=0 /usr/local/lib64/librmr_si.so* /usr/local/lib64/
 COPY --from=0 /go/myxapp/receiver .
 COPY delay-config-file.yaml .
 

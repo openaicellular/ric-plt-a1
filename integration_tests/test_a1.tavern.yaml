@@ -540,10 +540,11 @@ stages:
       body: [qt1, qt2]
 
   # after the query, a1 should send, query receiver should send back, and the policy should be in effect
-
+  # sometimes in kubernetes, this test takes a long time to work because of an k8s issue
+  # empirically we find that the si95 rmr finally "detects" failure after about 75 seconds, retries, and then works.
   - name: test the query status get
-    max_retries: 3
-    delay_before: 6  # give it a few seconds for rmr ; delay reciever sleeps for 5 seconds by default
+    max_retries: 100
+    delay_before: 1
     request:
       url: http://localhost:10000/a1-p/policytypes/1006001/policies/qt1/status
       method: GET
@@ -554,8 +555,8 @@ stages:
         has_been_deleted: False
 
   - name: test the query status get 2
-    max_retries: 3
-    delay_before: 6  # give it a few seconds for rmr ; delay reciever sleeps for 5 seconds by default
+    max_retries: 100
+    delay_before: 1
     request:
       url: http://localhost:10000/a1-p/policytypes/1006001/policies/qt2/status
       method: GET

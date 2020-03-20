@@ -36,22 +36,26 @@ This project follows semver. When changes are made, the versions are in:
 
 Version bumping rmr
 -------------------
-As of 2020/02/13, A1, Dockerfile-Unit-Test,  and all three integration test receivers use a base image from o-ran-sc.
+As of 2020/02/13, A1 (Dockerfile), Dockerfile-Unit-Test,  and all three integration test receivers use a base image from o-ran-sc.
 The rmr version is in that base image.
-However, the one item in this repo that must be kept in sync is ``rmr-version.yaml``. This controls what rmr gets installed for unit testing.
+When version changes are made in that image, rebuilding those 5 containers in the A1 repo will pick it up (or just A1 itself for prod usage).
+
+However, there are two items in this repo that must be kept in sync:  ``rmr-version.yaml``, which  controls what rmr gets installed for unit testing in Jenkins, and ``integration_tests/install_rmr.sh`` which is a useful script for a variety of local testing.
 
 Version bumping pyrmr
 ---------------------
 rmr-python is the python binding to rmr . Installing rmr per the above does not install it.
-Bumping the rmr python version dependency requires changes in:
+Bumping the rmr python version is done via ``setup.py``
 
-1) ``setup.py``
+Version bumping python itself
+-----------------------------
+If you want to update the version of python itself (ie just done from 37 to 38):
 
-2) ``integration_tests/Dockerfile-test-delay-receiver``
+1) ``Dockerfile``
 
-3) ``integration_tests/Dockerfile-query-receiver``
+2) ``Dockerfile-Unit-Test``
 
-Run the integration tests after attempting this.
+3) ``tox.ini``
 
 Unit Testing
 ------------
