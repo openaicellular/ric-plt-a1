@@ -47,9 +47,15 @@ Xapps to A1
 ~~~~~~~~~~~
 There are three scenarios in which Xapps are to send a message to A1:
 
-1. When an xapp receives a CREATE or UPDATE message for a policy instance. Xapps must respond to these requests by sending a message of type 20011 to A1. The schema for that message is defined by ``downstream_notification_schema`` in ``docs/a1_xapp_contract_openapi.yaml``
-2. Since policy instances can "deprecate" other instances, there are times when xapps need to asyncronously tell A1 that a policy is no longer active. Same message type and schema. The only difference between case 1 and 2 is that case 1 is a "reply" and case 2 is "unsolicited".
-3. Xapps can request A1 to re-send all instances of a type using a query, message 20012. When A1 receives this (TBD HERE, STILL BE WORKED OUT)
+1. When an xapp receives a CREATE message for a policy instance. Xapps must respond to these requests by sending a message of type 20011 to A1.
+   The schema for that message is defined by ``downstream_notification_schema`` in ``docs/a1_xapp_contract_openapi.yaml``.
+   Note, if the Xapp uses RTS for this, do not forget to change the message type before replying!
+2. Since policy instances can "deprecate" other instances, there are times when xapps need to asyncronously tell A1 that a policy is no longer active. Same message type and schema.
+3. Xapps can request A1 to re-send all instances of a type T using a query, message 20012.
+   The schema for that message is defined by ``policy_query_schema`` in ``docs/a1_xapp_contract_openapi.yaml`` (just a body with ``{policy_type_id}: ...}```.
+   When A1 receives this, A1 will send the xapp a CREATE message N times, where N is the number of policy instances for type T. The xapp should reply normally to each of those as per bullet 1.
+   That is, after the Xapp performs the query, the N CREATE messages sent and the N replies are "as normal".
+   The query just kicks off this process rather than an external caller to A1.
 
 
 Known differences from A1 1.0.0 spec

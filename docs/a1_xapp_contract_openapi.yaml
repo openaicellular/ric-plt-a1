@@ -19,6 +19,15 @@ components:
       type: string
       example: "3d2157af-6a8f-4a7c-810f-38c2f824bf12"
 
+    policy_query_schema:
+      type: object
+      required:
+        - policy_type_id
+      additionalProperties: false
+      properties:
+        policy_type_id:
+          "$ref": "#/components/schemas/policy_type_id"
+
     downstream_message_schema:
       type: object
       required:
