@@ -19,7 +19,7 @@ tests for controller
 # ==================================================================================
 import time
 import json
-from rmr.rmr_mocks import rmr_mocks
+from ricxappframe.rmr.rmr_mocks import rmr_mocks
 from ricxappframe.xapp_sdl import SDLWrapper
 from ricsdl.exceptions import RejectedByBackend, NotConnected, BackendError
 from a1 import a1rmr, data
@@ -89,7 +89,7 @@ def _fake_dequeue_deleted():
 def _test_put_patch(monkeypatch):
     rmr_mocks.patch_rmr(monkeypatch)
     # assert that rmr bad states don't cause problems
-    monkeypatch.setattr("rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(10))
+    monkeypatch.setattr("ricxappframe.rmr.rmr.rmr_send_msg", rmr_mocks.send_mock_generator(10))
 
 
 def _no_ac(client):

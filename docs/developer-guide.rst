@@ -42,11 +42,6 @@ When version changes are made in that image, rebuilding those 5 containers in th
 
 However, there are two items in this repo that must be kept in sync:  ``rmr-version.yaml``, which  controls what rmr gets installed for unit testing in Jenkins, and ``integration_tests/install_rmr.sh`` which is a useful script for a variety of local testing.
 
-Version bumping pyrmr
----------------------
-rmr-python is the python binding to rmr . Installing rmr per the above does not install it.
-Bumping the rmr python version is done via ``setup.py``
-
 Version bumping python itself
 -----------------------------
 If you want to update the version of python itself (ie just done from 37 to 38):
@@ -91,7 +86,7 @@ Then, run all the tests from the root (this requires the python packages ``tox``
    tox -c tox-integration.ini
 
 This script:
-1. Deploys 2 helm charts (4 containers) into a local kubernetes installation
+1. Deploys 3 helm charts (5 containers) into a local kubernetes installation
 2. Port forwards a pod ClusterIP to localhost
 3. Uses “tavern” to run some tests against the server
 4. Barrages the server with apache bench

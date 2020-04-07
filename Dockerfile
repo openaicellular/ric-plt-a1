@@ -40,7 +40,7 @@ RUN mkdir -p /opt/route/
 # python copy; this basically makes the 2 stage python build work
 COPY --from=compile-image /home/a1user/.local /home/a1user/.local
 # copy rmr .so from the builder image
-COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3-go:3-rmr-si95-nng-3.6.1 /usr/local/lib64/librmr_si.so /usr/local/lib64/librmr_si.so
+COPY --from=nexus3.o-ran-sc.org:10004/bldr-alpine3-go:5-a3.11-nng-rmr3 /usr/local/lib64/librmr_si.so /usr/local/lib64/librmr_si.so
 # Switch to a non-root user for security reasons. a1 does not currently write into any dirs so no chowns are needed at this time.
 RUN addgroup -S a1user && adduser -S -G a1user a1user
 USER a1user

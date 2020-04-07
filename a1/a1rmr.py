@@ -22,7 +22,7 @@ import queue
 import time
 import json
 from threading import Thread
-from rmr import rmr, helpers
+from ricxappframe.rmr import rmr, helpers
 from mdclogpy import Logger
 from a1 import data, messages
 from a1.exceptions import PolicyTypeNotFound, PolicyInstanceNotFound
@@ -45,6 +45,8 @@ class _RmrLoop:
     """
     class represents an rmr loop that constantly reads from rmr and performs operations based on waiting messages
     this launches a thread, it should probably only be called once; the public facing method to access these ensures this
+
+    TODO: the xapp frame has a version of this looping structure. See if A1 can switch to that.
     """
 
     def __init__(self, init_func_override=None, rcv_func_override=None):

@@ -16,9 +16,7 @@
 # ==================================================================================
 
 # This Dockerfile uses a two stage Docker build
-
-# The first stage is defined here: https://gerrit.o-ran-sc.org/r/gitweb?p=ci-management.git;a=blob;f=docker/bldr-alpine3-go/Dockerfile;h=a1e31f07e6113d4a02202793ace6ebc780d71583;hb=3711ffcbfe06f6c872bf4a0871eb5f2a2fcd83ae
-FROM nexus3.o-ran-sc.org:10004/bldr-alpine3-go:3-rmr-si95-nng-3.6.1
+FROM nexus3.o-ran-sc.org:10004/bldr-alpine3-go:5-a3.11-nng-rmr3
 
 # go will complain if there is a go.mod at the root of the GOPATH so we can't.
 RUN mkdir myxapp

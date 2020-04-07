@@ -14,6 +14,13 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    :depth: 3
    :local:
 
+[2.1.6] - 4/7/2020
+-------------------
+::
+
+    * Switch to rmr 3.6.3
+    * Switch to using rmr in the ricxappframe
+
 
 [2.1.5] - 3/19/2020
 -------------------
