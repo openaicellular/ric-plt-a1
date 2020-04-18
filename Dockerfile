@@ -18,8 +18,8 @@
 # This container uses a 2 stage build!
 # Tips and tricks were learned from: https://pythonspeed.com/articles/multi-stage-docker-python/
 FROM python:3.8-alpine AS compile-image
-# Gevent needs gcc
-RUN apk update && apk add gcc musl-dev
+# Gevent needs gcc, make, file, ffi
+RUN apk update && apk add gcc musl-dev make file libffi-dev
 
 # Switch to a non-root user for security reasons
 # This is only really needed in stage 2 however this makes the copying easier and straitforward! --user doesn't do the same thing if run as root!
