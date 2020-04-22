@@ -17,7 +17,8 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 [2.1.7] - 2020-04-22
 --------------------
 
-* Switch to rmr 3.8.0
+* Upgrade to rmr 3.8.0
+* Upgrade integration tests to xapp-frame-go version 0.4.8 which drops NNG
 
 [2.1.6] - 4/7/2020
 -------------------
