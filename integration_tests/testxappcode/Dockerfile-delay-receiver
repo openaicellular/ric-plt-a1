@@ -32,7 +32,10 @@ RUN go build -a -installsuffix cgo -o receiver receiver.go
 
 # 2nd stage
 FROM alpine:3.11
-COPY --from=0 /usr/local/lib64/librmr_si.so* /usr/local/lib64/
+
+# copy rmr .so from builder image in lieu of an Alpine package
+COPY --from=nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-alpine3-rmr:3.8.0 /usr/local/lib64/librmr_si.so /usr/local/lib64/librmr_si.so
+
 COPY --from=0 /go/myxapp/receiver .
 COPY delay-config-file.yaml .
 

@@ -14,6 +14,11 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    :depth: 3
    :local:
 
+[2.1.7] - 2020-04-22
+--------------------
+
+* Switch to rmr 3.8.0
+
 [2.1.6] - 4/7/2020
 -------------------
 ::
