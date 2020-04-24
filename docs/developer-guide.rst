@@ -74,13 +74,17 @@ Alternatively, you can run the unit tests in Docker (this is somewhat less nice 
 Integration testing
 -------------------
 
-This tests A1’s external API with three test receivers. This depends on helm+k8s.
+This tests A1’s external API with three test receivers. This requires docker, kubernetes and helm.
 
-Build all the containers:
+Build all the images:
 
 ::
 
-    docker build  -t a1:latest .; cd integration_tests/; docker build  -t testreceiver:latest . -f Dockerfile-test-delay-receiver; docker build -t queryreceiver:latest . -f Dockerfile-query-receiver; cd ..
+    docker build  -t a1:latest .
+    cd integration_tests/testxappcode
+    docker build -t delayreceiver:latest -f Dockerfile-delay-receiver .
+    docker build -t queryreceiver:latest -f Dockerfile-query-receiver .
+    docker build -t testreceiver:latest  -f Dockerfile-test-receiver  .
 
 
 Then, run all the tests from the root (this requires the python packages ``tox``, ``pytest``, and ``tavern``).

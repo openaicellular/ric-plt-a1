@@ -172,9 +172,8 @@ stages:
         blocking_rate: 20
         trigger_threshold: 10
 
-
   - name: test the admission control policy status get
-    delay_before: 3 # give it a few seconds for rmr
+    delay_before: 10 # give it a few seconds for rmr
     request:
       url: http://localhost:10000/a1-p/policytypes/6660666/policies/admission_control_policy/status
       method: GET
