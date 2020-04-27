@@ -166,6 +166,8 @@ def store_policy_type(policy_type_id, body):
     key = _generate_type_key(policy_type_id)
     if SDL.get(A1NS, key) is not None:
         raise PolicyTypeAlreadyExists()
+    # overwrite ID in body to enforce consistency
+    body['policy_type_id'] = policy_type_id
     SDL.set(A1NS, key, body)
 
 

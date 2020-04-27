@@ -1,8 +1,8 @@
 .. This work is licensed under a Creative Commons Attribution 4.0 International License.
 .. http://creativecommons.org/licenses/by/4.0
 
-Developer-Guide
-===============
+A1 Developer Guide
+==================
 
 .. contents::
    :depth: 3
@@ -14,10 +14,10 @@ Tech Stack
 -  OpenAPI3
 -  Connexion
 -  Flask with Gevent serving
--  Python3.7
+-  Python3.8
 
-Version bumping
----------------
+Version bumping A1
+------------------
 
 This project follows semver. When changes are made, the versions are in:
 
@@ -34,16 +34,18 @@ This project follows semver. When changes are made, the versions are in:
 6) in the ric-plt repo that contains a1 helm chart, ``values.yaml``, ``Chart.yml``
 
 
-Version bumping rmr
+Version bumping RMR
 -------------------
+
 As of 2020/02/13, A1 (Dockerfile), Dockerfile-Unit-Test,  and all three integration test receivers use a base image from o-ran-sc.
 The rmr version is in that base image.
 When version changes are made in that image, rebuilding those 5 containers in the A1 repo will pick it up (or just A1 itself for prod usage).
 
 However, there are two items in this repo that must be kept in sync:  ``rmr-version.yaml``, which  controls what rmr gets installed for unit testing in Jenkins, and ``integration_tests/install_rmr.sh`` which is a useful script for a variety of local testing.
 
-Version bumping python itself
------------------------------
+Version bumping Python
+----------------------
+
 If you want to update the version of python itself (ie just done from 37 to 38):
 
 1) ``Dockerfile``
@@ -54,6 +56,7 @@ If you want to update the version of python itself (ie just done from 37 to 38):
 
 Unit Testing
 ------------
+
 Note,  before this will work, for the first time on the machine running the tests, run ``./install_deps.sh``. This is only needed once on the machine.
 Also, this requires the python packages ``tox`` and ``pytest``.
 
@@ -70,6 +73,7 @@ Alternatively, you can run the unit tests in Docker (this is somewhat less nice 
 
 Integration testing
 -------------------
+
 This tests A1’s external API with three test receivers. This depends on helm+k8s.
 
 Build all the containers:

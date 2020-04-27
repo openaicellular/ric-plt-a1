@@ -1,19 +1,20 @@
 .. This work is licensed under a Creative Commons Attribution 4.0 International License.
 .. SPDX-License-Identifier: CC-BY-4.0
 
-A1 Mediator
+A1 Overview
 ===========
+
+The RAN Intelligent Controller (RIC) Platform's A1 Mediator component listens for policy
+type and policy instance requests sent via HTTP (the "northbound" interface),
+and publishes those requests to running xApps via RMR messages (the "southbound" interface).
 
 Code
 ----
+
+Code is managed in this Gerrit repository:
+
 https://gerrit.o-ran-sc.org/r/admin/repos/ric-plt/a1
 
-API
----
-
-You can see the API (OpenAPI3 spec) at ``a1/openapi.yml``. You can also
-see the “pretty” version if you run the container at
-``http://localhost:10000/ui/``.
 
 Policy Overview
 ----------------
