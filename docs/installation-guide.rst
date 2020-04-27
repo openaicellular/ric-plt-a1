@@ -40,5 +40,5 @@ running
 
 ::
 
-   docker run -dt -p 10000:10000 -v /path/to/localrt:/opt/route/local.rt -v /path/to/ricmanifest:/opt/ricmanifest.json a1:X.Y.Z -v
+   docker run -dt -p 10000:10000 -v /path/to/localrt:/opt/route/local.rt a1:X.Y.Z -v
 

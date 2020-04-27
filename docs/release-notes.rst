@@ -14,10 +14,10 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    :depth: 3
    :local:
 
-[2.1.7] - 2020-04-27
+[2.1.7] - 2020-04-28
 --------------------
 
-* Upgrade to rmr 3.8.0
+* Upgrade to rmr 4.0.2
 * Upgrade integration tests to xapp-frame-go version 0.4.8 which drops NNG
 * Extend exception handler to return error details in HTTP response
 * Ensure that policy type ID on path matches ID in object

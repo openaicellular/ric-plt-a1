@@ -37,11 +37,14 @@ This project follows semver. When changes are made, the versions are in:
 Version bumping RMR
 -------------------
 
-As of 2020/02/13, A1 (Dockerfile), Dockerfile-Unit-Test,  and all three integration test receivers use a base image from o-ran-sc.
-The rmr version is in that base image.
-When version changes are made in that image, rebuilding those 5 containers in the A1 repo will pick it up (or just A1 itself for prod usage).
+As of 2020/02/13, A1 (Dockerfile), Dockerfile-Unit-Test, and all three
+integration test receivers use an Alpine base image and install RMR
+from a base builder image.  Must update and rebuild all 5 containers
+in the A1 repo (or just A1 itself for prod usage).
 
-However, there are two items in this repo that must be kept in sync:  ``rmr-version.yaml``, which  controls what rmr gets installed for unit testing in Jenkins, and ``integration_tests/install_rmr.sh`` which is a useful script for a variety of local testing.
+In addition these items in this repo must be kept in sync:
+* ``rmr-version.yaml`` controls what rmr gets installed for unit testing in Jenkins
+* ``integration_tests/install_rmr.sh`` is a useful script for a variety of local testing.
 
 Version bumping Python
 ----------------------
@@ -57,15 +60,18 @@ If you want to update the version of python itself (ie just done from 37 to 38):
 Unit Testing
 ------------
 
-Note,  before this will work, for the first time on the machine running the tests, run ``./install_deps.sh``. This is only needed once on the machine.
-Also, this requires the python packages ``tox`` and ``pytest``.
+Note, before this will work, for the first time on the machine running
+the tests, run ``./install_deps.sh``. This is only needed once on the
+machine.  Also, this requires the python packages ``tox`` and
+``pytest``.
 
 ::
 
    tox
    open htmlcov/index.html
 
-Alternatively, you can run the unit tests in Docker (this is somewhat less nice because you don't get the pretty HTML)
+Alternatively, you can run the unit tests in Docker (this is somewhat
+less nice because you don't get the pretty HTML)
 
 ::
 
@@ -74,7 +80,8 @@ Alternatively, you can run the unit tests in Docker (this is somewhat less nice 
 Integration testing
 -------------------
 
-This tests A1’s external API with three test receivers. This requires docker, kubernetes and helm.
+This tests A1’s external API with three test receivers. This requires
+docker, kubernetes and helm.
 
 Build all the images:
 

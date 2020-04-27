@@ -35,12 +35,15 @@ RUN pip install --user /home/a1user
 ###########
 # 2nd stage
 FROM python:3.8-alpine
+
+# copy rmr libraries from builder image in lieu of an Alpine package
+COPY --from=nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-alpine3-rmr:4.0.2 /usr/local/lib64/librmr* /usr/local/lib64/
+
 # dir that rmr routing file temp goes into
 RUN mkdir -p /opt/route/
 # python copy; this basically makes the 2 stage python build work
 COPY --from=compile-image /home/a1user/.local /home/a1user/.local
-# copy rmr .so from builder image in lieu of an Alpine package
-COPY --from=nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-alpine3-rmr:3.8.0 /usr/local/lib64/librmr_si.so /usr/local/lib64/librmr_si.so
+
 # Switch to a non-root user for security reasons. a1 does not currently write into any dirs so no chowns are needed at this time.
 RUN addgroup -S a1user && adduser -S -G a1user a1user
 USER a1user
