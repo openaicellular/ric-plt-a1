@@ -16,17 +16,14 @@
 # ==================================================================================
 FROM python:3.8-alpine
 
-# copy rmr libraries from builder image in lieu of an Alpine package
-COPY --from=nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-alpine3-rmr:4.0.2 /usr/local/lib64/librmr* /usr/local/lib64/
-
-# dir that rmr routing file temp goes into
-RUN mkdir -p /opt/route/
-
 # Gevent needs gcc, make, file, ffi
 RUN apk update && apk add gcc musl-dev make file libffi-dev
 
 # Upgrade pip, install tox (gevent is installed as a speed hack in local dev where tox is run many times)
 RUN pip install --upgrade pip && pip install tox gevent
+
+# copy rmr libraries from builder image in lieu of an Alpine package
+COPY --from=nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-alpine3-rmr:4.0.2 /usr/local/lib64/librmr* /usr/local/lib64/
 
 # copies
 COPY a1/ /tmp/a1

@@ -1,6 +1,3 @@
-"""
-Main a1 controller
-"""
 # ==================================================================================
 #       Copyright (c) 2019-2020 Nokia
 #       Copyright (c) 2018-2020 AT&T Intellectual Property.
@@ -17,6 +14,9 @@ Main a1 controller
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
+"""
+Main a1 controller
+"""
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 import connexion

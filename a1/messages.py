@@ -1,6 +1,3 @@
-"""
-rmr messages
-"""
 # ==================================================================================
 #       Copyright (c) 2019 Nokia
 #       Copyright (c) 2018-2019 AT&T Intellectual Property.
@@ -17,6 +14,9 @@ rmr messages
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
+"""
+rmr messages
+"""
 
 
 def a1_to_handler(operation, policy_type_id, policy_instance_id, payload=None):

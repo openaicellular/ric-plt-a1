@@ -1,6 +1,3 @@
-"""
-A1 entrypoint
-"""
 # ==================================================================================
 #       Copyright (c) 2019 Nokia
 #       Copyright (c) 2018-2019 AT&T Intellectual Property.
@@ -17,6 +14,10 @@ A1 entrypoint
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
+"""
+A1 entrypoint
+"""
+from os import environ
 from gevent.pywsgi import WSGIServer
 from mdclogpy import Logger
 from a1 import app
@@ -28,11 +29,14 @@ mdc_logger = Logger(name=__name__)
 
 def main():
     """Entrypoint"""
+    mdc_logger.debug("A1Mediator starts")
     # start rmr thread
-    mdc_logger.debug("Initializing rmr thread. A1s webserver will not start until rmr initialization is complete.")
+    mdc_logger.debug("Starting RMR thread with RMR_RTG_SVC {0}, RMR_SEED_RT {1}".format(environ.get('RMR_RTG_SVC'), environ.get('RMR_SEED_RT')))
+    mdc_logger.debug("RMR initialization must complete before webserver can start")
     a1rmr.start_rmr_thread()
-
+    mdc_logger.debug("RMR initialization complete")
     # start webserver
-    mdc_logger.debug("Starting gevent server")
-    http_server = WSGIServer(("", 10000), app)
+    port = 10000
+    mdc_logger.debug("Starting gevent webserver on port {0}".format(port))
+    http_server = WSGIServer(("", port), app)
     http_server.serve_forever()

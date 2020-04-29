@@ -1,6 +1,3 @@
-"""
-a1s rmr functionality
-"""
 # ==================================================================================
 #       Copyright (c) 2019-2020 Nokia
 #       Copyright (c) 2018-2020 AT&T Intellectual Property.
@@ -17,6 +14,9 @@ a1s rmr functionality
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
+"""
+A1 RMR functionality
+"""
 import os
 import queue
 import time
@@ -43,13 +43,27 @@ __RMR_LOOP__ = None
 
 class _RmrLoop:
     """
-    class represents an rmr loop that constantly reads from rmr and performs operations based on waiting messages
-    this launches a thread, it should probably only be called once; the public facing method to access these ensures this
+    Class represents an rmr loop that constantly reads from rmr and performs operations
+    based on waiting messages.  This launches a thread, it should probably only be called
+    once; the public facing method to access these ensures this.
 
     TODO: the xapp frame has a version of this looping structure. See if A1 can switch to that.
     """
 
     def __init__(self, init_func_override=None, rcv_func_override=None):
+        """
+        Init
+
+        Parameters
+        ----------
+        init_func_override: function (optional)
+            Function that initializes RMR and answers an RMR context.
+            Supply an empty function to skip initializing RMR.
+
+        rcv_func_override: function (optional)
+            Function that receives messages from RMR and answers a list.
+            Supply a trivial function to skip reading from RMR.
+        """
         self.keep_going = True
         self.rcv_func = None
         self.last_ran = time.time()
@@ -199,6 +213,16 @@ class _RmrLoop:
 def start_rmr_thread(init_func_override=None, rcv_func_override=None):
     """
     Start a1s rmr thread
+
+    Parameters
+    ----------
+    init_func_override: function (optional)
+        Function that initializes RMR and answers an RMR context.
+        Supply an empty function to skip initializing RMR.
+
+    rcv_func_override: function (optional)
+        Function that receives messages from RMR and answers a list.
+        Supply a trivial function to skip reading from RMR.
     """
     global __RMR_LOOP__
     if __RMR_LOOP__ is None:

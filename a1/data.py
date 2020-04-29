@@ -1,6 +1,3 @@
-"""
-Represents A1s database and database access functions.
-"""
 # ==================================================================================
 #       Copyright (c) 2019-2020 Nokia
 #       Copyright (c) 2018-2020 AT&T Intellectual Property.
@@ -17,13 +14,15 @@ Represents A1s database and database access functions.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
+"""
+Represents A1s database and database access functions.
+"""
 import os
 import time
 from threading import Thread
 from mdclogpy import Logger
 from ricxappframe.xapp_sdl import SDLWrapper
 from a1.exceptions import PolicyTypeNotFound, PolicyInstanceNotFound, PolicyTypeAlreadyExists, CantDeleteNonEmptyType
-
 
 # constants
 INSTANCE_DELETE_NO_RESP_TTL = int(os.environ.get("INSTANCE_DELETE_NO_RESP_TTL", 5))

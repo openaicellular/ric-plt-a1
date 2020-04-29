@@ -14,6 +14,17 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    :depth: 3
    :local:
 
+[2.1.8] - 2020-04-29
+--------------------
+
+* Revise Dockerfile to set user as owner of .local dir with a1 package
+* Rename console shell start script to run-a1 from run.py 
+* Extend start script to report webserver listening port
+* Add tiny RMR routing table for use in demo and test
+* Extend documentation for running a container locally
+* Add documentation of start/init parameters to _RmrLoop class
+
+
 [2.1.7] - 2020-04-28
 --------------------
 
@@ -22,6 +33,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 * Extend exception handler to return error details in HTTP response
 * Ensure that policy type ID on path matches ID in object
 * Add OpenAPI spec to RST documentation
+
 
 [2.1.6] - 4/7/2020
 -------------------

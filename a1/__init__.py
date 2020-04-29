@@ -1,6 +1,3 @@
-"""
-contains the app; broken out here for ease of unit testing
-"""
 # ==================================================================================
 #       Copyright (c) 2019 Nokia
 #       Copyright (c) 2018-2019 AT&T Intellectual Property.
@@ -17,6 +14,9 @@ contains the app; broken out here for ease of unit testing
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 # ==================================================================================
+"""
+contains the app; broken out here for ease of unit testing
+"""
 import connexion
 
 

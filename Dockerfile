@@ -18,16 +18,19 @@
 # This container uses a 2 stage build!
 # Tips and tricks were learned from: https://pythonspeed.com/articles/multi-stage-docker-python/
 FROM python:3.8-alpine AS compile-image
+# upgrade pip as root
+RUN pip install --upgrade pip
 # Gevent needs gcc, make, file, ffi
 RUN apk update && apk add gcc musl-dev make file libffi-dev
-
-# Switch to a non-root user for security reasons
-# This is only really needed in stage 2 however this makes the copying easier and straitforward! --user doesn't do the same thing if run as root!
+# create a non-root user.  Only really needed in stage 2,
+# however this makes the copying easier and straighttforward;
+# pip option --user doesn't do the same thing if run as root
 RUN addgroup -S a1user && adduser -S -G a1user a1user
+# switch to the non-root user for installing site packages
 USER a1user
-
-# Speed hack; we install gevent FIRST because when building repeatedly (eg during dev) and only changing a1 code, we do not need to keep compiling gevent which takes forever
-RUN pip install --upgrade pip && pip install --user gevent
+# Speed hack; we install gevent before a1 because when building repeatedly (eg during dev)
+# and only changing a1 code, we do not need to keep compiling gevent which takes forever
+RUN pip install --user gevent
 COPY setup.py /home/a1user/
 COPY a1/ /home/a1user/a1
 RUN pip install --user /home/a1user
@@ -39,21 +42,23 @@ FROM python:3.8-alpine
 # copy rmr libraries from builder image in lieu of an Alpine package
 COPY --from=nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-alpine3-rmr:4.0.2 /usr/local/lib64/librmr* /usr/local/lib64/
 
-# dir that rmr routing file temp goes into
-RUN mkdir -p /opt/route/
-# python copy; this basically makes the 2 stage python build work
+# copy python modules; this makes the 2 stage python build work
 COPY --from=compile-image /home/a1user/.local /home/a1user/.local
-
-# Switch to a non-root user for security reasons. a1 does not currently write into any dirs so no chowns are needed at this time.
+# create mount point for dir with rmr routing file as named below
+RUN mkdir -p /opt/route/
+# create a non-root user
 RUN addgroup -S a1user && adduser -S -G a1user a1user
+# ensure the non-root user can read python files
+RUN chown -R a1user:a1user /home/a1user/.local
+# switch to the non-root user for security reasons
 USER a1user
 # misc setups
 EXPOSE 10000
 ENV LD_LIBRARY_PATH /usr/local/lib/:/usr/local/lib64
 ENV RMR_SEED_RT /opt/route/local.rt
 ENV PYTHONUNBUFFERED 1
-# This step is critical
+# pip installs console script to ~/.local/bin so PATH is critical
 ENV PATH=/home/a1user/.local/bin:$PATH
 
 # Run!
-CMD run.py
+CMD run-a1

@@ -60,10 +60,13 @@ If you want to update the version of python itself (ie just done from 37 to 38):
 Unit Testing
 ------------
 
-Note, before this will work, for the first time on the machine running
-the tests, run ``./install_deps.sh``. This is only needed once on the
-machine.  Also, this requires the python packages ``tox`` and
-``pytest``.
+Running the unit tests requires the python packages ``tox`` and ``pytest``.
+
+The RMR library is also required during unit tests. If running directly from tox
+(outside a Docker container), install RMR using the script in the integration_tests
+directory: ``install_rmr.sh``.
+
+Upon completion, view the test coverage like this:
 
 ::
 
@@ -75,7 +78,7 @@ less nice because you don't get the pretty HTML)
 
 ::
 
-   docker build  --no-cache -t a1test:latest -f Dockerfile-Unit-Test
+   docker build  --no-cache -f Dockerfile-Unit-Test .
 
 Integration testing
 -------------------
