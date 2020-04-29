@@ -12,13 +12,15 @@ A1 Installation Guide
 Optional ENV Variables
 ----------------------
 
-You can set the following ENVs to change the A1 behavior:
+You can set the following environment variables when launching a container to change the A1 behavior:
 
 1. ``A1_RMR_RETRY_TIMES``: the number of times failed rmr operations such as timeouts and send failures should be retried before A1 gives up and returns a 503. The default is ``4``.
 
 2. ``INSTANCE_DELETE_NO_RESP_TTL``: Please refer to the delete flowchart in docs/; this is ``T1`` there. The default is 5 (seconds). Basically, the number of seconds that a1 waits to remove an instance from the database after a delete is called in the case that no downstream apps responded.
 
 3. ``INSTANCE_DELETE_RESP_TTL``: Please refer to the delete flowchart in docs/; this is ``T2`` there. The default is 5 (seconds). Basically, the number of seconds that a1 waits to remove an instance from the database after a delete is called in the case that downstream apps responded.
+
+4. ``USE_FAKE_SDL``: This allows testing of the A1 feature without a DBaaS SDL container.  The default is False.
 
 K8S
 ---
@@ -38,11 +40,13 @@ Build the image
 Start the container
 ~~~~~~~~~~~~~~~~~~~
 
-A sample RMR routing table is supplied here in file `local.rt` for mounting as a volume:
+The A1 container depends on a companion DBaaS (SDL) container, but if that is not convenient set
+an environment variable as shown below to mock that service.  Also a sample RMR routing table is
+supplied in file `local.rt` for mounting as a volume.  The following command uses both:
 
 ::
 
-   docker run -p 10000:10000 -v /path/to/local.rt:/opt/route/local.rt a1:latest
+   docker run -e USE_FAKE_SDL=True -p 10000:10000 -v /path/to/local.rt:/opt/route/local.rt a1:latest
 
 View container API
 ~~~~~~~~~~~~~~~~~~
@@ -56,8 +60,8 @@ A web user interface generated from the OpenAPI specification can be accessed at
 Check container health
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The following command requests the container health.  This requires a Storage Data Layer
-(SDL) service; expect internal server error if that service is not available/running.
+The following command requests the container health.  Expect an internal server error if the
+Storage Data Layer (SDL) service is not available or has not been mocked as shown above.
 
 ::
 

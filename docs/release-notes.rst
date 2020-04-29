@@ -23,6 +23,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 * Add tiny RMR routing table for use in demo and test
 * Extend documentation for running a container locally
 * Add documentation of start/init parameters to _RmrLoop class
+* Add new environment variable USE_FAKE_SDL (`RIC-351 <https://jira.o-ran-sc.org/browse/RIC-351>`_)
 
 
 [2.1.7] - 2020-04-28

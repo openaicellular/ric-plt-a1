@@ -56,6 +56,8 @@ USER a1user
 EXPOSE 10000
 ENV LD_LIBRARY_PATH /usr/local/lib/:/usr/local/lib64
 ENV RMR_SEED_RT /opt/route/local.rt
+# Set to True to run standalone
+ENV USE_FAKE_SDL False
 ENV PYTHONUNBUFFERED 1
 # pip installs console script to ~/.local/bin so PATH is critical
 ENV PATH=/home/a1user/.local/bin:$PATH

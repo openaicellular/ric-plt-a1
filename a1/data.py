@@ -17,6 +17,7 @@
 """
 Represents A1s database and database access functions.
 """
+import distutils.util
 import os
 import time
 from threading import Thread
@@ -27,6 +28,7 @@ from a1.exceptions import PolicyTypeNotFound, PolicyInstanceNotFound, PolicyType
 # constants
 INSTANCE_DELETE_NO_RESP_TTL = int(os.environ.get("INSTANCE_DELETE_NO_RESP_TTL", 5))
 INSTANCE_DELETE_RESP_TTL = int(os.environ.get("INSTANCE_DELETE_RESP_TTL", 5))
+USE_FAKE_SDL = bool(distutils.util.strtobool(os.environ.get("USE_FAKE_SDL", "False")))
 A1NS = "A1m_ns"
 TYPE_PREFIX = "a1.policy_type."
 INSTANCE_PREFIX = "a1.policy_instance."
@@ -35,7 +37,9 @@ HANDLER_PREFIX = "a1.policy_handler."
 
 
 mdc_logger = Logger(name=__name__)
-SDL = SDLWrapper()
+if USE_FAKE_SDL:
+    mdc_logger.debug("Using fake SDL")
+SDL = SDLWrapper(use_fake_sdl=USE_FAKE_SDL)
 
 # Internal helpers
 
