@@ -363,20 +363,31 @@ def test_bad_instances(client, monkeypatch, adm_type_good):
 
     monkeypatch.setattr("a1.data.SDL.set", monkey_set)
 
-    res = client.put("/a1-p/policytypes/111", json=adm_type_good)
-    assert res.status_code == 503
-    res = client.put("/a1-p/policytypes/112", json=adm_type_good)
-    assert res.status_code == 503
-    res = client.put("/a1-p/policytypes/113", json=adm_type_good)
-    assert res.status_code == 503
+    def create_alt_id(json, id):
+        """
+        Overwrites the json's policy type ID, attempts create and tests for 503
+        """
+        json['policy_type_id'] = id
+        url = "/a1-p/policytypes/{0}".format(id)
+        res = client.put(url, json=json)
+        assert res.status_code == 503
+
+    create_alt_id(adm_type_good, 111)
+    create_alt_id(adm_type_good, 112)
+    create_alt_id(adm_type_good, 113)
 
 
 def test_illegal_types(client, adm_type_good):
     """
     Test illegal types
     """
+    # below valid range
     res = client.put("/a1-p/policytypes/0", json=adm_type_good)
     assert res.status_code == 400
+    # ID mismatch
+    res = client.put("/a1-p/policytypes/1", json=adm_type_good)
+    assert res.status_code == 400
+    # above valid range
     res = client.put("/a1-p/policytypes/2147483648", json=adm_type_good)
     assert res.status_code == 400
 

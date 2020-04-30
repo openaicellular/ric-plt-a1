@@ -28,20 +28,25 @@ from a1 import a1rmr, exceptions, data
 mdc_logger = Logger(name=__name__)
 
 
+def _log_build_http_resp(exception, http_resp_code):
+    """
+    helper method that logs the exception and returns a tuple of (str, int) as a http response
+    """
+    msg = repr(exception)
+    mdc_logger.warning("Request failed, returning {0}: {1}".format(http_resp_code, msg))
+    return msg, http_resp_code
+
+
 def _try_func_return(func):
     """
     helper method that runs the function and returns a detailed http response if an exception is raised.
     """
     try:
         return func()
-    except (ValidationError, exceptions.PolicyTypeAlreadyExists, exceptions.CantDeleteNonEmptyType) as exc:
-        msg = repr(exc)
-        mdc_logger.warning("Request failed, returning 400: {0}".format(msg))
-        return msg, 400
+    except (ValidationError, exceptions.PolicyTypeAlreadyExists, exceptions.PolicyTypeIdMismatch, exceptions.CantDeleteNonEmptyType) as exc:
+        return _log_build_http_resp(exc, 400)
     except (exceptions.PolicyTypeNotFound, exceptions.PolicyInstanceNotFound) as exc:
-        msg = repr(exc)
-        mdc_logger.warning("Request failed, returning 404: {0}".format(msg))
-        return msg, 404
+        return _log_build_http_resp(exc, 404)
     except (RejectedByBackend, NotConnected, BackendError) as exc:
         """
         These are SDL errors. At the time of development here, we do not have a good understanding
@@ -52,10 +57,7 @@ def _try_func_return(func):
         For now, we log, and 503, and investigate the logs later to improve the handling/reporting.
         """
         # mdc_logger.exception(exc)  # waiting for https://jira.o-ran-sc.org/browse/RIC-39
-        msg = repr(exc)
-        mdc_logger.warning("Request failed, returning 503: {0}".format(msg))
-        return msg, 503
-
+        return _log_build_http_resp(exc, 503)
     # let other types of unexpected exceptions blow up and log
 
 

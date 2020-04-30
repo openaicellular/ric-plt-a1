@@ -19,17 +19,29 @@ Custom Exceptions
 """
 
 
-class CantDeleteNonEmptyType(BaseException):
+class A1Error(Exception):
+    """A base class for A1 exceptions."""
+
+    def __init__(self, message):
+        # Call the base class constructor with the parameters it needs
+        super(A1Error, self).__init__(message)
+
+
+class CantDeleteNonEmptyType(A1Error):
     """tried to delete a type that isn't empty"""
 
 
-class PolicyInstanceNotFound(BaseException):
+class PolicyInstanceNotFound(A1Error):
     """a policy instance cannot be found"""
 
 
-class PolicyTypeNotFound(BaseException):
+class PolicyTypeNotFound(A1Error):
     """a policy type instance cannot be found"""
 
 
-class PolicyTypeAlreadyExists(BaseException):
+class PolicyTypeAlreadyExists(A1Error):
     """a policy type already exists and replace not supported at this time"""
+
+
+class PolicyTypeIdMismatch(A1Error):
+    """a policy type request path ID differs from its body ID"""

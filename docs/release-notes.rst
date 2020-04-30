@@ -14,16 +14,17 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    :depth: 3
    :local:
 
-[2.1.8] - 2020-04-29
+[2.1.8] - 2020-04-30
 --------------------
 
 * Revise Dockerfile to set user as owner of .local dir with a1 package
-* Rename console shell start script to run-a1 from run.py 
+* Rename console shell start script to run-a1 from run.py
 * Extend start script to report webserver listening port
 * Add tiny RMR routing table for use in demo and test
 * Extend documentation for running a container locally
 * Add documentation of start/init parameters to _RmrLoop class
 * Add new environment variable USE_FAKE_SDL (`RIC-351 <https://jira.o-ran-sc.org/browse/RIC-351>`_)
+* Respond with error if policy type ID differs from ID in object on create
 
 
 [2.1.7] - 2020-04-28

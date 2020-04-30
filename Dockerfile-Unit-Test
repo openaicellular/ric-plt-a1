@@ -26,9 +26,9 @@ RUN pip install --upgrade pip && pip install tox gevent
 COPY --from=nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-alpine3-rmr:4.0.2 /usr/local/lib64/librmr* /usr/local/lib64/
 
 # copies
+COPY setup.py tox.ini /tmp/
 COPY a1/ /tmp/a1
 COPY tests/ /tmp/tests
-COPY setup.py tox.ini /tmp/
 WORKDIR /tmp
 
 # Run the unit tests but skip doc
