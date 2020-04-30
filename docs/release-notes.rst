@@ -25,6 +25,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 * Add documentation of start/init parameters to _RmrLoop class
 * Add new environment variable USE_FAKE_SDL (`RIC-351 <https://jira.o-ran-sc.org/browse/RIC-351>`_)
 * Respond with error if policy type ID differs from ID in object on create
+* Upgrade integration tests to use Tavern version 1.0.0
 
 
 [2.1.7] - 2020-04-28
