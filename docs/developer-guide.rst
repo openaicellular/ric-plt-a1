@@ -11,51 +11,59 @@ A1 Developer Guide
 Tech Stack
 ----------
 
--  OpenAPI3
--  Connexion
--  Flask with Gevent serving
--  Python3.8
+The A1 Mediator is implemented in Python, currently 3.8, and depends on these third-party packages
+and technologies:
+
+- OpenAPI3
+- Connexion
+- Flask with Gevent serving
+- Swagger
 
 Version bumping A1
 ------------------
 
-This project follows semver. When changes are made, the versions are in:
+This project follows semver. When the version string changes, these files must be updated:
 
-1) ``docs/release-notes.rst``
+#. ``setup.py``
+#. ``container-tag.yaml``
+#. ``integration_tests/a1mediator/Chart.yaml``
+#. ``docs/release-notes.rst``
+#. ``a1/openapi.yaml`` But note this is an API version, not a software version; there's no need to bump on non-API changes.
+#.  And over in the ric-plt/ric-dep repo that contains the A1 Mediator helm chart, files ``values.yaml`` and ``Chart.yaml``.
 
-2) ``setup.py``
+It's convenient to use the Python utility `bumpversion` to maintain the first three items.
+After setup (``pip install bumpversion``) you can change the patch version like this::
 
-3) ``container-tag.yaml``
+    bumpversion --verbose patch
 
-4) ``integration_tests/a1mediator/Chart.yaml``
+Or change the minor version like this::
 
-5) ``a1/openapi.yaml`` (this is an API version, not a software version; no need to bump on patch changes)
+    bumpversion --verbose minor
 
-6) in the ric-plt repo that contains a1 helm chart, ``values.yaml``, ``Chart.yml``
+After the `bumpversion` utility has modified the files, update the release notes then commit.
 
 
 Version bumping RMR
 -------------------
 
-As of 2020/02/13, A1 (Dockerfile), Dockerfile-Unit-Test, and all three
-integration test receivers use an Alpine base image and install RMR
-from a base builder image.  Must update and rebuild all 5 containers
-in the A1 repo (or just A1 itself for prod usage).
+A1 (Dockerfile), Dockerfile-Unit-Test, and all three integration test receivers use an Alpine
+base image and install RMR from a base builder image.  Must update and rebuild all 5 containers
+in the A1 repo (or just A1 itself for production usage).
 
 In addition these items in this repo must be kept in sync:
-* ``rmr-version.yaml`` controls what rmr gets installed for unit testing in Jenkins
-* ``integration_tests/install_rmr.sh`` is a useful script for a variety of local testing.
+
+#. ``rmr-version.yaml`` controls what rmr gets installed for unit testing in Jenkins
+#. ``integration_tests/install_rmr.sh`` is a useful script for a variety of local testing.
 
 Version bumping Python
 ----------------------
 
-If you want to update the version of python itself (ie just done from 37 to 38):
+If you want to update the version of python; for example this was recently done to move
+from 3.7 to 3.8, update these files:
 
-1) ``Dockerfile``
-
-2) ``Dockerfile-Unit-Test``
-
-3) ``tox.ini``
+#. ``Dockerfile``
+#. ``Dockerfile-Unit-Test``
+#. ``tox.ini``
 
 Unit Testing
 ------------
@@ -104,8 +112,9 @@ Then, run all the tests from the root (this requires the python packages ``tox``
    tox -c tox-integration.ini
 
 This script:
-1. Deploys 3 helm charts (5 containers) into a local kubernetes installation
-2. Port forwards a pod ClusterIP to localhost
-3. Uses “tavern” to run some tests against the server
-4. Barrages the server with apache bench
-5. Tears everything down
+
+#. Deploys 3 helm charts (5 containers) into a local kubernetes installation
+#. Port forwards a pod ClusterIP to localhost
+#. Uses “tavern” to run some tests against the server
+#. Barrages the server with Apache bench
+#. Tears everything down
