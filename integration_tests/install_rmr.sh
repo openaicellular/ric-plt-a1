@@ -1,5 +1,5 @@
 #!/bin/sh
-git clone --branch 4.0.2 https://gerrit.oran-osc.org/r/ric-plt/lib/rmr \
+git clone --branch 4.0.5 https://gerrit.oran-osc.org/r/ric-plt/lib/rmr \
     && cd rmr \
     && mkdir .build; cd .build \
     && echo "<<<installing rmr devel headers>>>" \

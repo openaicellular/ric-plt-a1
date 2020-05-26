@@ -151,7 +151,6 @@ def get_policy_instance_status(policy_type_id, policy_instance_id):
         2. if a1 has received at least one status and at least one is OK, we return "IN EFFECT"
         3. "NOT IN EFFECT" otherwise (no statuses, or none are OK but not all are deleted)
     """
-
     return _try_func_return(lambda: data.get_policy_instance_status(policy_type_id, policy_instance_id))
 
 

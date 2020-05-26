@@ -14,6 +14,17 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
    :depth: 3
    :local:
 
+
+[2.1.9] - 2020-05-26
+--------------------
+
+* Fix _send_msg method to free allocated RMR message buffers
+* Adjust send-message methods to retry only on RMR_ERR_RETRY
+* Use constants from ricxappframe.rmr instead of hardcoded strings
+* Upgrade RMR to version 4.0.5
+* Upgrade tavern to version 1.2.2
+
+
 [2.1.8] - 2020-04-30
 --------------------
 
@@ -40,143 +51,126 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
 [2.1.6] - 4/7/2020
 -------------------
-::
 
-    * Switch to rmr 3.6.3
-    * Switch to using rmr in the ricxappframe
+* Switch to rmr 3.6.3
+* Switch to using rmr in the ricxappframe
 
 
 [2.1.5] - 3/19/2020
 -------------------
-::
 
-    * Switch to python3.8
-    * Switch to SI95 from NNG (rmr v3 vs rmr v1)
-    * The switch to SI95 led to a rabbit hole in which we eventually discovered that rmr_send may sometimes block for an arbitrary period of time. Because of this issue, a1's sends are now threaded. Please see the longer comment about this in a1rmr.
-    * Bump version of py xapp frame (SDL used only) in A1
-    * Bump version of go xapp frame (0.0.24 -> 0.4.2) in integration tests
-    * Add some additional logging in A1
+* Switch to python3.8
+* Switch to SI95 from NNG (rmr v3 vs rmr v1)
+* The switch to SI95 led to a rabbit hole in which we eventually discovered that rmr_send may sometimes block for an arbitrary period of time. Because of this issue, a1's sends are now threaded. Please see the longer comment about this in a1rmr.
+* Bump version of py xapp frame (SDL used only) in A1
+* Bump version of go xapp frame (0.0.24 -> 0.4.2) in integration tests
+* Add some additional logging in A1
 
 
 [2.1.4] - 3/6/2020
 -------------------
-::
 
-    * SDL Wrapper was moved into the python xapp framework; use it from there instead.
+* SDL Wrapper was moved into the python xapp framework; use it from there instead.
 
 
 [2.1.3] - 2/13/2020
 -------------------
-::
 
-    * This is a pretty big amount of work/changes, however no APIs were changed hence the semver patch
-    * Switches A1's three test receivers (integration tests) over to golang; this was mostly done to learn the go xapp framework and they are identical in functionality.
-    * Upgrades the version of rmr in A1 and all integration receivers to 1.13.*
-    * Uses a much fancier Docker build to reduce the size of a1's image. The python:3.7-alpine image itself is 98MB and A1 is now only ~116MB, so we're done optimizing A1's container size.
+* This is a pretty big amount of work/changes, however no APIs were changed hence the semver patch
+* Switches A1's three test receivers (integration tests) over to golang; this was mostly done to learn the go xapp framework and they are identical in functionality.
+* Upgrades the version of rmr in A1 and all integration receivers to 1.13.*
+* Uses a much fancier Docker build to reduce the size of a1's image. The python:3.7-alpine image itself is 98MB and A1 is now only ~116MB, so we're done optimizing A1's container size.
 
 [2.1.2] - 1/22/2020
 -------------------
 
-::
-
-    * Upgrades from sdl 2.0.2 to 2.0.3
-    * Integrates an sdl healthcheck into a1's healthcheck
+* Upgrades from sdl 2.0.2 to 2.0.3
+* Integrates an sdl healthcheck into a1's healthcheck
 
 
 [2.1.1] - 1/14/2020
 -------------------
 
-::
+* Upgrades from sdl 1.0.0 to 2.0.2
+* Delete a1test_helpers because SDL 2.0.2 provides the mockup we need
+* Remove general catch all from A1
 
-    * Upgrades from sdl 1.0.0 to 2.0.2
-    * Delete a1test_helpers because SDL 2.0.2 provides the mockup we need
-    * Remove general catch all from A1
 
 [2.1.0] - 1/8/2020
 ------------------
 
-::
+* Represents a resillent version of 2.0.0 that uses Redis for persistence
+* Now relies on SDL and dbaas; SDL is the python interface library to dbaas
+* Adds a 503 http code to nearly all http methods, as A1 now depends on an upstream system
+* Integration tests have a copy of a dbaas helm chart, however the goal is to simplify that deployment per https://jira.o-ran-sc.org/browse/RIC-45
+* Unit tests have a mockup of SDL, however again the goal is to simplify as SDL grows per https://jira.o-ran-sc.org/browse/RIC-44
 
-    * Represents a resillent version of 2.0.0 that uses Redis for persistence
-    * Now relies on SDL and dbaas; SDL is the python interface library to dbaas
-    * Adds a 503 http code to nearly all http methods, as A1 now depends on an upstream system
-    * Integration tests have a copy of a dbaas helm chart, however the goal is to simplify that deployment per https://jira.o-ran-sc.org/browse/RIC-45
-    * Unit tests have a mockup of SDL, however again the goal is to simplify as SDL grows per https://jira.o-ran-sc.org/browse/RIC-44
 
 [2.0.0] - 12/9/2019
 -------------------
 
-::
+* Implements new logic around when instances are deleted. See flowcharts in docs/. Basically timeouts now trigger to actually delete instances from a1s database, and these timeouts are configurable.
+* Eliminates the barrier to deleting an instance when no xapp evdr replied (via timeouts)
+* Add two new ENV variables that control timeouts
+* Make unit tests more modular so new workflows can be tested easily
+* Fixes the API for ../status to return a richer structure. This is an (albeit tiny) API change.
+* Clean up unused items in the integration tests helm chart
+* Removed "RMR_RCV_RETRY_INTERVAL" leftovers since this isn't used anymore
+* Uses the standard RIC logging library
+* Switch the backend routing scheme to using subscription id with constant message types, per request.
+* Given the above, policy type ids can be any valid 32bit greater than 0
+* Decouple the API between northbound and A1 from A1 with xapps. This is now two seperate OpenAPI files
+* Update example for AC Xapp
+* Updgrade rmr and rmr-python to utilize new features; lots of cleanups because of that
+* Implements a POLICY QUERY feature where A1 listens for queries for a policy type. A1 then responds via multiple RTS messages every policy instance of that policy type (and expects an ACK back from xapps as usual). This feature can be used for xapp recovery etc.
 
-    * Implements new logic around when instances are deleted. See flowcharts in docs/. Basically timeouts now trigger to actually delete instances from a1s database, and these timeouts are configurable.
-    * Eliminates the barrier to deleting an instance when no xapp evdr replied (via timeouts)
-    * Add two new ENV variables that control timeouts
-    * Make unit tests more modular so new workflows can be tested easily
-    * Fixes the API for ../status to return a richer structure. This is an (albeit tiny) API change.
-    * Clean up unused items in the integration tests helm chart
-    * Removed "RMR_RCV_RETRY_INTERVAL" leftovers since this isn't used anymore
-    * Uses the standard RIC logging library
-    * Switch the backend routing scheme to using subscription id with constant message types, per request.
-    * Given the above, policy type ids can be any valid 32bit greater than 0
-    * Decouple the API between northbound and A1 from A1 with xapps. This is now two seperate OpenAPI files
-    * Update example for AC Xapp
-    * Updgrade rmr and rmr-python to utilize new features; lots of cleanups because of that
-    * Implements a POLICY QUERY feature where A1 listens for queries for a policy type. A1 then responds via multiple RTS messages every policy instance of that policy type (and expects an ACK back from xapps as usual). This feature can be used for xapp recovery etc.
 
 [1.0.4]
 -------
 
-::
+* Only external change here is to healthcheck the rmr thread as part of a1s healthcheck. k8s will now respin a1 if that is failing.
+* Refactors (simplifies) how we wait for rmr initialization; it is now called as part of __init__
+* Refactors (simplifies) how the thread is actually launched; it is now internal to the object and also a part of __init__
+* Cleans up unit testing; a1rmr now exposes a replace_rcv_func; useful for unit testing, harmless if not called otherwise
+* Upgrades to rmr-python 1.0.0 for simpler message allocation
 
-    * Only external change here is to healthcheck the rmr thread as part of a1s healthcheck. k8s will now respin a1 if that is failing.
-    * Refactors (simplifies) how we wait for rmr initialization; it is now called as part of __init__
-    * Refactors (simplifies) how the thread is actually launched; it is now internal to the object and also a part of __init__
-    * Cleans up unit testing; a1rmr now exposes a replace_rcv_func; useful for unit testing, harmless if not called otherwise
-    * Upgrades to rmr-python 1.0.0 for simpler message allocation
 
 [1.0.3] - 10/22/2019
 --------------------
 
-::
+* Move database cleanup (e.g., deleting instances based on statuses) into the polling loop
+* Rework how unit testing works with the polling loop; prior, exceptions were being thrown silently from the thread but not printed. The polling thread has now been paramaterized with override functions for the purposes of testing
+* Make type cleanup more efficient since we know exactly what instances were touched, and it's inefficient to iterate over all instances if they were not
+* Bump rmr-python version, and bump rmr version
+* Still an item left to do in this work; refactor the thread slightly to tie in a healthcheck with a1s healthcheck. We need k8s to restart a1 if that thread dies too.
 
-    * Move database cleanup (e.g., deleting instances based on statuses) into the polling loop
-    * Rework how unit testing works with the polling loop; prior, exceptions were being thrown silently from the thread but not printed. The polling thread has now been paramaterized with override functions for the purposes of testing
-    * Make type cleanup more efficient since we know exactly what instances were touched, and it's inefficient to iterate over all instances if they were not
-    * Bump rmr-python version, and bump rmr version
-    * Still an item left to do in this work; refactor the thread slightly to tie in a healthcheck with a1s healthcheck. We need k8s to restart a1 if that thread dies too.
 
 [1.0.2] - 10/17/2019
 --------------------
 
-::
+* a1 now has a seperate, continuous polling thread, which will enable operations like database cleanup
+  (based on ACKs) and external notifications in real time, rather than when the API is invoked
+* all rmr send and receive operations are now in this thread
+* introduces a thread safe job queue between the two threads
+* Not done yet: database cleanups in the thread
+* Bump rmr python version
+* Clean up some logging
 
-    * a1 now has a seperate, continuous polling thread
-      this will enable operations like database cleanup (based on ACKs) and external notifications in real time,
-      rather than when the API is invoked
-    * all rmr send and receive operations are now in this thread
-    * introduces a thread safe job queue between the two threads
-    * Not done yet: database cleanups in the thread
-    * Bump rmr python version
-    * Clean up some logging
 
 [1.0.1] - 10/15/2019
 --------------------
 
-::
-
-    * Moves the "database" access calls to mimick the SDL API, in preparation for moving to SDL
-    * Does not yet actually use SDL or Redis, but the transition to those will be much shorter after this change.
+* Moves the "database" access calls to mimick the SDL API, in preparation for moving to SDL
+* Does not yet actually use SDL or Redis, but the transition to those will be much shorter after this change.
 
 
 [1.0.0] - 10/7/2019
 -------------------
 
-::
-
-    * Represents v1.0.0 of the A1 API for O-RAN-SC Release A
-    * Finished here:
-      - Implement type DELETE
-      - Clean up where policy instance cleanups happen
+* Represents v1.0.0 of the A1 API for O-RAN-SC Release A
+* Finished here:
+  - Implement type DELETE
+  - Clean up where policy instance cleanups happen
 
 
 [0.14.1] - 10/2/2019
