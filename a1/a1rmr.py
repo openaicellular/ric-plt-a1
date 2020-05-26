@@ -121,6 +121,7 @@ class _RmrLoop:
             mdc_logger.debug("_send_msg: sending: {}".format(pre_send_summary))
             sbuf = rmr.rmr_send_msg(self.mrc, sbuf)
             msg_state = self._assert_good_send(sbuf, pre_send_summary)
+            mdc_logger.debug("_send_msg: result message state: {}".format(msg_state))
             if msg_state != rmr.RMR_ERR_RETRY:
                 break
 
@@ -139,6 +140,7 @@ class _RmrLoop:
             mdc_logger.debug("_rts_msg: sending: {}".format(pre_send_summary))
             sbuf_rts = rmr.rmr_rts_msg(self.mrc, sbuf_rts, payload=pay, mtype=mtype)
             msg_state = self._assert_good_send(sbuf_rts, pre_send_summary)
+            mdc_logger.debug("_rts_msg: result message state: {}".format(msg_state))
             if msg_state != rmr.RMR_ERR_RETRY:
                 break
 

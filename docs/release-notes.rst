@@ -20,6 +20,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
 * Fix _send_msg method to free allocated RMR message buffers
 * Adjust send-message methods to retry only on RMR_ERR_RETRY
+* Extend send-message methods to log message state after send
 * Use constants from ricxappframe.rmr instead of hardcoded strings
 * Upgrade RMR to version 4.0.5
 * Upgrade tavern to version 1.2.2
