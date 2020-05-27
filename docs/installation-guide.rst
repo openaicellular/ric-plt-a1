@@ -2,8 +2,8 @@
 .. http://creativecommons.org/licenses/by/4.0
 .. Copyright (C) 2019 AT&T Intellectual Property
 
-A1 Installation Guide
-=====================
+Installation Guide
+==================
 
 .. contents::
    :depth: 3

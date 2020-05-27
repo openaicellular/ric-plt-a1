@@ -10,10 +10,6 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <http://keepachangelog.com/>`__
 and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
-.. contents::
-   :depth: 3
-   :local:
-
 
 [2.1.9] - 2020-05-26
 --------------------
@@ -24,6 +20,7 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 * Use constants from ricxappframe.rmr instead of hardcoded strings
 * Upgrade RMR to version 4.0.5
 * Upgrade tavern to version 1.2.2
+* Extend user guide with southbound API schemas
 
 
 [2.1.8] - 2020-04-30
@@ -126,8 +123,8 @@ and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 * Implements a POLICY QUERY feature where A1 listens for queries for a policy type. A1 then responds via multiple RTS messages every policy instance of that policy type (and expects an ACK back from xapps as usual). This feature can be used for xapp recovery etc.
 
 
-[1.0.4]
--------
+[1.0.4] - 10/24/2019
+--------------------
 
 * Only external change here is to healthcheck the rmr thread as part of a1s healthcheck. k8s will now respin a1 if that is failing.
 * Refactors (simplifies) how we wait for rmr initialization; it is now called as part of __init__
