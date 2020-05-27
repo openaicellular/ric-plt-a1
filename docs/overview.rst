@@ -4,6 +4,10 @@
 Overview
 ========
 
+.. contents::
+   :depth: 3
+   :local:
+
 The RAN Intelligent Controller (RIC) Platform's A1 Mediator component
 listens for policy type and policy instance requests sent via HTTP
 (the "northbound" interface), and publishes those requests to running

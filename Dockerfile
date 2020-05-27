@@ -60,7 +60,9 @@ ENV RMR_SEED_RT /opt/route/local.rt
 ENV USE_FAKE_SDL False
 ENV PYTHONUNBUFFERED 1
 # pip installs console script to ~/.local/bin so PATH is critical
-ENV PATH=/home/a1user/.local/bin:$PATH
+ENV PATH /home/a1user/.local/bin:$PATH
+# prometheus client gathers data here
+ENV prometheus_multiproc_dir /tmp
 
 # Run!
 CMD run-a1

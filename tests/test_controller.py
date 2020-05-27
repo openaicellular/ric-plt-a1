@@ -400,6 +400,14 @@ def test_healthcheck(client):
     assert res.status_code == 200
 
 
+def test_metrics(client):
+    """
+    test Prometheus metrics
+    """
+    res = client.get("/a1-p/metrics")
+    assert res.status_code == 200
+
+
 def teardown_module():
     """module teardown"""
     a1rmr.stop_rmr_thread()

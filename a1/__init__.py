@@ -18,7 +18,19 @@
 contains the app; broken out here for ease of unit testing
 """
 import connexion
+from prometheus_client import CollectorRegistry, generate_latest, multiprocess
 
 
 app = connexion.App(__name__, specification_dir=".")
 app.add_api("openapi.yaml", arguments={"title": "My Title"})
+
+
+# python decorators feel like black magic to me
+@app.app.route('/a1-p/metrics', methods=['GET'])
+def metrics():  # pylint: disable=unused-variable
+    # /metrics API shouldn't be visible in the API documentation,
+    # hence it's added here in the create_app step
+    # requires environment variable prometheus_multiproc_dir
+    registry = CollectorRegistry()
+    multiprocess.MultiProcessCollector(registry)
+    return generate_latest(registry)

@@ -4,6 +4,10 @@
 User Guide and APIs
 ===================
 
+.. contents::
+   :depth: 3
+   :local:
+
 This document explains how to communicate with the A1 Mediator.
 Information for maintainers of this platform component is in the Developer Guide.
 
@@ -33,6 +37,12 @@ a single integer value:
     }
 
 
+For example, if you put the JSON above into a file called "create.json" you can use
+the curl command-line tool to send the request::
+
+    curl -X PUT --header "Content-Type: application/json" --data-raw @create.json http://localhost/a1-p/policytypes/20008
+
+
 Send the following JSON to create an instance of policy type 20008:
 
 .. code-block:: yaml
@@ -40,6 +50,11 @@ Send the following JSON to create an instance of policy type 20008:
     {
       "threshold" : 5
     }
+
+
+For example, you can use the curl command-line tool to send this request::
+
+    curl -X PUT --header "Content-Type: application/json" --data '{"threshold" : 5}' http://localhost/a1-p/policytypes/20008/policies/tsapolicy145
 
 
 Integrating Xapps with A1

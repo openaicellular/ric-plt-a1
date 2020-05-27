@@ -20,12 +20,14 @@ Main a1 controller
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 import connexion
+from prometheus_client import Counter
 from mdclogpy import Logger
 from ricsdl.exceptions import RejectedByBackend, NotConnected, BackendError
 from a1 import a1rmr, exceptions, data
 
 
 mdc_logger = Logger(name=__name__)
+request_counter = Counter('policy_requests', 'Policy type and instance requests', ['action', 'target'])
 
 
 def _log_build_http_resp(exception, http_resp_code):
@@ -95,6 +97,7 @@ def create_policy_type(policy_type_id):
     """
     Handles PUT /a1-p/policytypes/policy_type_id
     """
+    request_counter.labels(action='create', target='policy_type').inc()
 
     def put_type_handler():
         data.store_policy_type(policy_type_id, body)
@@ -116,6 +119,7 @@ def delete_policy_type(policy_type_id):
     """
     Handles DELETE /a1-p/policytypes/policy_type_id
     """
+    request_counter.labels(action='delete', target='policy_type').inc()
 
     def delete_policy_type_handler():
         data.delete_policy_type(policy_type_id)
@@ -158,6 +162,7 @@ def create_or_replace_policy_instance(policy_type_id, policy_instance_id):
     """
     Handles PUT /a1-p/policytypes/polidyid/policies/policy_instance_id
     """
+    request_counter.labels(action='create', target='policy_inst').inc()
     instance = connexion.request.json
 
     def put_instance_handler():
@@ -185,6 +190,7 @@ def delete_policy_instance(policy_type_id, policy_instance_id):
     """
     Handles DELETE /a1-p/policytypes/polidyid/policies/policy_instance_id
     """
+    request_counter.labels(action='delete', target='policy_inst').inc()
 
     def delete_instance_handler():
         data.delete_policy_instance(policy_type_id, policy_instance_id)

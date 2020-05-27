@@ -11,6 +11,13 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/>`__
 and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
 
+[2.2.0] - 2020-05-28
+--------------------
+
+* Add counters of create/update/delete actions on policy types and instances
+* Add Prometheus /metrics endpoint to report counter data
+
+
 [2.1.9] - 2020-05-26
 --------------------
 

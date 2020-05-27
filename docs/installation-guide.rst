@@ -9,8 +9,8 @@ Installation Guide
    :depth: 3
    :local:
 
-Optional ENV Variables
-----------------------
+Environment Variables
+---------------------
 
 You can set the following environment variables when launching a container to change the A1 behavior:
 
@@ -22,12 +22,19 @@ You can set the following environment variables when launching a container to ch
 
 4. ``USE_FAKE_SDL``: This allows testing of the A1 feature without a DBaaS SDL container.  The default is False.
 
-K8S
----
-The "real" helm chart for A1 is in the LF it/dep repo. That repo holds all of the helm charts for the RIC platform. There is a helm chart in `integration_tests` here for running the integration tests as discussed above.
+5. ``prometheus_multiproc_dir``: The directory where Prometheus gathers metrics.  The default is /tmp.
 
-Local Docker
--------------
+
+Kubernetes Deployment
+---------------------
+The official Helm chart for the A1 Mediator is in a deployment repository, which holds all of the Helm charts 
+for the RIC platform. There is a helm chart in `integration_tests` here for running the integration tests as
+discussed above.
+
+Local Deployment
+----------------
+
+Build and run the A1 mediator locally using the docker CLI as follows.
 
 Build the image
 ~~~~~~~~~~~~~~~
