@@ -34,11 +34,6 @@ repositories:
     - ric-plt/a1
 committers:
     - <<: *oran_ric_plt_a1_ptl
-    - name: 'Tommy Carpenter'
-      email: 'tc677g@att.com'
-      company: 'att'
-      id: 'tommycarpenter'
-      timezone: 'Unknown/Unknown'
     - name: 'Scott Daniels'
       email: 'daniels@research.att.com'
       company: 'research.att'
@@ -53,6 +48,6 @@ tsc:
     # yamllint disable rule:line-length
     approval: 'missing'
     changes:
-        - type: ''
-          name: ''
-          link: ''
+        - type: 'Removal'
+          name: 'Tommy Carpenter'
+          link: 'https://lists.o-ran-sc.org/g/toc/topic/removal_of_committer_tommy_c/74795766?p=,,,100,0,0,0::recentpostdate%2Fsticky,,,100,2,0,74795766'
