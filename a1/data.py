@@ -204,14 +204,18 @@ def store_policy_instance(policy_type_id, policy_instance_id, instance):
     creation_timestamp = time.time()
 
     # store the instance
+    operation = "CREATE"
     key = _generate_instance_key(policy_type_id, policy_instance_id)
     if SDL.get(A1NS, key) is not None:
+        operation = "UPDATE"
         # Reset the statuses because this is a new policy instance, even if it was overwritten
         _clear_handlers(policy_type_id, policy_instance_id)  # delete all the handlers
     SDL.set(A1NS, key, instance)
 
     metadata_key = _generate_instance_metadata_key(policy_type_id, policy_instance_id)
     SDL.set(A1NS, metadata_key, {"created_at": creation_timestamp, "has_been_deleted": False})
+
+    return operation
 
 
 def get_policy_instance(policy_type_id, policy_instance_id):

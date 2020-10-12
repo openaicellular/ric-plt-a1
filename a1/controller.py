@@ -176,10 +176,10 @@ def create_or_replace_policy_instance(policy_type_id, policy_instance_id):
         validate(instance=instance, schema=schema)
 
         # store the instance
-        data.store_policy_instance(policy_type_id, policy_instance_id, instance)
+        operation = data.store_policy_instance(policy_type_id, policy_instance_id, instance)
 
         # queue rmr send (best effort)
-        a1rmr.queue_instance_send(("CREATE", policy_type_id, policy_instance_id, instance))
+        a1rmr.queue_instance_send((operation, policy_type_id, policy_instance_id, instance))
 
         return "", 202
 
