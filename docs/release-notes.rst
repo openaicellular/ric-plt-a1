@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <http://keepachangelog.com/>`__
 and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
+[2.4.0] - 2020-12-08
+* Reference RMR version 4.4.6 via the builder image.
 
 [2.2.0] - 2020-05-28
 --------------------

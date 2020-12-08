@@ -39,8 +39,8 @@ RUN pip install --user /home/a1user
 # 2nd stage
 FROM python:3.8-alpine
 
-# copy rmr libraries from builder image in lieu of an Alpine package
-COPY --from=nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-alpine3-rmr:4.0.5 /usr/local/lib64/librmr* /usr/local/lib64/
+# copy rmr libraries from builder image in lieu of an Alpine package (10002 is the release portion of the repo)
+COPY --from=nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-alpine3-rmr:4.4.6 /usr/local/lib64/librmr* /usr/local/lib64/
 
 # copy python modules; this makes the 2 stage python build work
 COPY --from=compile-image /home/a1user/.local /home/a1user/.local
