@@ -21,7 +21,7 @@ FROM python:3.8-alpine AS compile-image
 # upgrade pip as root
 RUN pip install --upgrade pip
 # Gevent needs gcc, make, file, ffi
-RUN apk update && apk add gcc musl-dev make file libffi-dev
+RUN apk update && apk add gcc musl-dev make file libffi-dev g++
 # create a non-root user.  Only really needed in stage 2,
 # however this makes the copying easier and straighttforward;
 # pip option --user doesn't do the same thing if run as root
@@ -40,7 +40,7 @@ RUN pip install --user /home/a1user
 FROM python:3.8-alpine
 
 # copy rmr libraries from builder image in lieu of an Alpine package (10002 is the release portion of the repo)
-COPY --from=nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-alpine3-rmr:4.4.6 /usr/local/lib64/librmr* /usr/local/lib64/
+COPY --from=nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-alpine3-rmr:4.5.2 /usr/local/lib64/librmr* /usr/local/lib64/
 
 # copy python modules; this makes the 2 stage python build work
 COPY --from=compile-image /home/a1user/.local /home/a1user/.local
