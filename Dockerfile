@@ -15,54 +15,116 @@
 #   limitations under the License.
 # ==================================================================================
 
-# This container uses a 2 stage build!
-# Tips and tricks were learned from: https://pythonspeed.com/articles/multi-stage-docker-python/
-FROM python:3.8-alpine AS compile-image
+# This builds an image for A1 based on ubuntu. The build takes between three and four
+# minutes depending on what was previously cached, and results in an image that is
+# roughly 260 MiB in size (as of May 2021)
+#
+
+FROM python:3.8 as build
+
 # upgrade pip as root
 RUN pip install --upgrade pip
-# Gevent needs gcc, make, file, ffi
-RUN apk update && apk add gcc musl-dev make file libffi-dev g++
-# create a non-root user.  Only really needed in stage 2,
+
+# pick up things for gevent build
+#
+RUN apt-get update
+RUN apt-get install -y gcc musl-dev make file libffi-dev g++
+
+# --- all root operations must be above this line ------------------------------------
+
+
+# create a simple user.  This is only really needed in stage 2,
 # however this makes the copying easier and straighttforward;
-# pip option --user doesn't do the same thing if run as root
-RUN addgroup -S a1user && adduser -S -G a1user a1user
-# switch to the non-root user for installing site packages
+# the 'pip option --user' command  doesn't do the same thing when
+# run as root.
+#
+RUN addgroup a1user && adduser --ingroup a1user a1user
+
+# switch to the non-root user for installing python things
 USER a1user
-# Speed hack; we install gevent before a1 because when building repeatedly (eg during dev)
+
+# Speed hack; we install gevent before anything because when building repeatedly (eg during dev)
 # and only changing a1 code, we do not need to keep compiling gevent which takes forever
 RUN pip install --user gevent
+
 COPY setup.py /home/a1user/
 COPY a1/ /home/a1user/a1
 RUN pip install --user /home/a1user
 
-###########
-# 2nd stage
-FROM python:3.8-alpine
 
-# copy rmr libraries from builder image in lieu of an Alpine package (10002 is the release portion of the repo)
-COPY --from=nexus3.o-ran-sc.org:10002/o-ran-sc/bldr-alpine3-rmr:4.5.2 /usr/local/lib64/librmr* /usr/local/lib64/
+
+# ----- stage 2  ---------------------------------------------------------------------------------
+
+# It might be tempting to use python:3.8, but that image is more than
+# 800 GiB to start, and the final image size if it is used is over
+# 1 GiB!!  Using the plain ubuntu image, then installing py3, and taking
+# things built in the first stage, the final image size isn't tiny, but should
+# be well under the 800GiB start for the python image.
+#
+FROM ubuntu:18.04
+
+# pick up reference to python so that we can get 3.8 and not the really old default
+
+RUN    apt-get update \
+	&& apt install -y software-properties-common \
+	&& add-apt-repository ppa:deadsnakes/ppa \
+	&& apt-get install -y python3.8 python3-pip wget \
+	&& apt-get clean
+
+# fetch and install RMR and any other needed libraries
+#
+ARG RMR_VER=4.7.4
+ARG RMR_PKG_URL=https://packagecloud.io/o-ran-sc/release/packages/debian/stretch/
+
+RUN wget -nv --content-disposition ${RMR_PKG_URL}/rmr_${RMR_VER}_amd64.deb/download.deb
+RUN wget -nv --content-disposition ${RMR_PKG_URL}/rmr-dev_${RMR_VER}_amd64.deb/download.deb
+RUN    dpkg -i rmr_${RMR_VER}_amd64.deb  \
+	&& dpkg -i rmr-dev_${RMR_VER}_amd64.deb \
+	&& ldconfig
 
 # copy python modules; this makes the 2 stage python build work
-COPY --from=compile-image /home/a1user/.local /home/a1user/.local
+#
+COPY --from=build /home/a1user/.local /home/a1user/.local
+
 # create mount point for dir with rmr routing file as named below
+#
 RUN mkdir -p /opt/route/
-# create a non-root user
-RUN addgroup -S a1user && adduser -S -G a1user a1user
-# ensure the non-root user can read python files
-RUN chown -R a1user:a1user /home/a1user/.local
-# switch to the non-root user for security reasons
+
+# create a non-root user, ensure it can access what it needs, and switch to it
+#
+RUN    addgroup a1user \
+	&& adduser --disabled-password --disabled-login --gecos "image-user" --no-create-home --ingroup a1user a1user \
+	&& chown -R a1user:a1user /home/a1user/.local \
+	&& chown a1user:a1user /home/a1user
+
+
+# ------------------ no root commands after this point -------------------------------------
 USER a1user
-# misc setups
+
+# the maddening onsey-twosey install of pything crud...
+#
+RUN pip3 install  --user connexion
+
+# misc
+#
 EXPOSE 10000
 ENV LD_LIBRARY_PATH /usr/local/lib/:/usr/local/lib64
 ENV RMR_SEED_RT /opt/route/local.rt
-# Set to True to run standalone
+
+# Set "fake" to True to run standalone
+#
 ENV USE_FAKE_SDL False
 ENV PYTHONUNBUFFERED 1
-# pip installs console script to ~/.local/bin so PATH is critical
+
+# pip installs executable script to $HOME/.local/bin so PATH vars are critical
+#
 ENV PATH /home/a1user/.local/bin:$PATH
+ENV PYTHONPATH /home/a1user/.local/lib/python3.8/site-packages
+
 # prometheus client gathers data here
+#
 ENV prometheus_multiproc_dir /tmp
 
-# Run!
-CMD run-a1
+# by defalt start the application
+#
+CMD [ "/usr/bin/python3.8", "/home/a1user/.local/bin/run-a1" ]
