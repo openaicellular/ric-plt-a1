@@ -309,6 +309,30 @@ paths:
         '503':
           description: "Potentially transient backend database error. Client should attempt to retry later."
 
+  '/data-delivery':
+
+    post:
+      description: >
+        Deliver data produced by data producer.
+      tags:
+        - A1 EI Data Delivery
+      operationId: a1.controller.data_delivery
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              description: >
+                object to represent data object
+      responses:
+        '200':
+          description: >
+            successfully delivered data from data producer
+
+        '404':
+          description: >
+            no job id defined for this data delivery
+
 components:
   schemas:
     policy_type_schema:

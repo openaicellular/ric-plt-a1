@@ -29,3 +29,13 @@ def a1_to_handler(operation, policy_type_id, policy_instance_id, payload=None):
         "policy_instance_id": policy_instance_id,
         "payload": payload,
     }
+
+
+def ei_to_handler(ei_job_id, payload=None):
+    """
+    used to create the payloads that get sent to downstream policy handlers
+    """
+    return {
+        "ei_job_id": ei_job_id,
+        "payload": payload,
+    }

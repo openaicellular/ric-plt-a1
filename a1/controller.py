@@ -201,3 +201,21 @@ def delete_policy_instance(policy_type_id, policy_instance_id):
         return "", 202
 
     return _try_func_return(delete_instance_handler)
+
+
+# data delivery
+
+
+def data_delivery():
+    """
+    Handle data delivery /data-delivery
+    """
+
+    def data_delivery_handler():
+        mdc_logger.debug("data: {}".format(connexion.request.json))
+        ei_job_result_json = connexion.request.json
+        mdc_logger.debug("jobid: {}".format(ei_job_result_json.get("job")))
+        a1rmr.queue_ei_job_result((ei_job_result_json.get("job"), ei_job_result_json))
+        return "", 200
+
+    return _try_func_return(data_delivery_handler)

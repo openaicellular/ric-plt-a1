@@ -46,6 +46,7 @@ USER a1user
 # Speed hack; we install gevent before anything because when building repeatedly (eg during dev)
 # and only changing a1 code, we do not need to keep compiling gevent which takes forever
 RUN pip install --user gevent
+RUN pip install --user requests
 
 COPY setup.py /home/a1user/
 COPY a1/ /home/a1user/a1
