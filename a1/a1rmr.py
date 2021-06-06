@@ -172,7 +172,7 @@ class _RmrLoop:
 
             work_item = self.ei_job_result_queue.get(block=False, timeout=None)
             payload = json.dumps(messages.ei_to_handler(*work_item)).encode("utf-8")
-            ei_job_id = int(payload.get("ei_job_id"))
+            ei_job_id = int(work_item[0])
             mdc_logger.debug("data-delivery: {}".format(payload))
 
             # send the payload to consumer subscribed for ei_job_id
@@ -323,9 +323,8 @@ def queue_ei_job_result(item):
     """
     push an item into the ei_job_queue
     """
-    mdc_logger.debug("before queue {0}".format(item))
+    mdc_logger.debug("queuing data delivery item {0}".format(item))
     __RMR_LOOP__.ei_job_result_queue.put(item)
-    mdc_logger.debug("after queue")
 
 
 def healthcheck_rmr_thread(seconds=30):
