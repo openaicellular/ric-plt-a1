@@ -24,7 +24,8 @@ from a1 import app
 from a1 import a1rmr
 
 
-mdc_logger = Logger(name=__name__)
+mdc_logger = Logger()
+mdc_logger.mdclog_format_init(configmap_monitor=True)
 
 
 def main():

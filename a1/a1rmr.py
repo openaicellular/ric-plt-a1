@@ -28,7 +28,8 @@ from mdclogpy import Logger
 from a1 import data, messages
 from a1.exceptions import PolicyTypeNotFound, PolicyInstanceNotFound
 
-mdc_logger = Logger(name=__name__)
+mdc_logger = Logger()
+mdc_logger.mdclog_format_init(configmap_monitor=True)
 
 
 # With Nanomsg and NNG it was possible for a send attempt to have a "soft"
