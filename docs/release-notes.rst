@@ -10,7 +10,18 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a Changelog <http://keepachangelog.com/>`__
 and this project adheres to `Semantic Versioning <http://semver.org/>`__.
 
+[2.5.0] - 2021-06-22
+--------------------
+
+* Enhancement to add A1-EI support.
+* Upgrade RMR to version 4.5.2.
+* Base docker image changed to ubuntu:18.04.
+* Upgrade ricxappframe to version 2.0.0.
+* Upgrade MDC logging.
+
 [2.4.0] - 2020-12-08
+--------------------
+
 * Reference RMR version 4.4.6 via the builder image.
 
 [2.2.0] - 2020-05-28
