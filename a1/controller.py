@@ -27,7 +27,8 @@ from a1 import a1rmr, exceptions, data
 
 
 mdc_logger = Logger(name=__name__)
-request_counter = Counter('policy_requests', 'Policy type and instance requests', ['action', 'target'])
+
+a1_counters = Counter('A1Policy', 'Policy type and instance counters', ['counter'])
 
 
 def _log_build_http_resp(exception, http_resp_code):
@@ -97,7 +98,7 @@ def create_policy_type(policy_type_id):
     """
     Handles PUT /a1-p/policytypes/policy_type_id
     """
-    request_counter.labels(action='create', target='policy_type').inc()
+    a1_counters.labels(counter='CreatePolicyTypeReqs').inc()
 
     def put_type_handler():
         data.store_policy_type(policy_type_id, body)
@@ -119,7 +120,7 @@ def delete_policy_type(policy_type_id):
     """
     Handles DELETE /a1-p/policytypes/policy_type_id
     """
-    request_counter.labels(action='delete', target='policy_type').inc()
+    a1_counters.labels(counter='DeletePolicyTypeReqs').inc()
 
     def delete_policy_type_handler():
         data.delete_policy_type(policy_type_id)
@@ -162,7 +163,7 @@ def create_or_replace_policy_instance(policy_type_id, policy_instance_id):
     """
     Handles PUT /a1-p/policytypes/polidyid/policies/policy_instance_id
     """
-    request_counter.labels(action='create', target='policy_inst').inc()
+    a1_counters.labels(counter='CreatePolicyInstanceReqs').inc()
     instance = connexion.request.json
 
     def put_instance_handler():
@@ -190,7 +191,7 @@ def delete_policy_instance(policy_type_id, policy_instance_id):
     """
     Handles DELETE /a1-p/policytypes/polidyid/policies/policy_instance_id
     """
-    request_counter.labels(action='delete', target='policy_inst').inc()
+    a1_counters.labels(counter='DeletePolicyInstanceReqs').inc()
 
     def delete_instance_handler():
         data.delete_policy_instance(policy_type_id, policy_instance_id)
