@@ -35,7 +35,7 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 
-	"subh.com/a1-go/pkg/models"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/models"
 )
 
 // NewA1ControllerCreatePolicyTypeParams creates a new A1ControllerCreatePolicyTypeParams object

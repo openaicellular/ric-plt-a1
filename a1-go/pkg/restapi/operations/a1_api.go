@@ -39,8 +39,8 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"subh.com/a1-go/pkg/restapi/operations/a1_e_i_data_delivery"
-	"subh.com/a1-go/pkg/restapi/operations/a1_mediator"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi/operations/a1_e_i_data_delivery"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi/operations/a1_mediator"
 )
 
 // NewA1API creates a new A1 instance

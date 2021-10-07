@@ -30,7 +30,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"subh.com/a1-go/pkg/models"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/models"
 )
 
 // A1ControllerGetAllPolicyTypesOKCode is the HTTP code returned for type A1ControllerGetAllPolicyTypesOK

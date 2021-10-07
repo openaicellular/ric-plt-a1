@@ -18,7 +18,7 @@
 //   platform project (RICP).
 //==================================================================================
 //
-module subh.com/a1-go
+module gerrit.o-ran-sc.org/r/ric-plt/a1
 
 go 1.16
 

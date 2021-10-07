@@ -45,7 +45,7 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	"golang.org/x/net/netutil"
 
-	"subh.com/a1-go/pkg/restapi/operations"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi/operations"
 )
 
 const (

@@ -30,9 +30,9 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	"subh.com/a1-go/pkg/restapi/operations"
-	"subh.com/a1-go/pkg/restapi/operations/a1_e_i_data_delivery"
-	"subh.com/a1-go/pkg/restapi/operations/a1_mediator"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi/operations"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi/operations/a1_e_i_data_delivery"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi/operations/a1_mediator"
 )
 
 //go:generate swagger generate server --target ../../pkg --name A1 --spec ../../api/swagger.yaml --exclude-main

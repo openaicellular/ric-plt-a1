@@ -26,7 +26,7 @@ import (
 	"strings"
 
 	"gerrit.o-ran-sc.org/r/ric-plt/sdlgo"
-	"subh.com/a1-go/pkg/models"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/models"
 )
 
 func NewResthook() *Resthook {

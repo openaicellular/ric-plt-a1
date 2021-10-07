@@ -21,7 +21,7 @@
 package main
 
 import (
-	"subh.com/a1-go/pkg/restful"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restful"
 )
 
 func main() {

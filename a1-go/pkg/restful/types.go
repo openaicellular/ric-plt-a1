@@ -21,8 +21,8 @@
 package restful
 
 import (
-	"subh.com/a1-go/pkg/restapi/operations"
-	resthook "subh.com/a1-go/pkg/resthooks"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi/operations"
+       resthook "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/resthooks"
 )
 
 type Restful struct {

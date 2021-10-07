@@ -27,10 +27,10 @@ import (
 
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
-	"subh.com/a1-go/pkg/restapi"
-	"subh.com/a1-go/pkg/restapi/operations"
-	"subh.com/a1-go/pkg/restapi/operations/a1_mediator"
-	"subh.com/a1-go/pkg/resthooks"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi/operations"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi/operations/a1_mediator"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/resthooks"
 )
 
 func NewRestful() *Restful {
