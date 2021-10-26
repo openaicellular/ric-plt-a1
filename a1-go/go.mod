@@ -24,7 +24,10 @@ go 1.16
 
 replace gerrit.o-ran-sc.org/r/ric-plt/sdlgo => gerrit.o-ran-sc.org/r/ric-plt/sdlgo.git v0.7.0
 
+replace gerrit.o-ran-sc.org/r/com/golog => gerrit.o-ran-sc.org/r/com/golog.git v0.0.2
+
 require (
+       gerrit.o-ran-sc.org/r/com/golog v0.0.2
 	gerrit.o-ran-sc.org/r/ric-plt/sdlgo v0.7.0
 	github.com/go-openapi/errors v0.19.9
 	github.com/go-openapi/loads v0.19.7
@@ -36,4 +39,5 @@ require (
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
+       k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
 )

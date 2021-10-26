@@ -21,16 +21,16 @@
 package restful
 
 import (
-	"fmt"
 	"log"
 	"os"
 
-	"github.com/go-openapi/loads"
-	"github.com/go-openapi/runtime/middleware"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/a1"
        "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi"
        "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi/operations"
        "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi/operations/a1_mediator"
        "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/resthooks"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 func NewRestful() *Restful {
@@ -49,7 +49,7 @@ func (r *Restful) setupHandler() *operations.A1API {
 
 	api := operations.NewA1API(swaggerSpec)
 	api.A1MediatorA1ControllerGetAllPolicyTypesHandler = a1_mediator.A1ControllerGetAllPolicyTypesHandlerFunc(func(param a1_mediator.A1ControllerGetAllPolicyTypesParams) middleware.Responder {
-		fmt.Printf("\n---- handler for get all all policy type --- \n")
+               a1.Logger.Debug("handler for get all all policy type")
 		return a1_mediator.NewA1ControllerGetAllPolicyTypesOK().WithPayload(r.rh.GetAllPolicyType())
 	})
 	return api

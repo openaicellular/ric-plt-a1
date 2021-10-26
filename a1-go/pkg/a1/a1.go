@@ -18,23 +18,34 @@
    platform project (RICP).
 ==================================================================================
 */
-package main
+package a1
 
 import (
-       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/a1"
-       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restful"
+       "fmt"
+       "os"
+
+       mdclog "gerrit.o-ran-sc.org/r/com/golog"
 )
 
-func main() {
+var Logger *mdclog.MdcLogger
 
-	// Development configuration
-	// following configuration is required if we would like to communicate with SDL
-	// os.Setenv("DBAAS_SERVICE_HOST", "xxxxx")
-	// os.Setenv("DBAAS_SERVICE_PORT", "xxxxx")
+func Init() {
+       var err error
+       Logger, err = mdclog.InitLogger("a1")
+       if err != nil {
+               fmt.Println("logger not initialised !!!")
+               return
+       }
 
-	// start restful service to handle a1 api's
-	restful := restful.NewRestful()
+       // set config file to read logging config
+       configFile := os.Getenv("A1_CONFIG_FILE")
+       fmt.Println(configFile)
 
-       a1.Logger.Info("Starting a1 mediator.")
-	restful.Run()
+       if configFile != "" {
+               Logger.ParseFileContent(configFile)
+               Logger.Info("logger is initialized with config file : %s", configFile)
+       } else {
+               Logger.LevelSet(mdclog.INFO)
+               Logger.Info("logger is initialized without config file.")
+       }
 }

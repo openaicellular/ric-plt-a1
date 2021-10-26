@@ -33,6 +33,13 @@ var sdlInst *SdlMock
 
 func TestMain(m *testing.M) {
 	sdlInst = new(SdlMock)
+
+       sdlInst.On("GetAll", "A1m_ns").Return([]string{"a1.policy_instance.1006001.qos",
+               "a1.policy_type.1006001",
+               "a1.policy_type.20000",
+               "a1.policy_inst_metadata.1006001.qos",
+       }, nil)
+
 	rh = createResthook(sdlInst)
 	code := m.Run()
 	os.Exit(code)
@@ -48,9 +55,6 @@ type SdlMock struct {
 }
 
 func (s *SdlMock) GetAll(ns string) ([]string, error) {
-	return []string{"a1.policy_instance.1006001.qos",
-		"a1.policy_type.1006001",
-		"a1.policy_type.20000",
-		"a1.policy_inst_metadata.1006001.qos",
-	}, nil
+       args := s.MethodCalled("GetAll", ns)
+       return args.Get(0).([]string), nil
 }

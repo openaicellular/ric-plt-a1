@@ -21,12 +21,12 @@
 package resthooks
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
-	"gerrit.o-ran-sc.org/r/ric-plt/sdlgo"
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/a1"
        "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/models"
+	"gerrit.o-ran-sc.org/r/ric-plt/sdlgo"
 )
 
 func NewResthook() *Resthook {
@@ -46,10 +46,10 @@ func (rh *Resthook) GetAllPolicyType() []models.PolicyTypeID {
 	keys, err := rh.db.GetAll("A1m_ns")
 
 	if err != nil {
-		fmt.Printf("error in retrieving policy. err: %v", err)
+               a1.Logger.Error("error in retrieving policy. err: %v", err)
 		return policyTypeIDs
 	}
-	fmt.Printf("keys : %+v", keys)
+       a1.Logger.Debug("keys : %+v", keys)
 
 	for _, key := range keys {
 		if strings.HasPrefix(strings.TrimLeft(key, " "), "a1.policy_type.") {
@@ -59,6 +59,6 @@ func (rh *Resthook) GetAllPolicyType() []models.PolicyTypeID {
 		}
 	}
 
-	fmt.Printf("return : %+v", policyTypeIDs)
+       a1.Logger.Debug("return : %+v", policyTypeIDs)
 	return policyTypeIDs
 }

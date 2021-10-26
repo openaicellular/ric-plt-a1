@@ -6,9 +6,6 @@ NOTES.txt
 rmr/*
 docs_and_diagrams/
 
-# go
-go.sum
-
 # documentation
 .tox
 docs/_build/

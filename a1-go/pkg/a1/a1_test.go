@@ -18,23 +18,27 @@
    platform project (RICP).
 ==================================================================================
 */
-package main
+package a1
 
 import (
-       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/a1"
-       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restful"
+       "os"
+       "path"
+       "testing"
+
+       "gerrit.o-ran-sc.org/r/com/golog"
+       "github.com/stretchr/testify/assert"
 )
 
-func main() {
+func TestLoggerWithConfigFile(t *testing.T) {
+       p, _ := os.Getwd()
+       p = path.Join(p, "../../config/config_test.yaml")
+       os.Setenv("A1_CONFIG_FILE", p)
+       Init()
+       assert.Equal(t, Logger.LevelGet(), golog.Level(4))
+}
 
-	// Development configuration
-	// following configuration is required if we would like to communicate with SDL
-	// os.Setenv("DBAAS_SERVICE_HOST", "xxxxx")
-	// os.Setenv("DBAAS_SERVICE_PORT", "xxxxx")
-
-	// start restful service to handle a1 api's
-	restful := restful.NewRestful()
-
-       a1.Logger.Info("Starting a1 mediator.")
-	restful.Run()
+func TestLoggerWithoutConfigFile(t *testing.T) {
+       os.Unsetenv("A1_CONFIG_FILE")
+       Init()
+       assert.Equal(t, Logger.LevelGet(), golog.Level(3))
 }
