@@ -24,6 +24,7 @@ import (
 	"os"
 	"testing"
 
+       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/a1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -40,6 +41,7 @@ func TestMain(m *testing.M) {
                "a1.policy_inst_metadata.1006001.qos",
        }, nil)
 
+       a1.Init()
 	rh = createResthook(sdlInst)
 	code := m.Run()
 	os.Exit(code)

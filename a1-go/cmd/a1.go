@@ -32,6 +32,9 @@ func main() {
 	// os.Setenv("DBAAS_SERVICE_HOST", "xxxxx")
 	// os.Setenv("DBAAS_SERVICE_PORT", "xxxxx")
 
+       // initialize logger
+       a1.Init()
+
 	// start restful service to handle a1 api's
 	restful := restful.NewRestful()
 
