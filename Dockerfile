@@ -62,7 +62,7 @@ RUN pip install --user /home/a1user
 # things built in the first stage, the final image size isn't tiny, but should
 # be well under the 800GiB start for the python image.
 #
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 # pick up reference to python so that we can get 3.8 and not the really old default
 
