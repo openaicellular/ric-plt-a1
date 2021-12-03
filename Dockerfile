@@ -74,7 +74,7 @@ RUN    apt-get update \
 
 # fetch and install RMR and any other needed libraries
 #
-ARG RMR_VER=4.7.4
+ARG RMR_VER=4.8.0
 ARG RMR_PKG_URL=https://packagecloud.io/o-ran-sc/release/packages/debian/stretch/
 
 RUN wget -nv --content-disposition ${RMR_PKG_URL}/rmr_${RMR_VER}_amd64.deb/download.deb
