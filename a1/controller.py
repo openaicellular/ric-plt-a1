@@ -27,6 +27,7 @@ from a1 import a1rmr, exceptions, data
 
 
 mdc_logger = Logger(name=__name__)
+mdc_logger.mdclog_format_init(configmap_monitor=True)
 
 a1_counters = Counter('A1Policy', 'Policy type and instance counters', ['counter'])
 
@@ -76,10 +77,10 @@ def get_healthcheck():
     3. checks that our SDL connection is healthy
     """
     if not a1rmr.healthcheck_rmr_thread():
-        mdc_logger.debug("A1 is not healthy due to the rmr thread")
+        mdc_logger.error("A1 is not healthy due to the rmr thread")
         return "rmr thread is unhealthy", 500
     if not data.SDL.healthcheck():
-        mdc_logger.debug("A1 is not healthy because it does not have a connection to SDL")
+        mdc_logger.error("A1 is not healthy because it does not have a connection to SDL")
         return "sdl connection is unhealthy", 500
     return "", 200
 

@@ -276,7 +276,6 @@ class _RmrLoop:
 
                 # we must free each sbuf
                 rmr.rmr_free_msg(sbuf)
-
             self.last_ran = time.time()
             time.sleep(1)
 

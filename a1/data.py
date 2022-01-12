@@ -37,6 +37,7 @@ HANDLER_PREFIX = "a1.policy_handler."
 
 
 mdc_logger = Logger(name=__name__)
+mdc_logger.mdclog_format_init(configmap_monitor=True)
 if USE_FAKE_SDL:
     mdc_logger.debug("Using fake SDL")
 SDL = SDLWrapper(use_fake_sdl=USE_FAKE_SDL)
