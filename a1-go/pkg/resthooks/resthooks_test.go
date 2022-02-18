@@ -24,7 +24,7 @@ import (
 	"os"
 	"testing"
 
-       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/a1"
+	"gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/a1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -35,13 +35,13 @@ var sdlInst *SdlMock
 func TestMain(m *testing.M) {
 	sdlInst = new(SdlMock)
 
-       sdlInst.On("GetAll", "A1m_ns").Return([]string{"a1.policy_instance.1006001.qos",
-               "a1.policy_type.1006001",
-               "a1.policy_type.20000",
-               "a1.policy_inst_metadata.1006001.qos",
-       }, nil)
+	sdlInst.On("GetAll", "A1m_ns").Return([]string{"a1.policy_instance.1006001.qos",
+		"a1.policy_type.1006001",
+		"a1.policy_type.20000",
+		"a1.policy_inst_metadata.1006001.qos",
+	}, nil)
 
-       a1.Init()
+	a1.Init()
 	rh = createResthook(sdlInst)
 	code := m.Run()
 	os.Exit(code)
@@ -57,6 +57,10 @@ type SdlMock struct {
 }
 
 func (s *SdlMock) GetAll(ns string) ([]string, error) {
-       args := s.MethodCalled("GetAll", ns)
-       return args.Get(0).([]string), nil
+	args := s.MethodCalled("GetAll", ns)
+	return args.Get(0).([]string), nil
+}
+
+func (s *SdlMock) SetIfNotExists(ns string, key string, data interface{}) (bool, error) {
+	return true, nil
 }

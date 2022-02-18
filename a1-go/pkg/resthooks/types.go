@@ -26,4 +26,5 @@ type Resthook struct {
 
 type iSdl interface {
 	GetAll(string) ([]string, error)
+	SetIfNotExists(ns string, key string, data interface{}) (bool, error)
 }

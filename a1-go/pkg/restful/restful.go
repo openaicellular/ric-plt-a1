@@ -24,11 +24,12 @@ import (
 	"log"
 	"os"
 
-       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/a1"
-       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi"
-       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi/operations"
-       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi/operations/a1_mediator"
-       "gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/resthooks"
+	"gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/a1"
+	"gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/models"
+	"gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi"
+	"gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi/operations"
+	"gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/restapi/operations/a1_mediator"
+	"gerrit.o-ran-sc.org/r/ric-plt/a1/pkg/resthooks"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/runtime/middleware"
 )
@@ -49,9 +50,23 @@ func (r *Restful) setupHandler() *operations.A1API {
 
 	api := operations.NewA1API(swaggerSpec)
 	api.A1MediatorA1ControllerGetAllPolicyTypesHandler = a1_mediator.A1ControllerGetAllPolicyTypesHandlerFunc(func(param a1_mediator.A1ControllerGetAllPolicyTypesParams) middleware.Responder {
-               a1.Logger.Debug("handler for get all all policy type")
+		a1.Logger.Debug("handler for get all policy type")
 		return a1_mediator.NewA1ControllerGetAllPolicyTypesOK().WithPayload(r.rh.GetAllPolicyType())
 	})
+
+	api.A1MediatorA1ControllerCreatePolicyTypeHandler = a1_mediator.A1ControllerCreatePolicyTypeHandlerFunc(func(params a1_mediator.A1ControllerCreatePolicyTypeParams) middleware.Responder {
+		a1.Logger.Debug("handler for get policy type from policytypeID")
+		if err = r.rh.CreatePolicyType(models.PolicyTypeID(params.PolicyTypeID), *params.Body); err == nil {
+			//Increase prometheus counter
+			return a1_mediator.NewA1ControllerCreatePolicyTypeCreated()
+		}
+		if r.rh.IsTypeAlready(err) || r.rh.IsTypeMismatch(err) {
+			return a1_mediator.NewA1ControllerCreatePolicyTypeBadRequest()
+		}
+		return a1_mediator.NewA1ControllerCreatePolicyTypeServiceUnavailable()
+
+	})
+
 	return api
 
 }
