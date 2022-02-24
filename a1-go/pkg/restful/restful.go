@@ -55,7 +55,7 @@ func (r *Restful) setupHandler() *operations.A1API {
 	})
 
 	api.A1MediatorA1ControllerCreatePolicyTypeHandler = a1_mediator.A1ControllerCreatePolicyTypeHandlerFunc(func(params a1_mediator.A1ControllerCreatePolicyTypeParams) middleware.Responder {
-		a1.Logger.Debug("handler for get policy type from policytypeID")
+		a1.Logger.Debug("handler for Create policy type ")
 		if err = r.rh.CreatePolicyType(models.PolicyTypeID(params.PolicyTypeID), *params.Body); err == nil {
 			//Increase prometheus counter
 			return a1_mediator.NewA1ControllerCreatePolicyTypeCreated()
@@ -65,6 +65,11 @@ func (r *Restful) setupHandler() *operations.A1API {
 		}
 		return a1_mediator.NewA1ControllerCreatePolicyTypeServiceUnavailable()
 
+	})
+
+	api.A1MediatorA1ControllerGetPolicyTypeHandler = a1_mediator.A1ControllerGetPolicyTypeHandlerFunc(func(params a1_mediator.A1ControllerGetPolicyTypeParams) middleware.Responder {
+		a1.Logger.Error("handler for get policy type from policytypeID")
+		return a1_mediator.NewA1ControllerGetPolicyTypeOK().WithPayload(r.rh.GetPolicyType(models.PolicyTypeID(params.PolicyTypeID)))
 	})
 
 	return api

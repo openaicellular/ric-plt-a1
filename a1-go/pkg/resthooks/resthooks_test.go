@@ -96,3 +96,7 @@ func (s *SdlMock) SetIfNotExists(ns string, key string, data interface{}) (bool,
 	args := s.MethodCalled("SetIfNotExists", ns, key, data)
 	return args.Bool(0), nil
 }
+
+func (s *SdlMock) Get(ns string, keys []string) (map[string]interface{}, error) {
+	return make(map[string]interface{}), nil
+}
