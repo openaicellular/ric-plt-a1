@@ -54,6 +54,33 @@ func TestGetAllPolicyType(t *testing.T) {
 	assert.Equal(t, 2, len(resp))
 }
 
+func TestGetPolicyType(t *testing.T) {
+
+	policyTypeId := models.PolicyTypeID(20001)
+
+	resp := rh.GetPolicyType(policyTypeId)
+
+	var policyTypeSchema models.PolicyTypeSchema
+	name := "admission_control_policy_mine"
+	policyTypeSchema.Name = &name
+	policytypeid := int64(20001)
+	policyTypeSchema.PolicyTypeID = &policytypeid
+	description := "various parameters to control admission of dual connection"
+	policyTypeSchema.Description = &description
+	schema := `{"$schema": "http://json-schema.org/draft-07/schema#","type":"object","properties": {"enforce": {"type":"boolean","default":"true",},"window_length": {"type":        "integer","default":1,"minimum":1,"maximum":60,"description": "Sliding window length (in minutes)",},
+"blocking_rate": {"type":"number","default":10,"minimum":1,"maximum":100,"description": "% Connections to block",},"additionalProperties": false,},}`
+	policyTypeSchema.CreateSchema = schema
+	key := a1PolicyPrefix + strconv.FormatInt((int64(policyTypeId)), 10)
+
+	//Setup Expectations
+	sdlInst.On("Get", a1MediatorNs, policyTypeId).Return(map[string]interface{}{key: policyTypeSchema}, nil)
+
+	assert.NotNil(t, resp)
+
+	sdlInst.AssertExpectations(t)
+
+}
+
 func TestCreatePolicyType(t *testing.T) {
 	var policyTypeId models.PolicyTypeID
 	policyTypeId = 20001
@@ -70,7 +97,7 @@ func TestCreatePolicyType(t *testing.T) {
 	data, err := policyTypeSchema.MarshalBinary()
 	a1.Logger.Debug("error : %+v ", err)
 	a1.Logger.Debug("data : %+v ", data)
-	key := "a1.policy_type." + strconv.FormatInt(20001, 10)
+	key := a1PolicyPrefix + strconv.FormatInt(20001, 10)
 	a1.Logger.Debug("key : %+v ", key)
 	//Setup Expectations
 	sdlInst.On("SetIfNotExists", a1MediatorNs, key, string(data)).Return(true, nil)
@@ -98,5 +125,20 @@ func (s *SdlMock) SetIfNotExists(ns string, key string, data interface{}) (bool,
 }
 
 func (s *SdlMock) Get(ns string, keys []string) (map[string]interface{}, error) {
-	return make(map[string]interface{}), nil
+	a1.Logger.Debug("Get Called ")
+	args := s.MethodCalled("Get", ns, keys)
+	a1.Logger.Debug("keys :%+v", args.Get(1))
+	var policyTypeSchema models.PolicyTypeSchema
+	name := "admission_control_policy_mine"
+	policyTypeSchema.Name = &name
+	policytypeid := int64(20001)
+	policyTypeSchema.PolicyTypeID = &policytypeid
+	description := "various parameters to control admission of dual connection"
+	policyTypeSchema.Description = &description
+	policyTypeSchema.CreateSchema = `{"$schema": "http://json-schema.org/draft-07/schema#","type":"object","properties": {"enforce": {"type":"boolean","default":"true",},"window_length": {"type":        "integer","default":1,"minimum":1,"maximum":60,"description": "Sliding window length (in minutes)",},
+"blocking_rate": {"type":"number","default":10,"minimum":1,"maximum":100,"description": "% Connections to block",},"additionalProperties": false,},}`
+	key := a1PolicyPrefix + strconv.FormatInt((policytypeid), 10)
+	mp := map[string]interface{}{key: policyTypeSchema}
+	a1.Logger.Debug("Get Called and mp return %+v ", mp)
+	return mp, nil
 }
